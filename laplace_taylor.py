@@ -131,133 +131,79 @@ class Taylor_Functions(laplace_theory.Theoretical_Values):
         x_value = self.x_values[0][0]
         ds_dx = self.x_taylor_ds_dx(known, unknown, x)
         
-#        ds1_dx1 = ds_dx[0, 0]
-#        ds1_dx2 = ds_dx[0, 1]
-#        ds2_dx1 = ds_dx[1, 0]
-#        ds2_dx2 = ds_dx[1, 1]
-#               
-#        det = ds1_dx1*ds2_dx2 - ds1_dx2*ds2_dx1
-#        
-#        coeff_0_det = lambdify(x, det, 'numpy')
-#        coeff_1_det = lambdify(x, diff(det, x[0]), 'numpy')
-#        coeff_2_det = lambdify(x, diff(det, x[1]), 'numpy')
-#        coeff_0_det = coeff_0_det(x_value[0], x_value[1])
-#        coeff_1_det = coeff_1_det(x_value[0], x_value[1])
-#        coeff_2_det = coeff_2_det(x_value[0], x_value[1])
-#        
-#        coeff_0_ds1_dx1 = lambdify(x, ds1_dx1, 'numpy')
-#        coeff_1_ds1_dx1 = lambdify(x, diff(ds1_dx1, x[0]), 'numpy')
-#        coeff_2_ds1_dx1 = lambdify(x, diff(ds1_dx1, x[1]), 'numpy')
-#        coeff_0_ds1_dx1 = coeff_0_ds1_dx1(x_value[0], x_value[1])
-#        coeff_1_ds1_dx1 = coeff_1_ds1_dx1(x_value[0], x_value[1])
-#        coeff_2_ds1_dx1 = coeff_2_ds1_dx1(x_value[0], x_value[1])
-#        
-#        coeff_0_ds1_dx2 = lambdify(x, ds1_dx2, 'numpy')
-#        coeff_1_ds1_dx2 = lambdify(x, diff(ds1_dx2, x[0]), 'numpy')
-#        coeff_2_ds1_dx2 = lambdify(x, diff(ds1_dx2, x[1]), 'numpy')
-#        coeff_0_ds1_dx2 = coeff_0_ds1_dx2(x_value[0], x_value[1])
-#        coeff_1_ds1_dx2 = coeff_1_ds1_dx2(x_value[0], x_value[1])
-#        coeff_2_ds1_dx2 = coeff_2_ds1_dx2(x_value[0], x_value[1])
-#        
-#        coeff_0_ds2_dx1 = lambdify(x, ds2_dx1, 'numpy')
-#        coeff_1_ds2_dx1 = lambdify(x, diff(ds2_dx1, x[0]), 'numpy')
-#        coeff_2_ds2_dx1 = lambdify(x, diff(ds2_dx1, x[1]), 'numpy')
-#        coeff_0_ds2_dx1 = coeff_0_ds2_dx1(x_value[0], x_value[1])
-#        coeff_1_ds2_dx1 = coeff_1_ds2_dx1(x_value[0], x_value[1])
-#        coeff_2_ds2_dx1 = coeff_2_ds2_dx1(x_value[0], x_value[1])
-#        
-#        coeff_0_ds2_dx2 = lambdify(x, ds2_dx2, 'numpy')
-#        coeff_1_ds2_dx2 = lambdify(x, diff(ds2_dx2, x[0]), 'numpy')
-#        coeff_2_ds2_dx2 = lambdify(x, diff(ds2_dx2, x[1]), 'numpy')
-#        coeff_0_ds2_dx2 = coeff_0_ds2_dx2(x_value[0], x_value[1])
-#        coeff_1_ds2_dx2 = coeff_1_ds2_dx2(x_value[0], x_value[1])
-#        coeff_2_ds2_dx2 = coeff_2_ds2_dx2(x_value[0], x_value[1])
-#        
-#        coeff_0_dx1_ds1 = coeff_0_ds2_dx2/coeff_0_det
-#        coeff_1_dx1_ds1 = coeff_0_ds2_dx2/coeff_0_det \
-#                          *(coeff_1_ds2_dx2/coeff_0_ds2_dx2 \
-#                            - coeff_1_det/coeff_0_det)       
-#        coeff_2_dx1_ds1 = coeff_0_ds2_dx2/coeff_0_det \
-#                          *(coeff_2_ds2_dx2/coeff_0_ds2_dx2 \
-#                            - coeff_2_det/coeff_0_det) 
-#                          
-#        coeff_0_dx1_ds2 = - coeff_0_ds1_dx2/coeff_0_det
-#        coeff_1_dx1_ds2 = - coeff_0_ds1_dx2/coeff_0_det \
-#                          *(coeff_1_ds1_dx2/coeff_0_ds1_dx2 \
-#                            - coeff_1_det/coeff_0_det)       
-#        coeff_2_dx1_ds2 = coeff_0_ds1_dx2/coeff_0_det \
-#                          *(coeff_2_ds1_dx2/coeff_0_ds1_dx2 \
-#                            - coeff_2_det/coeff_0_det)
-#                          
-#        coeff_0_dx2_ds1 = - coeff_0_ds2_dx2/coeff_0_det
-#        coeff_1_dx2_ds1 = - coeff_0_ds2_dx1/coeff_0_det \
-#                          *(coeff_1_ds2_dx1/coeff_0_ds2_dx1 \
-#                            - coeff_1_det/coeff_0_det)       
-#        coeff_2_dx2_ds1 = coeff_0_ds2_dx1/coeff_0_det \
-#                          *(coeff_2_ds2_dx1/coeff_0_ds1_dx2 \
-#                            - coeff_2_det/coeff_0_det)
-#                          
-#        coeff_0_dx2_ds2 = coeff_0_ds1_dx1/coeff_0_det
-#        coeff_1_dx2_ds2 = coeff_0_ds1_dx1/coeff_0_det \
-#                          *(coeff_1_ds1_dx1/coeff_0_ds1_dx1 \
-#                            - coeff_1_det/coeff_0_det)       
-#        coeff_2_dx2_ds2 = coeff_0_ds1_dx1/coeff_0_det \
-#                          *(coeff_2_ds1_dx1/coeff_0_ds1_dx1 \
-#                            - coeff_2_det/coeff_0_det)
-#        
-#        modified_dx1_ds1 = coeff_0_dx1_ds1 \
-#                           + coeff_1_dx1_ds1*x[0] \
-#                           + coeff_2_dx1_ds1*x[1]
-#        modified_dx1_ds2 = coeff_0_dx1_ds2 \
-#                           + coeff_1_dx1_ds2*x[0] \
-#                           + coeff_2_dx1_ds2*x[1]
-#        modified_dx2_ds1 = coeff_0_dx2_ds1 \
-#                           + coeff_1_dx2_ds1*x[0] \
-#                           + coeff_2_dx2_ds1*x[1]
-#        modified_dx2_ds2 = coeff_0_dx2_ds2 \
-#                           + coeff_1_dx2_ds2*x[0] \
-#                           + coeff_2_dx2_ds2*x[1]
-#        
-#        return sym.Matrix([[modified_dx1_ds1, modified_dx1_ds2],
-#                           [modified_dx2_ds1, modified_dx2_ds2]
-#                           ])
-            
-            
-        dx1_ds1 = ds_dx.inv()[0, 0]
-        dx1_ds2 = ds_dx.inv()[0, 1]
-        dx2_ds1 = ds_dx.inv()[1, 0]
-        dx2_ds2 = ds_dx.inv()[1, 1]
-        x_value = self.x_values[0][0]
+        ds1_dx1 = ds_dx[0, 0]
+        ds1_dx2 = ds_dx[0, 1]
+        ds2_dx1 = ds_dx[1, 0]
+        ds2_dx2 = ds_dx[1, 1]
+               
+        det = ds1_dx1*ds2_dx2 - ds1_dx2*ds2_dx1
         
-        coeff_0_dx1_ds1 = lambdify(x, dx1_ds1, 'numpy')
-        coeff_0_dx1_ds2 = lambdify(x, dx1_ds2, 'numpy')
-        coeff_0_dx2_ds1 = lambdify(x, dx2_ds1, 'numpy')
-        coeff_0_dx2_ds2 = lambdify(x, dx2_ds2, 'numpy')
+        coeff_0_det = lambdify(x, det, 'numpy')
+        coeff_1_det = lambdify(x, diff(det, x[0]), 'numpy')
+        coeff_2_det = lambdify(x, diff(det, x[1]), 'numpy')
+        coeff_0_det = coeff_0_det(x_value[0], x_value[1])
+        coeff_1_det = coeff_1_det(x_value[0], x_value[1])
+        coeff_2_det = coeff_2_det(x_value[0], x_value[1])
         
-        coeff_1_dx1_ds1 = lambdify(x, diff(dx1_ds1, x[0]), 'numpy')
-        coeff_1_dx1_ds2 = lambdify(x, diff(dx1_ds2, x[0]), 'numpy')
-        coeff_1_dx2_ds1 = lambdify(x, diff(dx2_ds1, x[0]), 'numpy')
-        coeff_1_dx2_ds2 = lambdify(x, diff(dx2_ds2, x[0]), 'numpy')
+        coeff_0_ds1_dx1 = lambdify(x, ds1_dx1, 'numpy')
+        coeff_1_ds1_dx1 = lambdify(x, diff(ds1_dx1, x[0]), 'numpy')
+        coeff_2_ds1_dx1 = lambdify(x, diff(ds1_dx1, x[1]), 'numpy')
+        coeff_0_ds1_dx1 = coeff_0_ds1_dx1(x_value[0], x_value[1])
+        coeff_1_ds1_dx1 = coeff_1_ds1_dx1(x_value[0], x_value[1])
+        coeff_2_ds1_dx1 = coeff_2_ds1_dx1(x_value[0], x_value[1])
         
-        coeff_2_dx1_ds1 = lambdify(x, diff(dx1_ds1, x[1]), 'numpy')
-        coeff_2_dx1_ds2 = lambdify(x, diff(dx1_ds2, x[1]), 'numpy')
-        coeff_2_dx2_ds1 = lambdify(x, diff(dx2_ds1, x[1]), 'numpy')
-        coeff_2_dx2_ds2 = lambdify(x, diff(dx2_ds2, x[1]), 'numpy')
+        coeff_0_ds1_dx2 = lambdify(x, ds1_dx2, 'numpy')
+        coeff_1_ds1_dx2 = lambdify(x, diff(ds1_dx2, x[0]), 'numpy')
+        coeff_2_ds1_dx2 = lambdify(x, diff(ds1_dx2, x[1]), 'numpy')
+        coeff_0_ds1_dx2 = coeff_0_ds1_dx2(x_value[0], x_value[1])
+        coeff_1_ds1_dx2 = coeff_1_ds1_dx2(x_value[0], x_value[1])
+        coeff_2_ds1_dx2 = coeff_2_ds1_dx2(x_value[0], x_value[1])
         
-        coeff_0_dx1_ds1 = coeff_0_dx1_ds1(x_value[0], x_value[1])
-        coeff_0_dx1_ds2 = coeff_0_dx1_ds2(x_value[0], x_value[1])
-        coeff_0_dx2_ds1 = coeff_0_dx2_ds1(x_value[0], x_value[1])
-        coeff_0_dx2_ds2 = coeff_0_dx2_ds2(x_value[0], x_value[1])
+        coeff_0_ds2_dx1 = lambdify(x, ds2_dx1, 'numpy')
+        coeff_1_ds2_dx1 = lambdify(x, diff(ds2_dx1, x[0]), 'numpy')
+        coeff_2_ds2_dx1 = lambdify(x, diff(ds2_dx1, x[1]), 'numpy')
+        coeff_0_ds2_dx1 = coeff_0_ds2_dx1(x_value[0], x_value[1])
+        coeff_1_ds2_dx1 = coeff_1_ds2_dx1(x_value[0], x_value[1])
+        coeff_2_ds2_dx1 = coeff_2_ds2_dx1(x_value[0], x_value[1])
         
-        coeff_1_dx1_ds1 = coeff_1_dx1_ds1(x_value[0], x_value[1])
-        coeff_1_dx1_ds2 = coeff_1_dx1_ds2(x_value[0], x_value[1])
-        coeff_1_dx2_ds1 = coeff_1_dx2_ds1(x_value[0], x_value[1])
-        coeff_1_dx2_ds2 = coeff_1_dx2_ds2(x_value[0], x_value[1])
+        coeff_0_ds2_dx2 = lambdify(x, ds2_dx2, 'numpy')
+        coeff_1_ds2_dx2 = lambdify(x, diff(ds2_dx2, x[0]), 'numpy')
+        coeff_2_ds2_dx2 = lambdify(x, diff(ds2_dx2, x[1]), 'numpy')
+        coeff_0_ds2_dx2 = coeff_0_ds2_dx2(x_value[0], x_value[1])
+        coeff_1_ds2_dx2 = coeff_1_ds2_dx2(x_value[0], x_value[1])
+        coeff_2_ds2_dx2 = coeff_2_ds2_dx2(x_value[0], x_value[1])
         
-        coeff_2_dx1_ds1 = coeff_2_dx1_ds1(x_value[0], x_value[1])
-        coeff_2_dx1_ds2 = coeff_2_dx1_ds2(x_value[0], x_value[1])
-        coeff_2_dx2_ds1 = coeff_2_dx2_ds1(x_value[0], x_value[1])
-        coeff_2_dx2_ds2 = coeff_2_dx2_ds2(x_value[0], x_value[1])
+        coeff_0_dx1_ds1 = coeff_0_ds2_dx2/coeff_0_det
+        coeff_1_dx1_ds1 = coeff_0_ds2_dx2/coeff_0_det \
+                          *(coeff_1_ds2_dx2/coeff_0_ds2_dx2 \
+                            - coeff_1_det/coeff_0_det)       
+        coeff_2_dx1_ds1 = coeff_0_ds2_dx2/coeff_0_det \
+                          *(coeff_2_ds2_dx2/coeff_0_ds2_dx2 \
+                            - coeff_2_det/coeff_0_det) 
+                          
+        coeff_0_dx1_ds2 = - coeff_0_ds1_dx2/coeff_0_det
+        coeff_1_dx1_ds2 = - coeff_0_ds1_dx2/coeff_0_det \
+                          *(coeff_1_ds1_dx2/coeff_0_ds1_dx2 \
+                            - coeff_1_det/coeff_0_det)       
+        coeff_2_dx1_ds2 = coeff_0_ds1_dx2/coeff_0_det \
+                          *(coeff_2_ds1_dx2/coeff_0_ds1_dx2 \
+                            - coeff_2_det/coeff_0_det)
+                          
+        coeff_0_dx2_ds1 = - coeff_0_ds2_dx2/coeff_0_det
+        coeff_1_dx2_ds1 = - coeff_0_ds2_dx1/coeff_0_det \
+                          *(coeff_1_ds2_dx1/coeff_0_ds2_dx1 \
+                            - coeff_1_det/coeff_0_det)       
+        coeff_2_dx2_ds1 = coeff_0_ds2_dx1/coeff_0_det \
+                          *(coeff_2_ds2_dx1/coeff_0_ds1_dx2 \
+                            - coeff_2_det/coeff_0_det)
+                          
+        coeff_0_dx2_ds2 = coeff_0_ds1_dx1/coeff_0_det
+        coeff_1_dx2_ds2 = coeff_0_ds1_dx1/coeff_0_det \
+                          *(coeff_1_ds1_dx1/coeff_0_ds1_dx1 \
+                            - coeff_1_det/coeff_0_det)       
+        coeff_2_dx2_ds2 = coeff_0_ds1_dx1/coeff_0_det \
+                          *(coeff_2_ds1_dx1/coeff_0_ds1_dx1 \
+                            - coeff_2_det/coeff_0_det)
         
         modified_dx1_ds1 = coeff_0_dx1_ds1 \
                            + coeff_1_dx1_ds1*x[0] \
