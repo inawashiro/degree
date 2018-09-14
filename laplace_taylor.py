@@ -335,30 +335,32 @@ class Taylor_Functions(laplace_theory.Theoretical_Values):
         x_taylor_s1 = lambdify([unknown, x], x_taylor_s1, 'numpy')
         x_taylor_s2 = lambdify([unknown, x], x_taylor_s2, 'numpy')
         
-        x_taylor_s1 = x_taylor_s1([(a_experiment[0],
-                                    a_experiment[1],
-                                    a_experiment[2],
-                                    b_experiment[0],
-                                    b_experiment[1],
-                                    b_experiment[2]),
-                                   (x_value[0],
-                                    x_value[1])
-                                   ])
-        x_taylor_s2 = x_taylor_s2([(a_experiment[0],
-                                    a_experiment[1],
-                                    a_experiment[2],
-                                    b_experiment[0],
-                                    b_experiment[1],
-                                    b_experiment[2]),
-                                   (x_value[0],
-                                    x_value[1])
-                                   ])
+        x_taylor_s1 = x_taylor_s1((a_experiment[0],
+                                   a_experiment[1],
+                                   a_experiment[2],
+                                   b_experiment[0],
+                                   b_experiment[1],
+                                   b_experiment[2]),
+                                  (x_value[0],
+                                   x_value[1])
+                                  )
+        x_taylor_s2 = x_taylor_s2((a_experiment[0],
+                                   a_experiment[1],
+                                   a_experiment[2],
+                                   b_experiment[0],
+                                   b_experiment[1],
+                                   b_experiment[2]),
+                                  (x_value[0],
+                                   x_value[1])
+                                  )
         
         u_experiment = s_taylor_u(x_taylor_s1, x_taylor_s2)
-        u_theory = u_theory(x_value[0], x_value[1])
-        
-        u_error = abs(u_experiment - u_theory)/u_theory
-        return u_error
+        u_theory = u_theory(x_value[0], x_value[1])     
+#        u_error = abs((u_experiment - u_theory)/u_theory)
+        result = np.ndarray((2,))
+        result[0] = u_theory
+        result[1] = u_experiment
+        return result
     
 
         
@@ -399,17 +401,8 @@ if __name__ == '__main__':
                Symbol('b22', real = True)
                ]
     
-#    print('x_values = ', theory.x_values(x))
-#    print('')
-#    
-#    print('r_theory = ', theory.r_theory(x))
-#    print('')
-#    
-#    print('a_theory = ', theory.a_theory(x))
-#    print('')
-#    
-#    print('b_theory = ', theory.b_theory(x))
-#    print('')
+    print('x_values = ', theory.x_values(x))
+    print('')
     
     taylor = Taylor_Functions(known, unknown, s, x)
 #    
@@ -418,7 +411,7 @@ if __name__ == '__main__':
 #        display(taylor.term_modified_x_taylor_laplacian_u(known, unknown, s, x)[i])    
 #    print('')
 
-    print('Relative Error of u = ')
+    print('(u_theory, u_experiment) = ')
     print(taylor.solution(known, unknown, s, x))
     print('')
     
@@ -427,35 +420,6 @@ if __name__ == '__main__':
     print('Elapsed Time = ', round(t1 - t0), '(s)')
         
     
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
