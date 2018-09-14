@@ -131,133 +131,79 @@ class Taylor_Functions(laplace_theory.Theoretical_Values):
         x_value = self.x_values[0][0]
         ds_dx = self.x_taylor_ds_dx(known, unknown, x)
         
-        ds1_dx1 = ds_dx[0, 0]
-        ds1_dx2 = ds_dx[0, 1]
-        ds2_dx1 = ds_dx[1, 0]
-        ds2_dx2 = ds_dx[1, 1]
-               
-        det = ds1_dx1*ds2_dx2 - ds1_dx2*ds2_dx1
-        
-        coeff_0_det = lambdify(x, det, 'numpy')
-        coeff_1_det = lambdify(x, diff(det, x[0]), 'numpy')
-        coeff_2_det = lambdify(x, diff(det, x[1]), 'numpy')
-        coeff_0_det = coeff_0_det(x_value[0], x_value[1])
-        coeff_1_det = coeff_1_det(x_value[0], x_value[1])
-        coeff_2_det = coeff_2_det(x_value[0], x_value[1])
-        
-        coeff_0_ds1_dx1 = lambdify(x, ds1_dx1, 'numpy')
-        coeff_1_ds1_dx1 = lambdify(x, diff(ds1_dx1, x[0]), 'numpy')
-        coeff_2_ds1_dx1 = lambdify(x, diff(ds1_dx1, x[1]), 'numpy')
-        coeff_0_ds1_dx1 = coeff_0_ds1_dx1(x_value[0], x_value[1])
-        coeff_1_ds1_dx1 = coeff_1_ds1_dx1(x_value[0], x_value[1])
-        coeff_2_ds1_dx1 = coeff_2_ds1_dx1(x_value[0], x_value[1])
-        
-        coeff_0_ds1_dx2 = lambdify(x, ds1_dx2, 'numpy')
-        coeff_1_ds1_dx2 = lambdify(x, diff(ds1_dx2, x[0]), 'numpy')
-        coeff_2_ds1_dx2 = lambdify(x, diff(ds1_dx2, x[1]), 'numpy')
-        coeff_0_ds1_dx2 = coeff_0_ds1_dx2(x_value[0], x_value[1])
-        coeff_1_ds1_dx2 = coeff_1_ds1_dx2(x_value[0], x_value[1])
-        coeff_2_ds1_dx2 = coeff_2_ds1_dx2(x_value[0], x_value[1])
-        
-        coeff_0_ds2_dx1 = lambdify(x, ds2_dx1, 'numpy')
-        coeff_1_ds2_dx1 = lambdify(x, diff(ds2_dx1, x[0]), 'numpy')
-        coeff_2_ds2_dx1 = lambdify(x, diff(ds2_dx1, x[1]), 'numpy')
-        coeff_0_ds2_dx1 = coeff_0_ds2_dx1(x_value[0], x_value[1])
-        coeff_1_ds2_dx1 = coeff_1_ds2_dx1(x_value[0], x_value[1])
-        coeff_2_ds2_dx1 = coeff_2_ds2_dx1(x_value[0], x_value[1])
-        
-        coeff_0_ds2_dx2 = lambdify(x, ds2_dx2, 'numpy')
-        coeff_1_ds2_dx2 = lambdify(x, diff(ds2_dx2, x[0]), 'numpy')
-        coeff_2_ds2_dx2 = lambdify(x, diff(ds2_dx2, x[1]), 'numpy')
-        coeff_0_ds2_dx2 = coeff_0_ds2_dx2(x_value[0], x_value[1])
-        coeff_1_ds2_dx2 = coeff_1_ds2_dx2(x_value[0], x_value[1])
-        coeff_2_ds2_dx2 = coeff_2_ds2_dx2(x_value[0], x_value[1])
-        
-        coeff_0_dx1_ds1 = coeff_0_ds2_dx2/coeff_0_det
-        coeff_1_dx1_ds1 = coeff_0_ds2_dx2/coeff_0_det \
-                          *(coeff_1_ds2_dx2/coeff_0_ds2_dx2 \
-                            - coeff_1_det/coeff_0_det)       
-        coeff_2_dx1_ds1 = coeff_0_ds2_dx2/coeff_0_det \
-                          *(coeff_2_ds2_dx2/coeff_0_ds2_dx2 \
-                            - coeff_2_det/coeff_0_det) 
-                          
-        coeff_0_dx1_ds2 = - coeff_0_ds1_dx2/coeff_0_det
-        coeff_1_dx1_ds2 = - coeff_0_ds1_dx2/coeff_0_det \
-                          *(coeff_1_ds1_dx2/coeff_0_ds1_dx2 \
-                            - coeff_1_det/coeff_0_det)       
-        coeff_2_dx1_ds2 = coeff_0_ds1_dx2/coeff_0_det \
-                          *(coeff_2_ds1_dx2/coeff_0_ds1_dx2 \
-                            - coeff_2_det/coeff_0_det)
-                          
-        coeff_0_dx2_ds1 = - coeff_0_ds2_dx2/coeff_0_det
-        coeff_1_dx2_ds1 = - coeff_0_ds2_dx1/coeff_0_det \
-                          *(coeff_1_ds2_dx1/coeff_0_ds2_dx1 \
-                            - coeff_1_det/coeff_0_det)       
-        coeff_2_dx2_ds1 = coeff_0_ds2_dx1/coeff_0_det \
-                          *(coeff_2_ds2_dx1/coeff_0_ds1_dx2 \
-                            - coeff_2_det/coeff_0_det)
-                          
-        coeff_0_dx2_ds2 = coeff_0_ds1_dx1/coeff_0_det
-        coeff_1_dx2_ds2 = coeff_0_ds1_dx1/coeff_0_det \
-                          *(coeff_1_ds1_dx1/coeff_0_ds1_dx1 \
-                            - coeff_1_det/coeff_0_det)       
-        coeff_2_dx2_ds2 = coeff_0_ds1_dx1/coeff_0_det \
-                          *(coeff_2_ds1_dx1/coeff_0_ds1_dx1 \
-                            - coeff_2_det/coeff_0_det)
-        
-        modified_dx1_ds1 = coeff_0_dx1_ds1 \
-                           + coeff_1_dx1_ds1*x[0] \
-                           + coeff_2_dx1_ds1*x[1]
-        modified_dx1_ds2 = coeff_0_dx1_ds2 \
-                           + coeff_1_dx1_ds2*x[0] \
-                           + coeff_2_dx1_ds2*x[1]
-        modified_dx2_ds1 = coeff_0_dx2_ds1 \
-                           + coeff_1_dx2_ds1*x[0] \
-                           + coeff_2_dx2_ds1*x[1]
-        modified_dx2_ds2 = coeff_0_dx2_ds2 \
-                           + coeff_1_dx2_ds2*x[0] \
-                           + coeff_2_dx2_ds2*x[1]
-        
-        return sym.Matrix([[modified_dx1_ds1, modified_dx1_ds2],
-                           [modified_dx2_ds1, modified_dx2_ds2]
-                           ])
-            
-            
-#        dx1_ds1 = ds_dx.inv()[0, 0]
-#        dx1_ds2 = ds_dx.inv()[0, 1]
-#        dx2_ds1 = ds_dx.inv()[1, 0]
-#        dx2_ds2 = ds_dx.inv()[1, 1]
-#        x_value = self.x_values[0][0]
+#        ds1_dx1 = ds_dx[0, 0]
+#        ds1_dx2 = ds_dx[0, 1]
+#        ds2_dx1 = ds_dx[1, 0]
+#        ds2_dx2 = ds_dx[1, 1]
+#               
+#        det = ds1_dx1*ds2_dx2 - ds1_dx2*ds2_dx1
 #        
-#        coeff_0_dx1_ds1 = lambdify(x, dx1_ds1, 'numpy')
-#        coeff_0_dx1_ds2 = lambdify(x, dx1_ds2, 'numpy')
-#        coeff_0_dx2_ds1 = lambdify(x, dx2_ds1, 'numpy')
-#        coeff_0_dx2_ds2 = lambdify(x, dx2_ds2, 'numpy')
+#        coeff_0_det = lambdify(x, det, 'numpy')
+#        coeff_1_det = lambdify(x, diff(det, x[0]), 'numpy')
+#        coeff_2_det = lambdify(x, diff(det, x[1]), 'numpy')
+#        coeff_0_det = coeff_0_det(x_value[0], x_value[1])
+#        coeff_1_det = coeff_1_det(x_value[0], x_value[1])
+#        coeff_2_det = coeff_2_det(x_value[0], x_value[1])
 #        
-#        coeff_1_dx1_ds1 = lambdify(x, diff(dx1_ds1, x[0]), 'numpy')
-#        coeff_1_dx1_ds2 = lambdify(x, diff(dx1_ds2, x[0]), 'numpy')
-#        coeff_1_dx2_ds1 = lambdify(x, diff(dx2_ds1, x[0]), 'numpy')
-#        coeff_1_dx2_ds2 = lambdify(x, diff(dx2_ds2, x[0]), 'numpy')
+#        coeff_0_ds1_dx1 = lambdify(x, ds1_dx1, 'numpy')
+#        coeff_1_ds1_dx1 = lambdify(x, diff(ds1_dx1, x[0]), 'numpy')
+#        coeff_2_ds1_dx1 = lambdify(x, diff(ds1_dx1, x[1]), 'numpy')
+#        coeff_0_ds1_dx1 = coeff_0_ds1_dx1(x_value[0], x_value[1])
+#        coeff_1_ds1_dx1 = coeff_1_ds1_dx1(x_value[0], x_value[1])
+#        coeff_2_ds1_dx1 = coeff_2_ds1_dx1(x_value[0], x_value[1])
 #        
-#        coeff_2_dx1_ds1 = lambdify(x, diff(dx1_ds1, x[1]), 'numpy')
-#        coeff_2_dx1_ds2 = lambdify(x, diff(dx1_ds2, x[1]), 'numpy')
-#        coeff_2_dx2_ds1 = lambdify(x, diff(dx2_ds1, x[1]), 'numpy')
-#        coeff_2_dx2_ds2 = lambdify(x, diff(dx2_ds2, x[1]), 'numpy')
+#        coeff_0_ds1_dx2 = lambdify(x, ds1_dx2, 'numpy')
+#        coeff_1_ds1_dx2 = lambdify(x, diff(ds1_dx2, x[0]), 'numpy')
+#        coeff_2_ds1_dx2 = lambdify(x, diff(ds1_dx2, x[1]), 'numpy')
+#        coeff_0_ds1_dx2 = coeff_0_ds1_dx2(x_value[0], x_value[1])
+#        coeff_1_ds1_dx2 = coeff_1_ds1_dx2(x_value[0], x_value[1])
+#        coeff_2_ds1_dx2 = coeff_2_ds1_dx2(x_value[0], x_value[1])
 #        
-#        coeff_0_dx1_ds1 = coeff_0_dx1_ds1(x_value[0], x_value[1])
-#        coeff_0_dx1_ds2 = coeff_0_dx1_ds2(x_value[0], x_value[1])
-#        coeff_0_dx2_ds1 = coeff_0_dx2_ds1(x_value[0], x_value[1])
-#        coeff_0_dx2_ds2 = coeff_0_dx2_ds2(x_value[0], x_value[1])
+#        coeff_0_ds2_dx1 = lambdify(x, ds2_dx1, 'numpy')
+#        coeff_1_ds2_dx1 = lambdify(x, diff(ds2_dx1, x[0]), 'numpy')
+#        coeff_2_ds2_dx1 = lambdify(x, diff(ds2_dx1, x[1]), 'numpy')
+#        coeff_0_ds2_dx1 = coeff_0_ds2_dx1(x_value[0], x_value[1])
+#        coeff_1_ds2_dx1 = coeff_1_ds2_dx1(x_value[0], x_value[1])
+#        coeff_2_ds2_dx1 = coeff_2_ds2_dx1(x_value[0], x_value[1])
 #        
-#        coeff_1_dx1_ds1 = coeff_1_dx1_ds1(x_value[0], x_value[1])
-#        coeff_1_dx1_ds2 = coeff_1_dx1_ds2(x_value[0], x_value[1])
-#        coeff_1_dx2_ds1 = coeff_1_dx2_ds1(x_value[0], x_value[1])
-#        coeff_1_dx2_ds2 = coeff_1_dx2_ds2(x_value[0], x_value[1])
+#        coeff_0_ds2_dx2 = lambdify(x, ds2_dx2, 'numpy')
+#        coeff_1_ds2_dx2 = lambdify(x, diff(ds2_dx2, x[0]), 'numpy')
+#        coeff_2_ds2_dx2 = lambdify(x, diff(ds2_dx2, x[1]), 'numpy')
+#        coeff_0_ds2_dx2 = coeff_0_ds2_dx2(x_value[0], x_value[1])
+#        coeff_1_ds2_dx2 = coeff_1_ds2_dx2(x_value[0], x_value[1])
+#        coeff_2_ds2_dx2 = coeff_2_ds2_dx2(x_value[0], x_value[1])
 #        
-#        coeff_2_dx1_ds1 = coeff_2_dx1_ds1(x_value[0], x_value[1])
-#        coeff_2_dx1_ds2 = coeff_2_dx1_ds2(x_value[0], x_value[1])
-#        coeff_2_dx2_ds1 = coeff_2_dx2_ds1(x_value[0], x_value[1])
-#        coeff_2_dx2_ds2 = coeff_2_dx2_ds2(x_value[0], x_value[1])
+#        coeff_0_dx1_ds1 = coeff_0_ds2_dx2/coeff_0_det
+#        coeff_1_dx1_ds1 = coeff_0_ds2_dx2/coeff_0_det \
+#                          *(coeff_1_ds2_dx2/coeff_0_ds2_dx2 \
+#                            - coeff_1_det/coeff_0_det)       
+#        coeff_2_dx1_ds1 = coeff_0_ds2_dx2/coeff_0_det \
+#                          *(coeff_2_ds2_dx2/coeff_0_ds2_dx2 \
+#                            - coeff_2_det/coeff_0_det) 
+#                          
+#        coeff_0_dx1_ds2 = - coeff_0_ds1_dx2/coeff_0_det
+#        coeff_1_dx1_ds2 = - coeff_0_ds1_dx2/coeff_0_det \
+#                          *(coeff_1_ds1_dx2/coeff_0_ds1_dx2 \
+#                            - coeff_1_det/coeff_0_det)       
+#        coeff_2_dx1_ds2 = coeff_0_ds1_dx2/coeff_0_det \
+#                          *(coeff_2_ds1_dx2/coeff_0_ds1_dx2 \
+#                            - coeff_2_det/coeff_0_det)
+#                          
+#        coeff_0_dx2_ds1 = - coeff_0_ds2_dx2/coeff_0_det
+#        coeff_1_dx2_ds1 = - coeff_0_ds2_dx1/coeff_0_det \
+#                          *(coeff_1_ds2_dx1/coeff_0_ds2_dx1 \
+#                            - coeff_1_det/coeff_0_det)       
+#        coeff_2_dx2_ds1 = coeff_0_ds2_dx1/coeff_0_det \
+#                          *(coeff_2_ds2_dx1/coeff_0_ds1_dx2 \
+#                            - coeff_2_det/coeff_0_det)
+#                          
+#        coeff_0_dx2_ds2 = coeff_0_ds1_dx1/coeff_0_det
+#        coeff_1_dx2_ds2 = coeff_0_ds1_dx1/coeff_0_det \
+#                          *(coeff_1_ds1_dx1/coeff_0_ds1_dx1 \
+#                            - coeff_1_det/coeff_0_det)       
+#        coeff_2_dx2_ds2 = coeff_0_ds1_dx1/coeff_0_det \
+#                          *(coeff_2_ds1_dx1/coeff_0_ds1_dx1 \
+#                            - coeff_2_det/coeff_0_det)
 #        
 #        modified_dx1_ds1 = coeff_0_dx1_ds1 \
 #                           + coeff_1_dx1_ds1*x[0] \
@@ -275,6 +221,60 @@ class Taylor_Functions(laplace_theory.Theoretical_Values):
 #        return sym.Matrix([[modified_dx1_ds1, modified_dx1_ds2],
 #                           [modified_dx2_ds1, modified_dx2_ds2]
 #                           ])
+            
+            
+        dx1_ds1 = ds_dx.inv()[0, 0]
+        dx1_ds2 = ds_dx.inv()[0, 1]
+        dx2_ds1 = ds_dx.inv()[1, 0]
+        dx2_ds2 = ds_dx.inv()[1, 1]
+        x_value = self.x_values[0][0]
+        
+        coeff_0_dx1_ds1 = lambdify(x, dx1_ds1, 'numpy')
+        coeff_0_dx1_ds2 = lambdify(x, dx1_ds2, 'numpy')
+        coeff_0_dx2_ds1 = lambdify(x, dx2_ds1, 'numpy')
+        coeff_0_dx2_ds2 = lambdify(x, dx2_ds2, 'numpy')
+        
+        coeff_1_dx1_ds1 = lambdify(x, diff(dx1_ds1, x[0]), 'numpy')
+        coeff_1_dx1_ds2 = lambdify(x, diff(dx1_ds2, x[0]), 'numpy')
+        coeff_1_dx2_ds1 = lambdify(x, diff(dx2_ds1, x[0]), 'numpy')
+        coeff_1_dx2_ds2 = lambdify(x, diff(dx2_ds2, x[0]), 'numpy')
+        
+        coeff_2_dx1_ds1 = lambdify(x, diff(dx1_ds1, x[1]), 'numpy')
+        coeff_2_dx1_ds2 = lambdify(x, diff(dx1_ds2, x[1]), 'numpy')
+        coeff_2_dx2_ds1 = lambdify(x, diff(dx2_ds1, x[1]), 'numpy')
+        coeff_2_dx2_ds2 = lambdify(x, diff(dx2_ds2, x[1]), 'numpy')
+        
+        coeff_0_dx1_ds1 = coeff_0_dx1_ds1(x_value[0], x_value[1])
+        coeff_0_dx1_ds2 = coeff_0_dx1_ds2(x_value[0], x_value[1])
+        coeff_0_dx2_ds1 = coeff_0_dx2_ds1(x_value[0], x_value[1])
+        coeff_0_dx2_ds2 = coeff_0_dx2_ds2(x_value[0], x_value[1])
+        
+        coeff_1_dx1_ds1 = coeff_1_dx1_ds1(x_value[0], x_value[1])
+        coeff_1_dx1_ds2 = coeff_1_dx1_ds2(x_value[0], x_value[1])
+        coeff_1_dx2_ds1 = coeff_1_dx2_ds1(x_value[0], x_value[1])
+        coeff_1_dx2_ds2 = coeff_1_dx2_ds2(x_value[0], x_value[1])
+        
+        coeff_2_dx1_ds1 = coeff_2_dx1_ds1(x_value[0], x_value[1])
+        coeff_2_dx1_ds2 = coeff_2_dx1_ds2(x_value[0], x_value[1])
+        coeff_2_dx2_ds1 = coeff_2_dx2_ds1(x_value[0], x_value[1])
+        coeff_2_dx2_ds2 = coeff_2_dx2_ds2(x_value[0], x_value[1])
+        
+        modified_dx1_ds1 = coeff_0_dx1_ds1 \
+                           + coeff_1_dx1_ds1*x[0] \
+                           + coeff_2_dx1_ds1*x[1]
+        modified_dx1_ds2 = coeff_0_dx1_ds2 \
+                           + coeff_1_dx1_ds2*x[0] \
+                           + coeff_2_dx1_ds2*x[1]
+        modified_dx2_ds1 = coeff_0_dx2_ds1 \
+                           + coeff_1_dx2_ds1*x[0] \
+                           + coeff_2_dx2_ds1*x[1]
+        modified_dx2_ds2 = coeff_0_dx2_ds2 \
+                           + coeff_1_dx2_ds2*x[0] \
+                           + coeff_2_dx2_ds2*x[1]
+        
+        return sym.Matrix([[modified_dx1_ds1, modified_dx1_ds2],
+                           [modified_dx2_ds1, modified_dx2_ds2]
+                           ])
   
     def modified_x_taylor_dg11_ds1(self, known, unknown, x):
         """ 2nd Order Modified x_Taylor Series of dg11/ds1 """
@@ -287,20 +287,6 @@ class Taylor_Functions(laplace_theory.Theoretical_Values):
         dg11_dx1 = diff(g11, x[0])
         dg11_dx2 = diff(g11, x[1])
         temp = modified_dx1_ds1*dg11_dx1 + modified_dx2_ds1*dg11_dx2
-        
-#        coeff_0_dg11_ds1 = lambdify(x, temp, 'numpy')
-#        coeff_1_dg11_ds1 = lambdify(x, diff(temp, x[0]), 'numpy')
-#        coeff_2_dg11_ds1 = lambdify(x, diff(temp, x[1]), 'numpy')
-#        
-#        coeff_0_dg11_ds1 = coeff_0_dg11_ds1(x_value[0], x_value[1])
-#        coeff_1_dg11_ds1 = coeff_1_dg11_ds1(x_value[0], x_value[1])
-#        coeff_2_dg11_ds1 = coeff_2_dg11_ds1(x_value[0], x_value[1])
-#        
-#        modified_dg11_ds1 = coeff_0_dg11_ds1 \
-#                            + coeff_1_dg11_ds1*x[0] \
-#                            + coeff_2_dg11_ds1*x[1]
-#        
-#        return modified_dg11_ds1
         
         return temp
     
@@ -316,19 +302,6 @@ class Taylor_Functions(laplace_theory.Theoretical_Values):
         dg22_dx2 = diff(g22, x[1])
         temp = modified_dx1_ds1*dg22_dx1 + modified_dx2_ds1*dg22_dx2
         
-#        coeff_0_dg22_ds1 = lambdify(x, temp, 'numpy')
-#        coeff_1_dg22_ds1 = lambdify(x, diff(temp, x[0]), 'numpy')
-#        coeff_2_dg22_ds1 = lambdify(x, diff(temp, x[1]), 'numpy')
-#        
-#        coeff_0_dg22_ds1 = coeff_0_dg22_ds1(x_value[0], x_value[1])
-#        coeff_1_dg22_ds1 = coeff_1_dg22_ds1(x_value[0], x_value[1])
-#        coeff_2_dg22_ds1 = coeff_2_dg22_ds1(x_value[0], x_value[1])
-#        
-#        modified_dg22_ds1 = coeff_0_dg22_ds1 \
-#                            + coeff_1_dg22_ds1*x[0] \
-#                            + coeff_2_dg22_ds1*x[1]
-#        
-#        return modified_dg22_ds1
         return temp
     
     def modified_x_taylor_laplacian_u(self, known, unknown, s, x):
@@ -367,214 +340,143 @@ class Taylor_Functions(laplace_theory.Theoretical_Values):
         coeff_1_laplacian_u = coeff_1_laplacian_u(x_value[0], x_value[1])
         coeff_2_laplacian_u = coeff_2_laplacian_u(x_value[0], x_value[1])
         
-        modified_laplacian_u = coeff_0_laplacian_u \
-                               + coeff_1_laplacian_u*x[0] \
-                               + coeff_2_laplacian_u*x[1]
-        
-        return modified_laplacian_u
-#        # u,1
-#        # 2nd Order
-#        du_ds1 = self.x_taylor_du_ds(known, unknown, s, x)[0]
-#        coeff_0_du_ds1 = lambdify(x, du_ds1, 'numpy')
-#        coeff_1_du_ds1 = lambdify(x, diff(du_ds1, x[0]), 'numpy')
-#        coeff_2_du_ds1 = lambdify(x, diff(du_ds1, x[1]), 'numpy')
-#        
-#        coeff_0_du_ds1 = coeff_0_du_ds1(x_value[0], x_value[1])
-#        coeff_1_du_ds1 = coeff_1_du_ds1(x_value[0], x_value[1])
-#        coeff_2_du_ds1 = coeff_2_du_ds1(x_value[0], x_value[1])
-#        
-#        modified_du_ds1 = coeff_0_du_ds1 \
-#                          + coeff_1_du_ds1*x[0] \
-#                          + coeff_2_du_ds1*x[1]
-#        # u,11
-#        # 0th Order
-#        ddu_dds1 = self.x_taylor_ddu_dds(known, unknown, s, x)[0, 0]
-#        # g11
-#        # 2nd Order
-#        g11 = self.x_taylor_submetric(known, unknown, x)[0, 0]
-#        coeff_0_g11 = lambdify(x, g11, 'numpy')
-#        coeff_1_g11 = lambdify(x, diff(g11, x[0]), 'numpy')
-#        coeff_2_g11 = lambdify(x, diff(g11, x[1]), 'numpy')
-#        
-#        coeff_0_g11 = coeff_0_g11(x_value[0], x_value[1])
-#        coeff_1_g11 = coeff_1_g11(x_value[0], x_value[1])
-#        coeff_2_g11 = coeff_2_g11(x_value[0], x_value[1])
-#        
-#        modified_g11 = coeff_0_g11 \
-#                       + coeff_1_g11*x[0] \
-#                       + coeff_2_g11*x[1]
-#        # g22
-#        # 2nd Order
-#        g22 = self.x_taylor_submetric(known, unknown, x)[1, 1]
-#        coeff_0_g22 = lambdify(x, g22, 'numpy')
-#        coeff_1_g22 = lambdify(x, diff(g22, x[0]), 'numpy')
-#        coeff_2_g22 = lambdify(x, diff(g22, x[1]), 'numpy')
-#        
-#        coeff_0_g22 = coeff_0_g22(x_value[0], x_value[1])
-#        coeff_1_g22 = coeff_1_g22(x_value[0], x_value[1])
-#        coeff_2_g22 = coeff_2_g22(x_value[0], x_value[1])
-#        
-#        modified_g22 = coeff_0_g22 \
-#                       + coeff_1_g22*x[0] \
-#                       + coeff_2_g22*x[1]
-#        # g11,1
-#        # 2nd Order
-#        modified_dg11_ds1 = self.modified_x_taylor_dg11_ds1(known, unknown, x)
-#        # g22,1
-#        # 2nd Order
-#        modified_dg22_ds1 = self.modified_x_taylor_dg22_ds1(known, unknown, x)
-#        # 2*g11*g22*u,11 + (g11*g22,1 - g11,1*g22)*u,1
-#        # 3rd Order
-#        temp = 2*modified_g11*modified_g22*ddu_dds1 \
-#               + (modified_g11*modified_dg22_ds1 - \
-#                  modified_dg11_ds1*modified_g22)*modified_du_ds1
-#        
-#        coeff_0_laplacian_u = lambdify(x, temp, 'numpy')
-#        coeff_1_laplacian_u = lambdify(x, diff(temp, x[0]), 'numpy')
-#        coeff_2_laplacian_u = lambdify(x, diff(temp, x[1]), 'numpy')
-#        
-#        coeff_0_laplacian_u = coeff_0_laplacian_u(x_value[0], x_value[1])
-#        coeff_1_laplacian_u = coeff_1_laplacian_u(x_value[0], x_value[1])
-#        coeff_2_laplacian_u = coeff_2_laplacian_u(x_value[0], x_value[1])
-#        
-#        modified_laplacian_u = coeff_0_laplacian_u \
-#                               + coeff_1_laplacian_u*x[0] \
-#                               + coeff_2_laplacian_u*x[1]
-#        
-#        return modified_laplacian_u
-
+        test = []
+        test = [coeff_0_laplacian_u,
+                coeff_1_laplacian_u,
+                coeff_2_laplacian_u]
+        return test
                 
-    def constraint_1_term(self, known, unknown, s):
-        """ Terms of s_Taylor Series of du/ds2 """
-        temp = []
-        constraint_1 = self.s_taylor_du_ds(known, unknown, s)[1]
-        r_theory = self.r_theory[0][0]
-        a_theory = self.a_theory[0][0]
-        b_theory = self.b_theory[0][0]
-        for i in range(len(Poly(constraint_1, s).coeffs())):
-            test = Poly(constraint_1, s).coeffs()[i]
-            test = lambdify(known, test, 'numpy')
-            test = test(r_theory[0], 
-                        a_theory[0],
-                        a_theory[1],
-                        a_theory[2],
-                        b_theory[0],
-                        b_theory[1],
-                        b_theory[2]
-                        )
-            temp.append(test)
-        return temp
-    
-    def constraint_1_term_verification(self, known, unknown, s):
-        temp = []
-        constraint_1_term = self.constraint_1_term
-        r_theory = self.r_theory[0][0]
-        a_theory = self.a_theory[0][0]
-        b_theory = self.b_theory[0][0]
-        for i in range(len(constraint_1_term(known, unknown, s))):
-            test = constraint_1_term(known, unknown, s)[i]
-            test = lambdify(unknown, test, 'numpy')
-            test = test(r_theory[1], 
-                        r_theory[2], 
-                        r_theory[3],
-                        r_theory[4],
-                        r_theory[5],
-                        a_theory[3],
-                        a_theory[4],
-                        a_theory[5],
-                        b_theory[3],
-                        b_theory[4],
-                        b_theory[5])
-            temp.append(test)
-        return temp
-    
-    def constraint_2_term(self, known, unknown, x):
-        """ Terms of s_Taylor Series of g12 """
-        temp = []
-        constraint_2 = self.x_taylor_submetric(known, unknown, x)[0, 1]
-        r_theory = self.r_theory[0][0]
-        a_theory = self.a_theory[0][0]
-        b_theory = self.b_theory[0][0]
-        for i in range(len(Poly(constraint_2, x).coeffs())):
-            test = Poly(constraint_2, x).coeffs()[i]
-            test = lambdify(known, test, 'numpy')
-            test = test(r_theory[0], 
-                        a_theory[0],
-                        a_theory[1],
-                        a_theory[2],
-                        b_theory[0],
-                        b_theory[1],
-                        b_theory[2]
-                        )
-            temp.append(test)
-        return temp
-    
-    def constraint_2_term_verification(self, known, unknown, x):
-        temp = []
-        constraint_2_term = self.constraint_2_term
-        r_theory = self.r_theory[0][0]
-        a_theory = self.a_theory[0][0]
-        b_theory = self.b_theory[0][0]
-        for i in range(len(constraint_2_term(known, unknown, x))):
-            test = constraint_2_term(known, unknown, x)[i]
-            test = lambdify(unknown, test, 'numpy')
-            test = test(r_theory[1], 
-                        r_theory[2], 
-                        r_theory[3],
-                        r_theory[4],
-                        r_theory[5],
-                        a_theory[3],
-                        a_theory[4],
-                        a_theory[5],
-                        b_theory[3],
-                        b_theory[4],
-                        b_theory[5])
-            temp.append(test)
-        return temp
-    
-    def constraint_3_term(self, known, unknown, s, x):
-        """ Terms of s_Taylor Series of 2*g11*g22*u,11 + (g11*g22,1 - g11,1*g22)*u,1 """
-        temp = []
-        constraint_3 = self.modified_x_taylor_laplacian_u(known, unknown, s, x)
-        r_theory = self.r_theory[0][0]
-        a_theory = self.a_theory[0][0]
-        b_theory = self.b_theory[0][0]
-        for i in range(len(Poly(constraint_3, x).coeffs())):
-            test = Poly(constraint_3, x).coeffs()[i]
-            test = lambdify(known, test, 'numpy')
-            test = test(r_theory[0], 
-                        a_theory[0],
-                        a_theory[1],
-                        a_theory[2],
-                        b_theory[0],
-                        b_theory[1],
-                        b_theory[2]
-                        )
-            temp.append(test)
-        return temp
-    
-    def constraint_3_term_verification(self, known, unknown, s, x):
-        temp = []
-        constraint_3_term = self.constraint_3_term
-        r_theory = self.r_theory[0][0]
-        a_theory = self.a_theory[0][0]
-        b_theory = self.b_theory[0][0]
-        for i in range(len(constraint_3_term(known, unknown, s, x))):
-            test = constraint_3_term(known, unknown, x)[i]
-            test = lambdify(unknown, test, 'numpy')
-            test = test(r_theory[1], 
-                        r_theory[2], 
-                        r_theory[3],
-                        r_theory[4],
-                        r_theory[5],
-                        a_theory[3],
-                        a_theory[4],
-                        a_theory[5],
-                        b_theory[3],
-                        b_theory[4],
-                        b_theory[5])
-            temp.append(test)
-        return temp
+#    def constraint_1_term(self, known, unknown, s):
+#        """ Terms of s_Taylor Series of du/ds2 """
+#        temp = []
+#        constraint_1 = self.s_taylor_du_ds(known, unknown, s)[1]
+#        r_theory = self.r_theory[0][0]
+#        a_theory = self.a_theory[0][0]
+#        b_theory = self.b_theory[0][0]
+#        for i in range(len(Poly(constraint_1, s).coeffs())):
+#            test = Poly(constraint_1, s).coeffs()[i]
+#            test = lambdify(known, test, 'numpy')
+#            test = test(r_theory[0], 
+#                        a_theory[0],
+#                        a_theory[1],
+#                        a_theory[2],
+#                        b_theory[0],
+#                        b_theory[1],
+#                        b_theory[2]
+#                        )
+#            temp.append(test)
+#        return temp
+#    
+#    def constraint_1_term_verification(self, known, unknown, s):
+#        temp = []
+#        constraint_1_term = self.constraint_1_term
+#        r_theory = self.r_theory[0][0]
+#        a_theory = self.a_theory[0][0]
+#        b_theory = self.b_theory[0][0]
+#        for i in range(len(constraint_1_term(known, unknown, s))):
+#            test = constraint_1_term(known, unknown, s)[i]
+#            test = lambdify(unknown, test, 'numpy')
+#            test = test(r_theory[1], 
+#                        r_theory[2], 
+#                        r_theory[3],
+#                        r_theory[4],
+#                        r_theory[5],
+#                        a_theory[3],
+#                        a_theory[4],
+#                        a_theory[5],
+#                        b_theory[3],
+#                        b_theory[4],
+#                        b_theory[5])
+#            temp.append(test)
+#        return temp
+#    
+#    def constraint_2_term(self, known, unknown, x):
+#        """ Terms of s_Taylor Series of g12 """
+#        temp = []
+#        constraint_2 = self.x_taylor_submetric(known, unknown, x)[0, 1]
+#        r_theory = self.r_theory[0][0]
+#        a_theory = self.a_theory[0][0]
+#        b_theory = self.b_theory[0][0]
+#        for i in range(len(Poly(constraint_2, x).coeffs())):
+#            test = Poly(constraint_2, x).coeffs()[i]
+#            test = lambdify(known, test, 'numpy')
+#            test = test(r_theory[0], 
+#                        a_theory[0],
+#                        a_theory[1],
+#                        a_theory[2],
+#                        b_theory[0],
+#                        b_theory[1],
+#                        b_theory[2]
+#                        )
+#            temp.append(test)
+#        return temp
+#    
+#    def constraint_2_term_verification(self, known, unknown, x):
+#        temp = []
+#        constraint_2_term = self.constraint_2_term
+#        r_theory = self.r_theory[0][0]
+#        a_theory = self.a_theory[0][0]
+#        b_theory = self.b_theory[0][0]
+#        for i in range(len(constraint_2_term(known, unknown, x))):
+#            test = constraint_2_term(known, unknown, x)[i]
+#            test = lambdify(unknown, test, 'numpy')
+#            test = test(r_theory[1], 
+#                        r_theory[2], 
+#                        r_theory[3],
+#                        r_theory[4],
+#                        r_theory[5],
+#                        a_theory[3],
+#                        a_theory[4],
+#                        a_theory[5],
+#                        b_theory[3],
+#                        b_theory[4],
+#                        b_theory[5])
+#            temp.append(test)
+#        return temp
+#    
+#    def constraint_3_term(self, known, unknown, s, x):
+#        """ Terms of s_Taylor Series of 2*g11*g22*u,11 + (g11*g22,1 - g11,1*g22)*u,1 """
+#        temp = []
+#        constraint_3 = self.modified_x_taylor_laplacian_u(known, unknown, s, x)
+#        r_theory = self.r_theory[0][0]
+#        a_theory = self.a_theory[0][0]
+#        b_theory = self.b_theory[0][0]
+#        for i in range(len(Poly(constraint_3, x).coeffs())):
+#            test = Poly(constraint_3, x).coeffs()[i]
+#            test = lambdify(known, test, 'numpy')
+#            test = test(r_theory[0], 
+#                        a_theory[0],
+#                        a_theory[1],
+#                        a_theory[2],
+#                        b_theory[0],
+#                        b_theory[1],
+#                        b_theory[2]
+#                        )
+#            temp.append(test)
+#        return temp
+#    
+#    def constraint_3_term_verification(self, known, unknown, s, x):
+#        temp = []
+#        constraint_3_term = self.constraint_3_term
+#        r_theory = self.r_theory[0][0]
+#        a_theory = self.a_theory[0][0]
+#        b_theory = self.b_theory[0][0]
+#        for i in range(len(constraint_3_term(known, unknown, s, x))):
+#            test = constraint_3_term(known, unknown, x)[i]
+#            test = lambdify(unknown, test, 'numpy')
+#            test = test(r_theory[1], 
+#                        r_theory[2], 
+#                        r_theory[3],
+#                        r_theory[4],
+#                        r_theory[5],
+#                        a_theory[3],
+#                        a_theory[4],
+#                        a_theory[5],
+#                        b_theory[3],
+#                        b_theory[4],
+#                        b_theory[5])
+#            temp.append(test)
+#        return temp
 
     def solution(self, known, unknown, s, x):
         r_theory = self.r_theory[0][0]
@@ -655,13 +557,22 @@ if __name__ == '__main__':
          Symbol('x2', real = True)
          ]
     
-    known = [Symbol('r0', real = True),
-             Symbol('a0', real = True),
-             Symbol('a1', real = True),
-             Symbol('a2', real = True),
-             Symbol('b0', real = True),
-             Symbol('b1', real = True),
-             Symbol('b2', real = True)
+#    known = [Symbol('r0', real = True),
+#             Symbol('a0', real = True),
+#             Symbol('a1', real = True),
+#             Symbol('a2', real = True),
+#             Symbol('b0', real = True),
+#             Symbol('b1', real = True),
+#             Symbol('b2', real = True)
+#             ]
+    
+    known = [theory.r_theory(x)[0][0][0],
+             theory.a_theory(x)[0][0][0],
+             theory.a_theory(x)[0][0][1],
+             theory.a_theory(x)[0][0][2],
+             theory.b_theory(x)[0][0][0],
+             theory.b_theory(x)[0][0][1],
+             theory.b_theory(x)[0][0][2]
              ]
     
     unknown = [Symbol('r1', real = True),
@@ -707,39 +618,40 @@ if __name__ == '__main__':
     print('')
     
     print('Modified x_Taylor Series of Laplacian of u = ')
-    display(taylor.modified_x_taylor_laplacian_u(known, unknown, s, x))
+    for i in range(len(taylor.modified_x_taylor_laplacian_u(known, unknown, s, x))):
+        display(taylor.modified_x_taylor_laplacian_u(known, unknown, s, x)[i])    
     print('')
 
     
-    print('s_Taylor Series of du/ds2  = ')
-    print('# of terms =', len(taylor.constraint_1_term(known, unknown, s)))
-    for i in range(len(taylor.constraint_1_term(known, unknown, s))):
-        display(taylor.constraint_1_term(known, unknown, s)[i])
-    print('')
-    print('# of terms =', len(taylor.constraint_1_term_verification(known, unknown, s)))
-    for i in range(len(taylor.constraint_1_term_verification(known, unknown, s))):
-        display(round(taylor.constraint_1_term_verification(known, unknown, s)[i], 4))
-    print('')
-    
-    print('x_Taylor Series of g12  = ')
-    print('# of terms =', len(taylor.constraint_2_term(known, unknown, x)))
-    for i in range(len(taylor.constraint_2_term(known, unknown, x))):
-        display(taylor.constraint_2_term(known, unknown, x)[i])
-    print('')
-    print('# of terms =', len(taylor.constraint_2_term_verification(known, unknown, x)))
-    for i in range(len(taylor.constraint_2_term_verification(known, unknown, x))):
-        display(round(taylor.constraint_2_term_verification(known, unknown, x)[i], 4))
-    print('')
-    
-    print('x_Taylor Series of Laplacian of u  = ')
-    print('# of terms =', len(taylor.constraint_3_term(known, unknown, s, x)))
-    for i in range(len(taylor.constraint_3_term(known, unknown, s, x))):
-        display(taylor.constraint_3_term(known, unknown, s, x)[i])
-    print('')
-    print('# of terms =', len(taylor.constraint_3_term_verification(known, unknown, s, x)))
-    for i in range(len(taylor.constraint_3_term_verification(known, unknown, s, x))):
-        display(round(taylor.constraint_3_term_verification(known, unknown, s, x)[i], 4))
-    print('')
+#    print('s_Taylor Series of du/ds2  = ')
+#    print('# of terms =', len(taylor.constraint_1_term(known, unknown, s)))
+#    for i in range(len(taylor.constraint_1_term(known, unknown, s))):
+#        display(taylor.constraint_1_term(known, unknown, s)[i])
+#    print('')
+#    print('# of terms =', len(taylor.constraint_1_term_verification(known, unknown, s)))
+#    for i in range(len(taylor.constraint_1_term_verification(known, unknown, s))):
+#        display(round(taylor.constraint_1_term_verification(known, unknown, s)[i], 4))
+#    print('')
+#    
+#    print('x_Taylor Series of g12  = ')
+#    print('# of terms =', len(taylor.constraint_2_term(known, unknown, x)))
+#    for i in range(len(taylor.constraint_2_term(known, unknown, x))):
+#        display(taylor.constraint_2_term(known, unknown, x)[i])
+#    print('')
+#    print('# of terms =', len(taylor.constraint_2_term_verification(known, unknown, x)))
+#    for i in range(len(taylor.constraint_2_term_verification(known, unknown, x))):
+#        display(round(taylor.constraint_2_term_verification(known, unknown, x)[i], 4))
+#    print('')
+#    
+#    print('x_Taylor Series of Laplacian of u  = ')
+#    print('# of terms =', len(taylor.constraint_3_term(known, unknown, s, x)))
+#    for i in range(len(taylor.constraint_3_term(known, unknown, s, x))):
+#        display(taylor.constraint_3_term(known, unknown, s, x)[i])
+#    print('')
+#    print('# of terms =', len(taylor.constraint_3_term_verification(known, unknown, s, x)))
+#    for i in range(len(taylor.constraint_3_term_verification(known, unknown, s, x))):
+#        display(round(taylor.constraint_3_term_verification(known, unknown, s, x)[i], 4))
+#    print('')
 #    
 #    
 #    
