@@ -40,32 +40,58 @@ class Taylor_Functions(laplace_theory.Theoretical_Values):
         self.a_theory = self.theory.a_theory(x)
         self.b_theory = self.theory.b_theory(x)
 
+#    def s_taylor_u(self, known, unknown, s):
+#        """ 2nd Order s_Taylor Series of u """
+#        return known[0] \
+#               + unknown[0]*s[0] \
+#               + unknown[1]*s[1] \
+#               + unknown[2]*s[0]**2 \
+#               + unknown[3]*s[0]*s[1] \
+#               + unknown[4]*s[1]**2
+#    
+#    def x_taylor_s1(self, known, unknown, x):
+#        """ 2nd Order x_Taylor Series of s1 """
+#        return known[1] \
+#               + known[2]*x[0] \
+#               + known[3]*x[1] \
+#               + unknown[5]*x[0]**2 \
+#               + unknown[6]*x[0]*x[1] \
+#               + unknown[7]*x[1]**2
+#        
+#    def x_taylor_s2(self, known, unknown, x):
+#        """ 2nd Order x_Taylor Series of s2 """
+#        return known[4] \
+#               + known[5]*x[0] \
+#               + known[6]*x[1] \
+#               + unknown[8]*x[0]**2 \
+#               + unknown[9]*x[0]*x[1] \
+#               + unknown[10]*x[1]**2
     def s_taylor_u(self, known, unknown, s):
         """ 2nd Order s_Taylor Series of u """
         return known[0] \
-               + unknown[0]*s[0] \
-               + unknown[1]*s[1] \
-               + unknown[2]*s[0]**2 \
-               + unknown[3]*s[0]*s[1] \
-               + unknown[4]*s[1]**2
+               + known[1]*s[0] \
+               + known[2]*s[1] \
+               + known[3]*s[0]**2 \
+               + known[4]*s[0]*s[1] \
+               + known[5]*s[1]**2
     
     def x_taylor_s1(self, known, unknown, x):
         """ 2nd Order x_Taylor Series of s1 """
-        return known[1] \
-               + known[2]*x[0] \
-               + known[3]*x[1] \
-               + unknown[5]*x[0]**2 \
-               + unknown[6]*x[0]*x[1] \
-               + unknown[7]*x[1]**2
+        return known[6] \
+               + known[7]*x[0] \
+               + known[8]*x[1] \
+               + unknown[0]*x[0]**2 \
+               + unknown[1]*x[0]*x[1] \
+               + unknown[2]*x[1]**2
         
     def x_taylor_s2(self, known, unknown, x):
         """ 2nd Order x_Taylor Series of s2 """
-        return known[4] \
-               + known[5]*x[0] \
-               + known[6]*x[1] \
-               + unknown[8]*x[0]**2 \
-               + unknown[9]*x[0]*x[1] \
-               + unknown[10]*x[1]**2    
+        return known[9] \
+               + known[10]*x[0] \
+               + known[11]*x[1] \
+               + unknown[3]*x[0]**2 \
+               + unknown[4]*x[0]*x[1] \
+               + unknown[5]*x[1]**2
     
     def s_taylor_du_ds(self, known, unknown, s):
         """ 1st Order s_Taylor Series of (du/ds) """
@@ -250,7 +276,7 @@ class Taylor_Functions(laplace_theory.Theoretical_Values):
         
         return temp
     
-    def modified_x_taylor_laplacian_u(self, known, unknown, s, x):
+    def term_modified_x_taylor_laplacian_u(self, known, unknown, s, x):
         """ 1st Order x_Taylor Series of Laplacian of u """
         """ 2*g11*g22*u,11 + (g11*g22,1 - g11,1*g22)*u,1 """
         x_value = self.x_values[0][0]
@@ -291,163 +317,69 @@ class Taylor_Functions(laplace_theory.Theoretical_Values):
                 coeff_1_laplacian_u,
                 coeff_2_laplacian_u]
         return test
-                
-#    def constraint_1_term(self, known, unknown, s):
-#        """ Terms of s_Taylor Series of du/ds2 """
-#        temp = []
-#        constraint_1 = self.s_taylor_du_ds(known, unknown, s)[1]
-#        r_theory = self.r_theory[0][0]
-#        a_theory = self.a_theory[0][0]
-#        b_theory = self.b_theory[0][0]
-#        for i in range(len(Poly(constraint_1, s).coeffs())):
-#            test = Poly(constraint_1, s).coeffs()[i]
-#            test = lambdify(known, test, 'numpy')
-#            test = test(r_theory[0], 
-#                        a_theory[0],
-#                        a_theory[1],
-#                        a_theory[2],
-#                        b_theory[0],
-#                        b_theory[1],
-#                        b_theory[2]
-#                        )
-#            temp.append(test)
-#        return temp
-#    
-#    def constraint_1_term_verification(self, known, unknown, s):
-#        temp = []
-#        constraint_1_term = self.constraint_1_term
-#        r_theory = self.r_theory[0][0]
-#        a_theory = self.a_theory[0][0]
-#        b_theory = self.b_theory[0][0]
-#        for i in range(len(constraint_1_term(known, unknown, s))):
-#            test = constraint_1_term(known, unknown, s)[i]
-#            test = lambdify(unknown, test, 'numpy')
-#            test = test(r_theory[1], 
-#                        r_theory[2], 
-#                        r_theory[3],
-#                        r_theory[4],
-#                        r_theory[5],
-#                        a_theory[3],
-#                        a_theory[4],
-#                        a_theory[5],
-#                        b_theory[3],
-#                        b_theory[4],
-#                        b_theory[5])
-#            temp.append(test)
-#        return temp
-#    
-#    def constraint_2_term(self, known, unknown, x):
-#        """ Terms of s_Taylor Series of g12 """
-#        temp = []
-#        constraint_2 = self.x_taylor_submetric(known, unknown, x)[0, 1]
-#        r_theory = self.r_theory[0][0]
-#        a_theory = self.a_theory[0][0]
-#        b_theory = self.b_theory[0][0]
-#        for i in range(len(Poly(constraint_2, x).coeffs())):
-#            test = Poly(constraint_2, x).coeffs()[i]
-#            test = lambdify(known, test, 'numpy')
-#            test = test(r_theory[0], 
-#                        a_theory[0],
-#                        a_theory[1],
-#                        a_theory[2],
-#                        b_theory[0],
-#                        b_theory[1],
-#                        b_theory[2]
-#                        )
-#            temp.append(test)
-#        return temp
-#    
-#    def constraint_2_term_verification(self, known, unknown, x):
-#        temp = []
-#        constraint_2_term = self.constraint_2_term
-#        r_theory = self.r_theory[0][0]
-#        a_theory = self.a_theory[0][0]
-#        b_theory = self.b_theory[0][0]
-#        for i in range(len(constraint_2_term(known, unknown, x))):
-#            test = constraint_2_term(known, unknown, x)[i]
-#            test = lambdify(unknown, test, 'numpy')
-#            test = test(r_theory[1], 
-#                        r_theory[2], 
-#                        r_theory[3],
-#                        r_theory[4],
-#                        r_theory[5],
-#                        a_theory[3],
-#                        a_theory[4],
-#                        a_theory[5],
-#                        b_theory[3],
-#                        b_theory[4],
-#                        b_theory[5])
-#            temp.append(test)
-#        return temp
-#    
-#    def constraint_3_term(self, known, unknown, s, x):
-#        """ Terms of s_Taylor Series of 2*g11*g22*u,11 + (g11*g22,1 - g11,1*g22)*u,1 """
-#        temp = []
-#        constraint_3 = self.modified_x_taylor_laplacian_u(known, unknown, s, x)
-#        r_theory = self.r_theory[0][0]
-#        a_theory = self.a_theory[0][0]
-#        b_theory = self.b_theory[0][0]
-#        for i in range(len(Poly(constraint_3, x).coeffs())):
-#            test = Poly(constraint_3, x).coeffs()[i]
-#            test = lambdify(known, test, 'numpy')
-#            test = test(r_theory[0], 
-#                        a_theory[0],
-#                        a_theory[1],
-#                        a_theory[2],
-#                        b_theory[0],
-#                        b_theory[1],
-#                        b_theory[2]
-#                        )
-#            temp.append(test)
-#        return temp
-#    
-#    def constraint_3_term_verification(self, known, unknown, s, x):
-#        temp = []
-#        constraint_3_term = self.constraint_3_term
-#        r_theory = self.r_theory[0][0]
-#        a_theory = self.a_theory[0][0]
-#        b_theory = self.b_theory[0][0]
-#        for i in range(len(constraint_3_term(known, unknown, s, x))):
-#            test = constraint_3_term(known, unknown, x)[i]
-#            test = lambdify(unknown, test, 'numpy')
-#            test = test(r_theory[1], 
-#                        r_theory[2], 
-#                        r_theory[3],
-#                        r_theory[4],
-#                        r_theory[5],
-#                        a_theory[3],
-#                        a_theory[4],
-#                        a_theory[5],
-#                        b_theory[3],
-#                        b_theory[4],
-#                        b_theory[5])
-#            temp.append(test)
-#        return temp
+    
+    def term_s_taylor_du_ds2(self, known, unknown, s):
+        du_ds2 = self.s_taylor_du_ds(known, unknown, s)[1]
+        test = []
+        for i in range(len(Poly(du_ds2, s).coeffs())):
+            temp = Poly(du_ds2, s).coeffs()[i]
+            test.append(temp)
+        return test
+    
+    def term_x_taylor_g12(self, known, unknown, x):
+        g12 = self.x_taylor_submetric(known, unknown, x)[0, 1]
+        test = []
+        for i in range(len(Poly(g12, x).coeffs())):
+            temp = Poly(g12, x).coeffs()[i]
+            test.append(temp)
+        return test
 
+#    def solution(self, known, unknown, s, x):
+#        r_theory = self.r_theory[0][0]
+#        a_theory = self.a_theory[0][0]
+#        b_theory = self.b_theory[0][0]
+#        
+#        f1 = self.term_s_taylor_du_ds2(known, unknown, s)[0]
+#        f2 = self.term_s_taylor_du_ds2(known, unknown, s)[1]
+#        f3 = self.term_s_taylor_du_ds2(known, unknown, s)[2]
+#        f4 = self.term_x_taylor_g12(known, unknown, x)[0]
+#        f5 = self.term_x_taylor_g12(known, unknown, x)[1]
+#        f6 = self.term_x_taylor_g12(known, unknown, x)[2]
+#        f7 = self.term_x_taylor_g12(known, unknown, x)[3]
+#        f8 = self.term_x_taylor_g12(known, unknown, x)[4]
+#        f9 = self.term_modified_x_taylor_laplacian_u(known, unknown, s, x)[0]
+#        f10 = self.term_modified_x_taylor_laplacian_u(known, unknown, s, x)[1]
+#        f11 = self.term_modified_x_taylor_laplacian_u(known, unknown, s, x)[2]
+#        f = (f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11)
+#        
+#        unknown_init = ((1 + random.uniform(-1.0, 1.0)/10)*r_theory[1],
+#                        (1 + random.uniform(-1.0, 1.0)/10)*r_theory[2],
+#                        (1 + random.uniform(-1.0, 1.0)/10)*r_theory[3],
+#                        (1 + random.uniform(-1.0, 1.0)/10)*r_theory[4],
+#                        (1 + random.uniform(-1.0, 1.0)/10)*r_theory[5],
+#                        (1 + random.uniform(-1.0, 1.0)/10)*a_theory[3],
+#                        (1 + random.uniform(-1.0, 1.0)/10)*a_theory[4],
+#                        (1 + random.uniform(-1.0, 1.0)/10)*a_theory[5],
+#                        (1 + random.uniform(-1.0, 1.0)/10)*b_theory[3],
+#                        (1 + random.uniform(-1.0, 1.0)/10)*b_theory[4],
+#                        (1 + random.uniform(-1.0, 1.0)/10)*b_theory[5]
+#                        )
+#        return nsolve(f, unknown, unknown_init)
     def solution(self, known, unknown, s, x):
-        r_theory = self.r_theory[0][0]
         a_theory = self.a_theory[0][0]
         b_theory = self.b_theory[0][0]
         
-        f1 = self.constraint_1_term(known, unknown, s)[0]
-        f2 = self.constraint_1_term(known, unknown, s)[1]
-        f3 = self.constraint_1_term(known, unknown, s)[2]
-        f4 = self.constraint_2_term(known, unknown, x)[0]
-        f5 = self.constraint_2_term(known, unknown, x)[1]
-        f6 = self.constraint_2_term(known, unknown, x)[2]
-        f7 = self.constraint_2_term(known, unknown, x)[3]
-        f8 = self.constraint_2_term(known, unknown, x)[4]
-        f9 = self.constraint_3_term(known, unknown, s, x)[0]
-        f10 = self.constraint_3_term(known, unknown, s, x)[1]
-        f11 = self.constraint_3_term(known, unknown, s, x)[2]
-        f = (f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11)
+        f1 = self.term_x_taylor_g12(known, unknown, x)[0]
+        f2 = self.term_x_taylor_g12(known, unknown, x)[1]
+        f3 = self.term_x_taylor_g12(known, unknown, x)[2]
+        f4 = self.term_x_taylor_g12(known, unknown, x)[3]
+        f5 = self.term_x_taylor_g12(known, unknown, x)[4]
+        f6 = self.term_modified_x_taylor_laplacian_u(known, unknown, s, x)[0]
+#        f7 = self.term_modified_x_taylor_laplacian_u(known, unknown, s, x)[1]
+#        f8 = self.term_modified_x_taylor_laplacian_u(known, unknown, s, x)[2]
+        f = (f1, f2, f3, f4, f5, f6)
         
-        unknown_init = ((1 + random.uniform(-1.0, 1.0)/10)*r_theory[1],
-                        (1 + random.uniform(-1.0, 1.0)/10)*r_theory[2],
-                        (1 + random.uniform(-1.0, 1.0)/10)*r_theory[3],
-                        (1 + random.uniform(-1.0, 1.0)/10)*r_theory[4],
-                        (1 + random.uniform(-1.0, 1.0)/10)*r_theory[5],
-                        (1 + random.uniform(-1.0, 1.0)/10)*a_theory[3],
+        unknown_init = ((1 + random.uniform(-1.0, 1.0)/10)*a_theory[3],
                         (1 + random.uniform(-1.0, 1.0)/10)*a_theory[4],
                         (1 + random.uniform(-1.0, 1.0)/10)*a_theory[5],
                         (1 + random.uniform(-1.0, 1.0)/10)*b_theory[3],
@@ -503,16 +435,33 @@ if __name__ == '__main__':
          Symbol('x2', real = True)
          ]
     
-#    known = [Symbol('r0', real = True),
-#             Symbol('a0', real = True),
-#             Symbol('a1', real = True),
-#             Symbol('a2', real = True),
-#             Symbol('b0', real = True),
-#             Symbol('b1', real = True),
-#             Symbol('b2', real = True)
+#    known = [theory.r_theory(x)[0][0][0],
+#             theory.a_theory(x)[0][0][0],
+#             theory.a_theory(x)[0][0][1],
+#             theory.a_theory(x)[0][0][2],
+#             theory.b_theory(x)[0][0][0],
+#             theory.b_theory(x)[0][0][1],
+#             theory.b_theory(x)[0][0][2]
 #             ]
-    
+#    
+#    unknown = [Symbol('r1', real = True),
+#               Symbol('r2', real = True),
+#               Symbol('r11', real = True),
+#               Symbol('r12', real = True),
+#               Symbol('r22', real = True),
+#               Symbol('a11', real = True),
+#               Symbol('a12', real = True),
+#               Symbol('a22', real = True),
+#               Symbol('b11', real = True),
+#               Symbol('b12', real = True),
+#               Symbol('b22', real = True)
+#               ]
     known = [theory.r_theory(x)[0][0][0],
+             theory.r_theory(x)[0][0][1],
+             theory.r_theory(x)[0][0][2],
+             theory.r_theory(x)[0][0][3],
+             theory.r_theory(x)[0][0][4],
+             theory.r_theory(x)[0][0][5],
              theory.a_theory(x)[0][0][0],
              theory.a_theory(x)[0][0][1],
              theory.a_theory(x)[0][0][2],
@@ -521,19 +470,13 @@ if __name__ == '__main__':
              theory.b_theory(x)[0][0][2]
              ]
     
-    unknown = [Symbol('r1', real = True),
-               Symbol('r2', real = True),
-               Symbol('r11', real = True),
-               Symbol('r12', real = True),
-               Symbol('r22', real = True),
-               Symbol('a11', real = True),
+    unknown = [Symbol('a11', real = True),
                Symbol('a12', real = True),
                Symbol('a22', real = True),
                Symbol('b11', real = True),
                Symbol('b12', real = True),
                Symbol('b22', real = True)
                ]
-    
     
     print('x_values = ', theory.x_values(x))
     print('')
@@ -564,8 +507,8 @@ if __name__ == '__main__':
     print('')
     
     print('Modified x_Taylor Series of Laplacian of u = ')
-    for i in range(len(taylor.modified_x_taylor_laplacian_u(known, unknown, s, x))):
-        display(taylor.modified_x_taylor_laplacian_u(known, unknown, s, x)[i])    
+    for i in range(len(taylor.term_modified_x_taylor_laplacian_u(known, unknown, s, x))):
+        display(taylor.term_modified_x_taylor_laplacian_u(known, unknown, s, x)[i])    
     print('')
 
     
@@ -601,9 +544,9 @@ if __name__ == '__main__':
 #    
 #    
 #    
-#    print('Solution = ')
-#    display(taylor.solution(known, unknown, s, x))
-#    print('')
+    print('Solution = ')
+    display(taylor.solution(known, unknown, s, x))
+    print('')
     
 #    print('Error of r = ')
 #    print(solve.r_error(known, unknown, s, x))
