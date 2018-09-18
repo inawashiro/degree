@@ -382,21 +382,22 @@ if __name__ == '__main__':
     print(theory.x_values(x))
     print('')
     
+    temp = [a_theory[3], 
+            a_theory[4],
+            a_theory[5],
+            b_theory[3],
+            b_theory[4],
+            b_theory[5]] 
     print('(a_theory, b_theory) = ')
-    print([a_theory[3], 
-           a_theory[4],
-           a_theory[5],
-           b_theory[3],
-           b_theory[4],
-           b_theory[5]])
+    [print(round(item, 4)) for item in temp]
     print('')
     
     
     taylor = Taylor_Functions(known, unknown, s, x)
-    solution = taylor.solution(known, unknown, s, x)
+    temp = taylor.solution(known, unknown, s, x)
     
     print('(a_experiment, b_experiment) = ')
-    [print(round(item, 4)) for item in solution]
+    [print(round(item, 4)) for item in temp]
     print('')
     
     g12 = taylor.term_x_taylor_g12(known, unknown, x)
