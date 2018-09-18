@@ -36,6 +36,7 @@ class Taylor_Functions(laplace_theory.Theoretical_Values):
     def __init__(self, known, unknown, s, x):
         self.theory = laplace_theory.Theoretical_Values()
         self.u_theory = self.theory.u(x)
+        self.s_values = self.theory.s_values()
         self.x_values = self.theory.x_values(x)
         self.r_theory = self.theory.r_theory(x)
         self.a_theory = self.theory.a_theory(x)
@@ -43,12 +44,13 @@ class Taylor_Functions(laplace_theory.Theoretical_Values):
 
     def s_taylor_u(self, known, unknown, s):
         """ 2nd Order s_Taylor Series of u """
+        s_value = self.s_values[0][0]
         return known[0] \
-               + known[1]*s[0] \
-               + known[2]*s[1] \
-               + known[3]*s[0]**2 \
-               + known[4]*s[0]*s[1] \
-               + known[5]*s[1]**2
+               + known[1]*(s[0] - s_value[0]) \
+               + known[2]*(s[1] - s_value[1]) \
+               + known[3]*(s[0] - s_value[0])**2 \
+               + known[4]*(s[0] - s_value[0])*(s[1] - s_value[1]) \
+               + known[5]*(s[1] - s_value[1])**2
     
     def x_taylor_s1(self, known, unknown, x):
         """ 2nd Order x_Taylor Series of s1 """
@@ -56,9 +58,9 @@ class Taylor_Functions(laplace_theory.Theoretical_Values):
         return known[6] \
                + known[7]*(x[0] - x_value[0]) \
                + known[8]*(x[1] - x_value[1]) \
-               + unknown[0]*(x[0] - x_value[0])**2/2 \
+               + unknown[0]*(x[0] - x_value[0])**2 \
                + unknown[1]*(x[0] - x_value[0])*(x[1] - x_value[1]) \
-               + unknown[2]*(x[1] - x_value[1])**2/2
+               + unknown[2]*(x[1] - x_value[1])**2
         
     def x_taylor_s2(self, known, unknown, x):
         """ 2nd Order x_Taylor Series of s1 """
@@ -66,9 +68,9 @@ class Taylor_Functions(laplace_theory.Theoretical_Values):
         return known[9] \
                + known[10]*(x[0] - x_value[0]) \
                + known[11]*(x[1] - x_value[1]) \
-               + unknown[3]*(x[0] - x_value[0])**2/2 \
+               + unknown[3]*(x[0] - x_value[0])**2 \
                + unknown[4]*(x[0] - x_value[0])*(x[1] - x_value[1]) \
-               + unknown[5]*(x[1] - x_value[1])**2/2
+               + unknown[5]*(x[1] - x_value[1])**2
                
     def x_taylor_u(self, known, unknown, s, x):
         """ 4th Order x_taylor Series of u"""
@@ -284,8 +286,8 @@ class Taylor_Functions(laplace_theory.Theoretical_Values):
         return test
 
     def solution(self, known, unknown, s, x):
-        u_theory = self.u_theory
-        x_value = self.x_values[0][0]
+#        u_theory = self.u_theory
+#        x_value = self.x_values[0][0]
         a_theory = self.a_theory[0][0]
         b_theory = self.b_theory[0][0]
         
@@ -296,7 +298,6 @@ class Taylor_Functions(laplace_theory.Theoretical_Values):
         f5 = self.term_x_taylor_g12(known, unknown, x)[4]
         f6 = self.term_modified_x_taylor_laplacian_u(known, unknown, s, x)[0]
         f = (f1, f2, f3, f4, f5, f6)
-        
         unknown_init = ((1 + random.uniform(-1.0, 1.0)/10)*a_theory[3],
                         (1 + random.uniform(-1.0, 1.0)/10)*a_theory[4],
                         (1 + random.uniform(-1.0, 1.0)/10)*a_theory[5],
@@ -304,18 +305,17 @@ class Taylor_Functions(laplace_theory.Theoretical_Values):
                         (1 + random.uniform(-1.0, 1.0)/10)*b_theory[4],
                         (1 + random.uniform(-1.0, 1.0)/10)*b_theory[5]
                         )
-
         solution = nsolve(f, unknown, unknown_init)
         
-        a_experiment = np.ndarray((3,))
-        a_experiment[0] = solution[0]
-        a_experiment[1] = solution[1]
-        a_experiment[2] = solution[2]
-        
-        b_experiment = np.ndarray((3,))
-        b_experiment[0] = solution[3]
-        b_experiment[1] = solution[4]
-        b_experiment[2] = solution[5]
+#        a_experiment = np.ndarray((3,))
+#        a_experiment[0] = solution[0]
+#        a_experiment[1] = solution[1]
+#        a_experiment[2] = solution[2]
+#        
+#        b_experiment = np.ndarray((3,))
+#        b_experiment[0] = solution[3]
+#        b_experiment[1] = solution[4]
+#        b_experiment[2] = solution[5]
         
 #        x_taylor_u = self.x_taylor_u(known, unknown, s, x)
 #        u_experiment = lambdify([unknown, x], x_taylor_u, 'numpy')
@@ -335,15 +335,13 @@ class Taylor_Functions(laplace_theory.Theoretical_Values):
 #        result = np.ndarray((2,))
 #        result[0] = u_theory
 #        result[1] = u_experiment
-        return (a_experiment, b_experiment)   
+        return solution
 
         
 
 if __name__ == '__main__':
     
     t0 = time.time()
-    
-    theory = laplace_theory.Theoretical_Values()
     
     s = [Symbol('s1', real = True), 
          Symbol('s2', real = True)
@@ -353,18 +351,23 @@ if __name__ == '__main__':
          Symbol('x2', real = True)
          ]
     
-    known = [theory.r_theory(x)[0][0][0],
-             theory.r_theory(x)[0][0][1],
-             theory.r_theory(x)[0][0][2],
-             theory.r_theory(x)[0][0][3],
-             theory.r_theory(x)[0][0][4],
-             theory.r_theory(x)[0][0][5],
-             theory.a_theory(x)[0][0][0],
-             theory.a_theory(x)[0][0][1],
-             theory.a_theory(x)[0][0][2],
-             theory.b_theory(x)[0][0][0],
-             theory.b_theory(x)[0][0][1],
-             theory.b_theory(x)[0][0][2]
+    theory = laplace_theory.Theoretical_Values()
+    r_theory = theory.r_theory(x)[0][0]
+    a_theory = theory.a_theory(x)[0][0]
+    b_theory = theory.b_theory(x)[0][0]
+    
+    known = [r_theory[0],
+             r_theory[1],
+             r_theory[2],
+             r_theory[3],
+             r_theory[4],
+             r_theory[5],
+             a_theory[0],
+             a_theory[1],
+             a_theory[2],
+             b_theory[0],
+             b_theory[1],
+             b_theory[2]
              ]
     
     unknown = [Symbol('a11', real = True),
@@ -379,38 +382,47 @@ if __name__ == '__main__':
     print(theory.x_values(x))
     print('')
     
-    print('a_theory = ')
-    print(theory.a_theory(x))
+    print('(a_theory, b_theory) = ')
+    print([a_theory[3], 
+           a_theory[4],
+           a_theory[5],
+           b_theory[3],
+           b_theory[4],
+           b_theory[5]])
     print('')
     
-    print('b_theory = ')
-    print(theory.b_theory(x))
-    print('')
     
     taylor = Taylor_Functions(known, unknown, s, x)
+    solution = taylor.solution(known, unknown, s, x)
     
-#    a_theory = theory.a_theory(x)[0][0]
-#    b_theory = theory.b_theory(x)[0][0]
-#    laplacian_u = taylor.term_modified_x_taylor_laplacian_u(known, unknown, s, x)
-#    laplacian_u = lambdify(unknown, laplacian_u, 'numpy')
-#    laplacian_u = laplacian_u(a_theory[3],
-#                              a_theory[4],
-#                              a_theory[5],
-#                              b_theory[3],
-#                              b_theory[4],
-#                              b_theory[5])
-#    print('Verificaiton of Laplacian u')
-#    print(laplacian_u)
-#    print('')
-
     print('(a_experiment, b_experiment) = ')
-    print(taylor.solution(known, unknown, s, x))
+    [print(round(item, 4)) for item in solution]
     print('')
     
-#    print('(u_theory, u_experiment) = ')
-#    print(taylor.solution(known, unknown, s, x))
-#    print('')
+    g12 = taylor.term_x_taylor_g12(known, unknown, x)
+    g12 = lambdify(unknown, g12, 'numpy')
+    g12 = g12(a_theory[3],
+              a_theory[4],
+              a_theory[5],
+              b_theory[3],
+              b_theory[4],
+              b_theory[5])
+    print('Verificaiton of g12')
+    [print(round(item, 4)) for item in g12]
+    print('')
     
+    laplacian_u = taylor.term_modified_x_taylor_laplacian_u(known, unknown, s, x)
+    laplacian_u = lambdify(unknown, laplacian_u, 'numpy')
+    laplacian_u = laplacian_u(a_theory[3],
+                              a_theory[4],
+                              a_theory[5],
+                              b_theory[3],
+                              b_theory[4],
+                              b_theory[5])
+    print('Verificaiton of Laplacian u')
+    [print(round(item, 4)) for item in laplacian_u]
+    print('')
+
     t1 = time.time()
     
     print('Elapsed Time = ', round(t1 - t0), '(s)')
