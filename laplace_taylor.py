@@ -19,11 +19,11 @@ import sympy as sym
 from sympy import Symbol, diff, Matrix, simplify, factor, S, Poly, nsolve, lambdify
 sym.init_printing()
 
+## For Symbolic Expression Displaying
+#from IPython.display import display
+
 # For Random Variables
 import random
-
-# For Symbolic Mathematics
-from IPython.display import display
 
 # For measuring computation time
 import time
@@ -56,9 +56,9 @@ class Taylor_Functions(laplace_theory.Theoretical_Values):
         return known[6] \
                + known[7]*(x[0] - x_value[0]) \
                + known[8]*(x[1] - x_value[1]) \
-               + unknown[0]*(x[0] - x_value[0])**2 \
+               + unknown[0]*(x[0] - x_value[0])**2/2 \
                + unknown[1]*(x[0] - x_value[0])*(x[1] - x_value[1]) \
-               + unknown[2]*(x[1] - x_value[1])**2
+               + unknown[2]*(x[1] - x_value[1])**2/2
         
     def x_taylor_s2(self, known, unknown, x):
         """ 2nd Order x_Taylor Series of s1 """
@@ -66,9 +66,9 @@ class Taylor_Functions(laplace_theory.Theoretical_Values):
         return known[9] \
                + known[10]*(x[0] - x_value[0]) \
                + known[11]*(x[1] - x_value[1]) \
-               + unknown[3]*(x[0] - x_value[0])**2 \
+               + unknown[3]*(x[0] - x_value[0])**2/2 \
                + unknown[4]*(x[0] - x_value[0])*(x[1] - x_value[1]) \
-               + unknown[5]*(x[1] - x_value[1])**2
+               + unknown[5]*(x[1] - x_value[1])**2/2
                
     def x_taylor_u(self, known, unknown, s, x):
         """ 4th Order x_taylor Series of u"""
@@ -283,7 +283,7 @@ class Taylor_Functions(laplace_theory.Theoretical_Values):
             test.append(temp)
         return test
 
-    def u_experiment(self, known, unknown, s, x):
+    def solution(self, known, unknown, s, x):
         u_theory = self.u_theory
         x_value = self.x_values[0][0]
         a_theory = self.a_theory[0][0]
@@ -297,21 +297,15 @@ class Taylor_Functions(laplace_theory.Theoretical_Values):
         f6 = self.term_modified_x_taylor_laplacian_u(known, unknown, s, x)[0]
         f = (f1, f2, f3, f4, f5, f6)
         
-        unknown_init = ((1 + random.uniform(-0.5, 0.5)/10)*a_theory[3],
-                        (1 + random.uniform(-0.5, 0.5)/10)*a_theory[4],
-                        (1 + random.uniform(-0.5, 0.5)/10)*a_theory[5],
-                        (1 + random.uniform(-0.5, 0.5)/10)*b_theory[3],
-                        (1 + random.uniform(-0.5, 0.5)/10)*b_theory[4],
-                        (1 + random.uniform(-0.5, 0.5)/10)*b_theory[5]
+        unknown_init = ((1 + random.uniform(-1.0, 1.0)/10)*a_theory[3],
+                        (1 + random.uniform(-1.0, 1.0)/10)*a_theory[4],
+                        (1 + random.uniform(-1.0, 1.0)/10)*a_theory[5],
+                        (1 + random.uniform(-1.0, 1.0)/10)*b_theory[3],
+                        (1 + random.uniform(-1.0, 1.0)/10)*b_theory[4],
+                        (1 + random.uniform(-1.0, 1.0)/10)*b_theory[5]
                         )
 
-        solution = np.ndarray((6,))
-        solution[0] = nsolve(f, unknown, unknown_init)[0]
-        solution[1] = nsolve(f, unknown, unknown_init)[1]
-        solution[2] = nsolve(f, unknown, unknown_init)[2]
-        solution[3] = nsolve(f, unknown, unknown_init)[3]
-        solution[4] = nsolve(f, unknown, unknown_init)[4]
-        solution[5] = nsolve(f, unknown, unknown_init)[5]
+        solution = nsolve(f, unknown, unknown_init)
         
         a_experiment = np.ndarray((3,))
         a_experiment[0] = solution[0]
@@ -323,24 +317,24 @@ class Taylor_Functions(laplace_theory.Theoretical_Values):
         b_experiment[1] = solution[4]
         b_experiment[2] = solution[5]
         
-        x_taylor_u = self.x_taylor_u(known, unknown, s, x)
-        u_experiment = lambdify([unknown, x], x_taylor_u, 'numpy')
-        u_experiment = u_experiment((a_experiment[0],
-                                     a_experiment[1],
-                                     a_experiment[2],
-                                     b_experiment[0],
-                                     b_experiment[1],
-                                     b_experiment[2]),
-                                    (x_value[0],
-                                     x_value[1])
-                                    )
-                                    
-        u_theory = lambdify(x, u_theory, 'numpy')
-        u_theory = u_theory(x_value[0], x_value[1])     
-        
-        result = np.ndarray((2,))
-        result[0] = u_theory
-        result[1] = u_experiment
+#        x_taylor_u = self.x_taylor_u(known, unknown, s, x)
+#        u_experiment = lambdify([unknown, x], x_taylor_u, 'numpy')
+#        u_experiment = u_experiment((a_experiment[0],
+#                                     a_experiment[1],
+#                                     a_experiment[2],
+#                                     b_experiment[0],
+#                                     b_experiment[1],
+#                                     b_experiment[2]),
+#                                    (x_value[0],
+#                                     x_value[1])
+#                                    )
+#                                    
+#        u_theory = lambdify(x, u_theory, 'numpy')
+#        u_theory = u_theory(x_value[0], x_value[1])     
+#        
+#        result = np.ndarray((2,))
+#        result[0] = u_theory
+#        result[1] = u_experiment
         return (a_experiment, b_experiment)   
 
         
@@ -410,11 +404,11 @@ if __name__ == '__main__':
 #    print('')
 
     print('(a_experiment, b_experiment) = ')
-    print(taylor.u_experiment(known, unknown, s, x))
+    print(taylor.solution(known, unknown, s, x))
     print('')
     
 #    print('(u_theory, u_experiment) = ')
-#    print(taylor.u_experiment(known, unknown, s, x))
+#    print(taylor.solution(known, unknown, s, x))
 #    print('')
     
     t1 = time.time()

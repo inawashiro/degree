@@ -20,8 +20,8 @@ import sympy as sym
 from sympy import Symbol, diff, nsolve, lambdify
 sym.init_printing()
 
-# For Symbolic Mathematics
-from IPython.display import display
+## For Symbolic Mathematics
+#from IPython.display import display
 
 # For Getting Access to Another Directory
 import os
@@ -55,9 +55,9 @@ class Functions():
         return [s1, 
                 diff(s1, x[0]), 
                 diff(s1, x[1]),
-                diff(s1, x[0], 2)/2, 
+                diff(s1, x[0], 2), 
                 diff(s1, x[0], x[1]), 
-                diff(s1, x[1], 2)/2
+                diff(s1, x[1], 2)
                 ]
     
     def b(self, x):
@@ -66,9 +66,9 @@ class Functions():
         return [s2, 
                 diff(s2, x[0]), 
                 diff(s2, x[1]),
-                diff(s2, x[0], 2)/2, 
+                diff(s2, x[0], 2), 
                 diff(s2, x[0], x[1]), 
-                diff(s2, x[1], 2)/2
+                diff(s2, x[1], 2)
                 ]
 
 
