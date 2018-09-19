@@ -30,11 +30,11 @@ import time
 
 
 
-class Taylor_Functions(laplace_theory.Theoretical_Values):
+class Experiment(laplace_theory.Theory):
     """ Tayolr Series Expression of Parameters """
     
     def __init__(self, known, unknown, s, x):
-        self.theory = laplace_theory.Theoretical_Values()
+        self.theory = laplace_theory.Theory()
         self.u_theory = self.theory.u(x)
         self.s_values = self.theory.s_values()
         self.x_values = self.theory.x_values(x)
@@ -219,27 +219,36 @@ class Taylor_Functions(laplace_theory.Theoretical_Values):
                            [modified_dx2_ds1, modified_dx2_ds2]
                            ])
   
-    def modified_x_taylor_dg11_ds1(self, known, unknown, x):
+    def modified_x_taylor_dg_ds1(self, known, unknown, x):
         """ 2nd Order Modified x_Taylor Series of dg11/ds1 """
         """ dg11/ds1 = dx1/ds1*dg11/dx1 + dx2/ds1*dg11/dx2 """
-        modified_dx1_ds1 = self.modified_x_taylor_dx_ds(known, unknown, x)[0, 0]
-        modified_dx2_ds1 = self.modified_x_taylor_dx_ds(known, unknown, x)[1, 0]
-        g11 = self.x_taylor_submetric(known, unknown, x)[0, 0]
-        dg11_dx1 = diff(g11, x[0])
-        dg11_dx2 = diff(g11, x[1])
-        temp = modified_dx1_ds1*dg11_dx1 + modified_dx2_ds1*dg11_dx2
-        return temp
-    
-    def modified_x_taylor_dg22_ds1(self, known, unknown, x):
-        """ 2nd Order x_Taylor Series of dg22/ds1 """
+        """ dg12/ds1 = dx1/ds1*dg12/dx1 + dx2/ds1*dg12/dx2 """
+        """ dg21/ds1 = dx1/ds1*dg21/dx1 + dx2/ds1*dg21/dx2 """
         """ dg22/ds1 = dx1/ds1*dg22/dx1 + dx2/ds1*dg22/dx2 """
         modified_dx1_ds1 = self.modified_x_taylor_dx_ds(known, unknown, x)[0, 0]
         modified_dx2_ds1 = self.modified_x_taylor_dx_ds(known, unknown, x)[1, 0]
+        g11 = self.x_taylor_submetric(known, unknown, x)[0, 0]
+        g12 = self.x_taylor_submetric(known, unknown, x)[0, 1]
+        g21 = self.x_taylor_submetric(known, unknown, x)[1, 0]
         g22 = self.x_taylor_submetric(known, unknown, x)[1, 1]
+        
+        dg11_dx1 = diff(g11, x[0])
+        dg11_dx2 = diff(g11, x[1])
+        dg12_dx1 = diff(g12, x[0])
+        dg12_dx2 = diff(g12, x[1])
+        dg21_dx1 = diff(g21, x[0])
+        dg21_dx2 = diff(g21, x[1])
         dg22_dx1 = diff(g22, x[0])
         dg22_dx2 = diff(g22, x[1])
-        temp = modified_dx1_ds1*dg22_dx1 + modified_dx2_ds1*dg22_dx2
-        return temp
+        
+        dg11_ds1 = modified_dx1_ds1*dg11_dx1 + modified_dx2_ds1*dg11_dx2
+        dg12_ds1 = modified_dx1_ds1*dg12_dx1 + modified_dx2_ds1*dg12_dx2
+        dg21_ds1 = modified_dx1_ds1*dg21_dx1 + modified_dx2_ds1*dg21_dx2
+        dg22_ds1 = modified_dx1_ds1*dg22_dx1 + modified_dx2_ds1*dg22_dx2
+        
+        return sym.Matrix([[dg11_ds1, dg12_ds1],
+                           [dg21_ds1, dg22_ds1]
+                           ])
     
     def term_modified_x_taylor_laplacian_u(self, known, unknown, s, x):
         """ 1st Order x_Taylor Series of Laplacian of u """
@@ -249,8 +258,8 @@ class Taylor_Functions(laplace_theory.Theoretical_Values):
         ddu_dds1 = self.x_taylor_ddu_dds(known, unknown, s, x)[0, 0]
         g11 = self.x_taylor_submetric(known, unknown, x)[0, 0]
         g22 = self.x_taylor_submetric(known, unknown, x)[1, 1]
-        modified_dg11_ds1 = self.modified_x_taylor_dg11_ds1(known, unknown, x)
-        modified_dg22_ds1 = self.modified_x_taylor_dg22_ds1(known, unknown, x)
+        modified_dg11_ds1 = self.modified_x_taylor_dg_ds1(known, unknown, x)[0, 0]
+        modified_dg22_ds1 = self.modified_x_taylor_dg_ds1(known, unknown, x)[1, 1]
         
         laplacian_u = 2*g11*g22*ddu_dds1 \
                       + (g11*modified_dg22_ds1 - \
@@ -351,7 +360,7 @@ if __name__ == '__main__':
          Symbol('x2', real = True)
          ]
     
-    theory = laplace_theory.Theoretical_Values()
+    theory = laplace_theory.Theory()
     r_theory = theory.r_theory(x)[0][0]
     a_theory = theory.a_theory(x)[0][0]
     b_theory = theory.b_theory(x)[0][0]
@@ -393,14 +402,14 @@ if __name__ == '__main__':
     print('')
     
     
-    taylor = Taylor_Functions(known, unknown, s, x)
-    temp = taylor.solution(known, unknown, s, x)
+    experiment = Experiment(known, unknown, s, x)
+    temp = experiment.solution(known, unknown, s, x)
     
     print('(a_experiment, b_experiment) = ')
     [print(round(item, 4)) for item in temp]
     print('')
     
-    g12 = taylor.term_x_taylor_g12(known, unknown, x)
+    g12 = experiment.term_x_taylor_g12(known, unknown, x)
     g12 = lambdify(unknown, g12, 'numpy')
     g12 = g12(a_theory[3],
               a_theory[4],
@@ -412,7 +421,7 @@ if __name__ == '__main__':
     [print(round(item, 4)) for item in g12]
     print('')
     
-    laplacian_u = taylor.term_modified_x_taylor_laplacian_u(known, unknown, s, x)
+    laplacian_u = experiment.term_modified_x_taylor_laplacian_u(known, unknown, s, x)
     laplacian_u = lambdify(unknown, laplacian_u, 'numpy')
     laplacian_u = laplacian_u(a_theory[3],
                               a_theory[4],

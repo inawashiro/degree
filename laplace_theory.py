@@ -20,7 +20,7 @@ import sympy as sym
 from sympy import Symbol, diff, nsolve, lambdify
 sym.init_printing()
 
-## For Symbolic Mathematics
+## For Symbolic Expression Display
 #from IPython.display import display
 
 # For Getting Access to Another Directory
@@ -31,8 +31,14 @@ import time
 
 
 
-class Functions():
+class Theory():
     """" Analytical Experessions of Parameters """
+    
+    def __init__(self):
+        self.s1_interval = 12.5
+        self.s2_interval = 12.5
+        self.number_of_points_on_line = [round(12.5/self.s1_interval), 
+                                         round(12.5/self.s2_interval)]
        
     def u(self, x):
         """ One of the Polynomial Solutions of Laplace Equation """
@@ -45,7 +51,7 @@ class Functions():
     def s2(self, x):
         return -x[1]**3 + 3*x[0]**2*x[1]
 
-    def r(self, x):
+    def r(self):
         """ Theoretical Values of Taylor Series of u w.r.t. x """
         return [0, 1, 0, 0, 0, 0]
 
@@ -70,37 +76,23 @@ class Functions():
                 diff(s2, x[0], x[1]), 
                 diff(s2, x[1], 2)/2
                 ]
-
-
-
-class Theoretical_Values(Functions):
-    """ Numerical Pointwise Parameters """
-     
-    def __init__(self):
-        self.func = Functions()
-        self.s_interval = [12.5, 12.5]
-        s1_interval = self.s_interval[0]
-        s2_interval = self.s_interval[1]
-        self.number_of_points_on_line = [round(12.5/s1_interval), 
-                                         round(12.5/s2_interval)]
     
     def s_values(self):
-        s_interval = self.s_interval
+        s1_interval = self.s1_interval
+        s2_interval = self.s2_interval
         number_of_points_on_line = self.number_of_points_on_line
-        temp = np.ndarray((number_of_points_on_line[1],
-                           number_of_points_on_line[0], 2))
+        temp = np.ndarray((number_of_points_on_line[1],number_of_points_on_line[0], 2))
         for i in range(number_of_points_on_line[0]):
             for j in range(number_of_points_on_line[1]):
-                temp[i][j][0] = s_interval[0]*(- j - 1)
-                temp[i][j][1] = s_interval[1]*(i + 1)
+                temp[i][j][0] = s1_interval*(- j - 1)
+                temp[i][j][1] = s2_interval*(i + 1)
         return temp
 
     def x_values(self, x):
         number_of_points_on_line = self.number_of_points_on_line
-        s1 = self.func.s1(x)
-        s2 = self.func.s2(x)
-        temp = np.ndarray((number_of_points_on_line[1],
-                           number_of_points_on_line[0], 2))
+        s1 = self.s1(x)
+        s2 = self.s2(x)
+        temp = np.ndarray((number_of_points_on_line[1],number_of_points_on_line[0], 2))
         for i in range(number_of_points_on_line[0]):
             for j in range(number_of_points_on_line[1]):
                 s_values = self.s_values()[i][j]
@@ -113,9 +105,8 @@ class Theoretical_Values(Functions):
     
     def r_theory(self, x):
         number_of_points_on_line = self.number_of_points_on_line
-        r = self.func.r(x)
-        temp = np.ndarray((number_of_points_on_line[1],
-                           number_of_points_on_line[0], 6))
+        r = self.r()
+        temp = np.ndarray((number_of_points_on_line[1],number_of_points_on_line[0], 6))
         for i in range(number_of_points_on_line[0]):
             for j in range(number_of_points_on_line[1]):
                 temp[i][j][0] = r[0]
@@ -128,9 +119,8 @@ class Theoretical_Values(Functions):
     
     def a_theory(self, x):
         number_of_points_on_line = self.number_of_points_on_line
-        a = self.func.a(x)
-        temp = np.ndarray((number_of_points_on_line[1],
-                           number_of_points_on_line[0], 6))
+        a = self.a(x)
+        temp = np.ndarray((number_of_points_on_line[1],number_of_points_on_line[0], 6))
         for i in range(number_of_points_on_line[0]):
             for j in range(number_of_points_on_line[1]):
                 x_value = self.x_values(x)[i][j]
@@ -150,9 +140,9 @@ class Theoretical_Values(Functions):
     
     def b_theory(self, x):
         number_of_points_on_line = self.number_of_points_on_line
-        b = self.func.b(x)
-        temp = np.ndarray((number_of_points_on_line[1],
-                                       number_of_points_on_line[0], 6))
+#        number_of_points_on_line = Theory.number_of_points_on_line
+        b = self.b(x)
+        temp = np.ndarray((number_of_points_on_line[1],number_of_points_on_line[0], 6))
         for i in range(number_of_points_on_line[0]):
             for j in range(number_of_points_on_line[1]):
                 x_value = self.x_values(x)[i][j]
@@ -172,15 +162,14 @@ class Theoretical_Values(Functions):
 
         
         
-class Plot(Functions):
+class Plot(Theory):
     """ Display Plot """
-    def __init__(self):
-        self.func = Functions()
-        
-        os.chdir('./graph')
     
-    def u_plot(self, x):
-        u = self.func.u(x)
+    def __init__(self):
+        self.theory = Theory()
+    
+    def u_plot(self):
+        u = self.theory.u(x)
         
         fig = plt.figure()
         ax = fig.gca(projection = '3d')
@@ -191,9 +180,9 @@ class Plot(Functions):
         plt.pause(.01)
         
         
-    def principal_coordinate_system_plot(self, x):
-        s1 = self.func.s1(x)
-        s2 = self.func.s2(x)
+    def principal_coordinate_system_plot(self):
+        s1 = self.theory.s1(x)
+        s2 = self.theory.s2(x)
             
         plt.gca().set_aspect('equal', adjustable='box')
         
@@ -218,14 +207,12 @@ if __name__ == '__main__':
     
     t0 = time.time()
     
-    func = Functions()
+    theory = Theory()
     
     x = [Symbol('x_1', real = True), 
          Symbol('x_2', real = True)
          ]
-    
-    theory = Theoretical_Values()
-    
+
     print('x_values = ', theory.x_values(x))
     print('')
     
@@ -241,15 +228,17 @@ if __name__ == '__main__':
     
     plot = Plot()
     
+    os.chdir('./graph')
+    
     x = np.meshgrid(np.arange(1, 2, 0.01),
                     np.arange(1, 2, 0.01))
     
     print('3D Plot of u')
-    plot.u_plot(x)
+    plot.u_plot()
     print('')
     
     print('Principal Coordinate System')
-    plot.principal_coordinate_system_plot(x)
+    plot.principal_coordinate_system_plot()
     print('')    
     
     
