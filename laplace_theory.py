@@ -20,8 +20,8 @@ import sympy as sym
 from sympy import Symbol, diff, nsolve, lambdify
 sym.init_printing()
 
-## For Symbolic Expression Display
-#from IPython.display import display
+# For Symbolic Expression Display
+from IPython.display import display
 
 # For Getting Access to Another Directory
 import os
@@ -33,6 +33,9 @@ import time
 
 class Theory():
     """" Analytical Experessions of Parameters """
+    x = [Symbol('x_1', real = True), 
+         Symbol('x_2', real = True)
+         ]
     
     def __init__(self):
         self.s1_interval = 12.5
@@ -165,6 +168,9 @@ class Theory():
 class Plot(Theory):
     """ Display Plot """
     
+    x = np.meshgrid(np.arange(1, 2, 0.01),
+                    np.arange(1, 2, 0.01))
+    
     def __init__(self):
         self.theory = Theory()
     
@@ -209,9 +215,13 @@ if __name__ == '__main__':
     
     theory = Theory()
     
-    x = [Symbol('x_1', real = True), 
-         Symbol('x_2', real = True)
-         ]
+#    x = [Symbol('x_1', real = True), 
+#         Symbol('x_2', real = True)
+#         ]
+    
+    print('u = ')
+    display(theory.u(x))
+    print('')
 
     print('x_values = ', theory.x_values(x))
     print('')
@@ -230,8 +240,8 @@ if __name__ == '__main__':
     
     os.chdir('./graph')
     
-    x = np.meshgrid(np.arange(1, 2, 0.01),
-                    np.arange(1, 2, 0.01))
+#    x = np.meshgrid(np.arange(1, 2, 0.01),
+#                    np.arange(1, 2, 0.01))
     
     print('3D Plot of u')
     plot.u_plot()
@@ -240,7 +250,6 @@ if __name__ == '__main__':
     print('Principal Coordinate System')
     plot.principal_coordinate_system_plot()
     print('')    
-    
     
     t1 = time.time()
     
