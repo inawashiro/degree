@@ -19,8 +19,8 @@ import sympy as sym
 from sympy import Symbol, diff, Matrix, simplify, factor, S, Poly, nsolve, lambdify
 sym.init_printing()
 
-## For Symbolic Expression Displaying
-#from IPython.display import display
+# For Symbolic Expression Displaying
+from IPython.display import display
 
 # For Random Variables
 import random
@@ -393,6 +393,14 @@ if __name__ == '__main__':
     x = [Symbol('x1', real = True), 
          Symbol('x2', real = True)
          ]
+    
+    unknown = [Symbol('a11', real = True),
+               Symbol('a12', real = True),
+               Symbol('a22', real = True),
+               Symbol('b11', real = True),
+               Symbol('b12', real = True),
+               Symbol('b22', real = True)
+               ]
  
     theory = laplace_theory.Theory()
     r_theory = theory.r_theory(x)[0][0]
@@ -421,8 +429,9 @@ if __name__ == '__main__':
     [print(round(item, 4)) for item in temp]
     print('')
     
+    # Verification
     g12 = experiment.term_x_taylor_g12(x)
-    g12 = lambdify(g12, 'numpy')
+    g12 = lambdify(unknown, g12, 'numpy')
     g12 = g12(a_theory[3],
               a_theory[4],
               a_theory[5],
@@ -434,7 +443,7 @@ if __name__ == '__main__':
     print('')
     
     laplacian_u = experiment.term_modified_x_taylor_laplacian_u(s, x)
-    laplacian_u = lambdify(laplacian_u, 'numpy')
+    laplacian_u = lambdify(unknown, laplacian_u, 'numpy')
     laplacian_u = laplacian_u(a_theory[3],
                               a_theory[4],
                               a_theory[5],
