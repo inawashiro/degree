@@ -19,8 +19,8 @@ import sympy as sym
 from sympy import Symbol, diff, Matrix, simplify, factor, S, Poly, nsolve, lambdify
 sym.init_printing()
 
-# For Symbolic Expression Displaying
-from IPython.display import display
+## For Symbolic Expression Displaying
+#from IPython.display import display
 
 # For Random Variables
 import random
@@ -177,6 +177,7 @@ class Experiment(laplace_theory.Theory):
         
     def modified_x_taylor_dx_ds(self, x):
         """ 1st Order Modified x_Taylor Series of (dx/ds) """
+        """ NOT Using Inverse Matrix Computing Library for Comutational Cost"""
         x_value = self.x_values[0][0]
         ds_dx = self.x_taylor_ds_dx(x)
         
@@ -311,14 +312,6 @@ class Experiment(laplace_theory.Theory):
                 coeff_2_laplacian_u]
         return test
     
-#    def term_s_taylor_du_ds2(self, known, unknown, s):
-#        du_ds2 = self.s_taylor_du_ds(known, unknown, s)[1]
-#        test = []
-#        for i in range(len(Poly(du_ds2, s).coeffs())):
-#            temp = Poly(du_ds2, s).coeffs()[i]
-#            test.append(temp)
-#        return test
-    
     def term_x_taylor_g12(self, x):
         g12 = self.x_taylor_submetric(x)[0, 1]
         test = []
@@ -326,7 +319,7 @@ class Experiment(laplace_theory.Theory):
             temp = Poly(g12, x).coeffs()[i]
             test.append(temp)
         return test
-
+    
     def solution(self, s, x):
 #        u_theory = self.u_theory
 #        x_value = self.x_values[0][0]
@@ -334,31 +327,170 @@ class Experiment(laplace_theory.Theory):
         a_theory = self.a_theory[0][0]
         b_theory = self.b_theory[0][0]
         
-        f1 = self.term_x_taylor_g12(x)[0]
-        f2 = self.term_x_taylor_g12(x)[1]
-        f3 = self.term_x_taylor_g12(x)[2]
-        f4 = self.term_x_taylor_g12(x)[3]
-        f5 = self.term_x_taylor_g12(x)[4]
+        f0 = self.term_x_taylor_g12(x)[0]
+        f1 = self.term_x_taylor_g12(x)[1]
+        f2 = self.term_x_taylor_g12(x)[2]
+        f3 = self.term_x_taylor_g12(x)[3]
+        f4 = self.term_x_taylor_g12(x)[4]
+        f5 = self.term_x_taylor_g12(x)[5]
         f6 = self.term_modified_x_taylor_laplacian_u(s, x)[0]
-        f = (f1, f2, f3, f4, f5, f6)
-        unknown_init = ((1 + random.uniform(-1.0, 1.0)/10)*a_theory[3],
-                        (1 + random.uniform(-1.0, 1.0)/10)*a_theory[4],
-                        (1 + random.uniform(-1.0, 1.0)/10)*a_theory[5],
-                        (1 + random.uniform(-1.0, 1.0)/10)*b_theory[3],
-                        (1 + random.uniform(-1.0, 1.0)/10)*b_theory[4],
-                        (1 + random.uniform(-1.0, 1.0)/10)*b_theory[5]
+        unknown_init = ((1 + random.uniform(-0.1, 0.1)/10)*a_theory[3],
+                        (1 + random.uniform(-0.1, 0.1)/10)*a_theory[4],
+                        (1 + random.uniform(-0.1, 0.1)/10)*a_theory[5],
+                        (1 + random.uniform(-0.1, 0.1)/10)*b_theory[3],
+                        (1 + random.uniform(-0.1, 0.1)/10)*b_theory[4],
+                        (1 + random.uniform(-0.1, 0.1)/10)*b_theory[5]
                         )
-        solution = nsolve(f, unknown, unknown_init)
         
-#        a_experiment = np.ndarray((3,))
-#        a_experiment[0] = solution[0]
-#        a_experiment[1] = solution[1]
-#        a_experiment[2] = solution[2]
-#        
-#        b_experiment = np.ndarray((3,))
-#        b_experiment[0] = solution[3]
-#        b_experiment[1] = solution[4]
-#        b_experiment[2] = solution[5]
+        coeff_f = np.ndarray((7,), 'object')
+        coeff_f[6] = f0
+        for i in range(6):
+            coeff_f[i] = diff(f0, unknown[i])
+        for i in range(7):
+            coeff_f[i] = lambdify(unknown, coeff_f[i], 'numpy')
+            coeff_f[i] = coeff_f[i](unknown_init[0],
+                                    unknown_init[1],
+                                    unknown_init[2],
+                                    unknown_init[3],
+                                    unknown_init[4],
+                                    unknown_init[5]
+                                    )
+        f0 = coeff_f[6] \
+             + coeff_f[0]*unknown[0] \
+             + coeff_f[1]*unknown[1] \
+             + coeff_f[2]*unknown[2] \
+             + coeff_f[3]*unknown[3] \
+             + coeff_f[4]*unknown[4] \
+             + coeff_f[5]*unknown[5]  
+             
+        coeff_f = np.ndarray((7,), 'object')
+        coeff_f[6] = f1
+        for i in range(6):
+            coeff_f[i] = diff(f1, unknown[i])
+        for i in range(7):
+            coeff_f[i] = lambdify(unknown, coeff_f[i], 'numpy')
+            coeff_f[i] = coeff_f[i](unknown_init[0],
+                                    unknown_init[1],
+                                    unknown_init[2],
+                                    unknown_init[3],
+                                    unknown_init[4],
+                                    unknown_init[5]
+                                    )
+        f1 = coeff_f[6] \
+             + coeff_f[0]*unknown[0] \
+             + coeff_f[1]*unknown[1] \
+             + coeff_f[2]*unknown[2] \
+             + coeff_f[3]*unknown[3] \
+             + coeff_f[4]*unknown[4] \
+             + coeff_f[5]*unknown[5]  
+        
+        coeff_f = np.ndarray((7,), 'object')
+        coeff_f[6] = f2
+        for i in range(6):
+            coeff_f[i] = diff(f2, unknown[i])
+        for i in range(7):
+            coeff_f[i] = lambdify(unknown, coeff_f[i], 'numpy')
+            coeff_f[i] = coeff_f[i](unknown_init[0],
+                                    unknown_init[1],
+                                    unknown_init[2],
+                                    unknown_init[3],
+                                    unknown_init[4],
+                                    unknown_init[5]
+                                    )
+        f2 = coeff_f[6] \
+             + coeff_f[0]*unknown[0] \
+             + coeff_f[1]*unknown[1] \
+             + coeff_f[2]*unknown[2] \
+             + coeff_f[3]*unknown[3] \
+             + coeff_f[4]*unknown[4] \
+             + coeff_f[5]*unknown[5]  
+             
+        coeff_f = np.ndarray((7,), 'object')
+        coeff_f[6] = f3
+        for i in range(6):
+            coeff_f[i] = diff(f3, unknown[i])
+        for i in range(7):
+            coeff_f[i] = lambdify(unknown, coeff_f[i], 'numpy')
+            coeff_f[i] = coeff_f[i](unknown_init[0],
+                                    unknown_init[1],
+                                    unknown_init[2],
+                                    unknown_init[3],
+                                    unknown_init[4],
+                                    unknown_init[5]
+                                    )
+        f3 = coeff_f[6] \
+             + coeff_f[0]*unknown[0] \
+             + coeff_f[1]*unknown[1] \
+             + coeff_f[2]*unknown[2] \
+             + coeff_f[3]*unknown[3] \
+             + coeff_f[4]*unknown[4] \
+             + coeff_f[5]*unknown[5]  
+             
+        coeff_f = np.ndarray((7,), 'object')
+        coeff_f[6] = f4
+        for i in range(6):
+            coeff_f[i] = diff(f4, unknown[i])
+        for i in range(7):
+            coeff_f[i] = lambdify(unknown, coeff_f[i], 'numpy')
+            coeff_f[i] = coeff_f[i](unknown_init[0],
+                                    unknown_init[1],
+                                    unknown_init[2],
+                                    unknown_init[3],
+                                    unknown_init[4],
+                                    unknown_init[5]
+                                    )
+        f4 = coeff_f[6] \
+             + coeff_f[0]*unknown[0] \
+             + coeff_f[1]*unknown[1] \
+             + coeff_f[2]*unknown[2] \
+             + coeff_f[3]*unknown[3] \
+             + coeff_f[4]*unknown[4] \
+             + coeff_f[5]*unknown[5]  
+        
+        coeff_f = np.ndarray((7,), 'object')
+        coeff_f[6] = f5
+        for i in range(6):
+            coeff_f[i] = diff(f5, unknown[i])
+        for i in range(7):
+            coeff_f[i] = lambdify(unknown, coeff_f[i], 'numpy')
+            coeff_f[i] = coeff_f[i](unknown_init[0],
+                                    unknown_init[1],
+                                    unknown_init[2],
+                                    unknown_init[3],
+                                    unknown_init[4],
+                                    unknown_init[5]
+                                    )
+        f5 = coeff_f[6] \
+             + coeff_f[0]*unknown[0] \
+             + coeff_f[1]*unknown[1] \
+             + coeff_f[2]*unknown[2] \
+             + coeff_f[3]*unknown[3] \
+             + coeff_f[4]*unknown[4] \
+             + coeff_f[5]*unknown[5]  
+             
+        coeff_f = np.ndarray((7,), 'object')
+        coeff_f[6] = f6
+        for i in range(6):
+            coeff_f[i] = diff(f6, unknown[i])
+        for i in range(7):
+            coeff_f[i] = lambdify(unknown, coeff_f[i], 'numpy')
+            coeff_f[i] = coeff_f[i](unknown_init[0],
+                                    unknown_init[1],
+                                    unknown_init[2],
+                                    unknown_init[3],
+                                    unknown_init[4],
+                                    unknown_init[5]
+                                    )
+        f6 = coeff_f[6] \
+             + coeff_f[0]*unknown[0] \
+             + coeff_f[1]*unknown[1] \
+             + coeff_f[2]*unknown[2] \
+             + coeff_f[3]*unknown[3] \
+             + coeff_f[4]*unknown[4] \
+             + coeff_f[5]*unknown[5]  
+
+        f = (f0, f1, f2, f3, f4, f5, f6)
+        solution = nsolve(f, unknown, unknown_init)
         
 #        x_taylor_u = self.x_taylor_u(known, unknown, s, x)
 #        u_experiment = lambdify([unknown, x], x_taylor_u, 'numpy')
@@ -389,11 +521,9 @@ if __name__ == '__main__':
     s = [Symbol('s1', real = True), 
          Symbol('s2', real = True)
          ]
-    
     x = [Symbol('x1', real = True), 
          Symbol('x2', real = True)
          ]
-    
     unknown = [Symbol('a11', real = True),
                Symbol('a12', real = True),
                Symbol('a22', real = True),
@@ -428,6 +558,7 @@ if __name__ == '__main__':
     print('(a_experiment, b_experiment) = ')
     [print(round(item, 4)) for item in temp]
     print('')
+    
     
     # Verification
     g12 = experiment.term_x_taylor_g12(x)
