@@ -175,7 +175,7 @@ class Plot(Theory):
     def __init__(self):
         self.theory = Theory()
     
-    def u_plot(self):
+    def u_plot(self, x):
         u = self.theory.u(x)
         
         fig = plt.figure()
@@ -187,7 +187,7 @@ class Plot(Theory):
         plt.pause(.01)
         
         
-    def principal_coordinate_system_plot(self):
+    def principal_coordinate_system_plot(self, x):
         s1 = self.theory.s1(x)
         s2 = self.theory.s2(x)
             
@@ -241,11 +241,11 @@ if __name__ == '__main__':
                     np.arange(1, 2, 0.01))
     
     print('3D Plot of u')
-    plot.u_plot()
+    plot.u_plot(x)
     print('')
     
     print('Principal Coordinate System')
-    plot.principal_coordinate_system_plot()
+    plot.principal_coordinate_system_plot(x)
     print('')    
     
     t1 = time.time()
