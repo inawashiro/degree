@@ -32,6 +32,7 @@ import time
 
 class Experiment(laplace_theory.Theory):
     """ Tayolr Series Expression of Parameters """
+    
     s = [Symbol('s1', real = True), 
          Symbol('s2', real = True)
          ]
@@ -386,40 +387,40 @@ if __name__ == '__main__':
     
     t0 = time.time()
     
-#    s = [Symbol('s1', real = True), 
-#         Symbol('s2', real = True)
-#         ]
-#    
-#    x = [Symbol('x1', real = True), 
-#         Symbol('x2', real = True)
-#         ]
+    s = [Symbol('s1', real = True), 
+         Symbol('s2', real = True)
+         ]
+    
+    x = [Symbol('x1', real = True), 
+         Symbol('x2', real = True)
+         ]
 #    
     theory = laplace_theory.Theory()
-#    r_theory = theory.r_theory(x)[0][0]
-#    a_theory = theory.a_theory(x)[0][0]
-#    b_theory = theory.b_theory(x)[0][0]
-#    
-#    known = [r_theory[0],
-#             r_theory[1],
-#             r_theory[2],
-#             r_theory[3],
-#             r_theory[4],
-#             r_theory[5],
-#             a_theory[0],
-#             a_theory[1],
-#             a_theory[2],
-#             b_theory[0],
-#             b_theory[1],
-#             b_theory[2]
-#             ]
-#    
-#    unknown = [Symbol('a11', real = True),
-#               Symbol('a12', real = True),
-#               Symbol('a22', real = True),
-#               Symbol('b11', real = True),
-#               Symbol('b12', real = True),
-#               Symbol('b22', real = True)
-#               ]
+    r_theory = theory.r_theory(x)[0][0]
+    a_theory = theory.a_theory(x)[0][0]
+    b_theory = theory.b_theory(x)[0][0]
+    
+    known = [r_theory[0],
+             r_theory[1],
+             r_theory[2],
+             r_theory[3],
+             r_theory[4],
+             r_theory[5],
+             a_theory[0],
+             a_theory[1],
+             a_theory[2],
+             b_theory[0],
+             b_theory[1],
+             b_theory[2]
+             ]
+    
+    unknown = [Symbol('a11', real = True),
+               Symbol('a12', real = True),
+               Symbol('a22', real = True),
+               Symbol('b11', real = True),
+               Symbol('b12', real = True),
+               Symbol('b22', real = True)
+               ]
     
     print('x_values = ')
     print(theory.x_values(x))

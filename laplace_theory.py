@@ -20,8 +20,8 @@ import sympy as sym
 from sympy import Symbol, diff, nsolve, lambdify
 sym.init_printing()
 
-# For Symbolic Expression Display
-from IPython.display import display
+## For Symbolic Expression Display
+#from IPython.display import display
 
 # For Getting Access to Another Directory
 import os
@@ -33,6 +33,7 @@ import time
 
 class Theory():
     """" Analytical Experessions of Parameters """
+    
     x = [Symbol('x_1', real = True), 
          Symbol('x_2', real = True)
          ]
@@ -215,13 +216,9 @@ if __name__ == '__main__':
     
     theory = Theory()
     
-#    x = [Symbol('x_1', real = True), 
-#         Symbol('x_2', real = True)
-#         ]
-    
-    print('u = ')
-    display(theory.u(x))
-    print('')
+    x = [Symbol('x_1', real = True), 
+         Symbol('x_2', real = True)
+         ]
 
     print('x_values = ', theory.x_values(x))
     print('')
@@ -240,8 +237,8 @@ if __name__ == '__main__':
     
     os.chdir('./graph')
     
-#    x = np.meshgrid(np.arange(1, 2, 0.01),
-#                    np.arange(1, 2, 0.01))
+    x = np.meshgrid(np.arange(1, 2, 0.01),
+                    np.arange(1, 2, 0.01))
     
     print('3D Plot of u')
     plot.u_plot()
