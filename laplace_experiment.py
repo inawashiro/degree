@@ -175,6 +175,21 @@ class Experiment(laplace_theory.Theory):
                            [g21, g22]
                            ])
         
+    def term_linear_x_taylor_g12(self, x):
+        x_value = self.x_values[0][0]
+        g12 = self.x_taylor_submetric(x)[0, 1]
+        
+        coeff_g12 = np.ndarray((len(x_value) + 1,), 'object')
+        coeff_g12[0] = diff(g12, x[0])
+        coeff_g12[1] = diff(g12, x[1])
+        coeff_g12[2] = g12
+        for i in range(len(x_value) + 1):
+            coeff_g12[i] = lambdify(x, coeff_g12[i], 'numpy')
+            coeff_g12[i] = coeff_g12[i](x_value[0], x_value[1]) 
+         
+        return coeff_g12
+    
+    
     def linear_x_taylor_dx_ds(self, x):
         """ 1st Order x_Taylor Series of (dx/ds) """
         """ NOT Using Inverse Matrix Computing Library for Comutational Cost"""
@@ -281,41 +296,28 @@ class Experiment(laplace_theory.Theory):
          
         return coeff_laplacian_u
     
-    def term_x_taylor_g12(self, x):
-        g12 = self.x_taylor_submetric(x)[0, 1]
-        test = []
-        for i in range(len(Poly(g12, x).coeffs())):
-            temp = Poly(g12, x).coeffs()[i]
-            test.append(temp)
-        return test
-    
     def solution(self, s, x):
-#        u_theory = self.u_theory
-#        x_value = self.x_values[0][0]
         unknown = self.unknown
         a_theory = self.a_theory[0][0]
         b_theory = self.b_theory[0][0]
         
         f = np.ndarray((7,), 'object')
-        f[0] = self.term_x_taylor_g12(x)[0]
-        f[1] = self.term_x_taylor_g12(x)[1]
-        f[2] = self.term_x_taylor_g12(x)[2]
-        f[3] = self.term_x_taylor_g12(x)[3]
-        f[4] = self.term_x_taylor_g12(x)[4]
-        f[5] = self.term_x_taylor_g12(x)[5]
-        f[6] = self.term_linear_x_taylor_laplacian_u(s, x)[0]
-#        f[7] = self.term_linear_x_taylor_laplacian_u(s, x)[1]
-#        f[8] = self.term_linear_x_taylor_laplacian_u(s, x)[2]
-        unknown_init = ((1 + random.uniform(-1.0, 1.0)/10)*a_theory[3],
-                        (1 + random.uniform(-1.0, 1.0)/10)*a_theory[4],
-                        (1 + random.uniform(-1.0, 1.0)/10)*a_theory[5],
-                        (1 + random.uniform(-1.0, 1.0)/10)*b_theory[3],
-                        (1 + random.uniform(-1.0, 1.0)/10)*b_theory[4],
-                        (1 + random.uniform(-1.0, 1.0)/10)*b_theory[5]
+        f[0] = self.term_linear_x_taylor_g12(x)[0]
+        f[1] = self.term_linear_x_taylor_g12(x)[1]
+        f[2] = self.term_linear_x_taylor_g12(x)[2]
+        f[3] = self.term_linear_x_taylor_laplacian_u(s, x)[0]
+        f[4] = self.term_linear_x_taylor_laplacian_u(s, x)[1]
+        f[5] = self.term_linear_x_taylor_laplacian_u(s, x)[2]
+        unknown_init = ((1 + random.uniform(-0.1, 0.1)/10)*a_theory[3],
+                        (1 + random.uniform(-0.1, 0.1)/10)*a_theory[4],
+                        (1 + random.uniform(-0.1, 0.1)/10)*a_theory[5],
+                        (1 + random.uniform(-0.1, 0.1)/10)*b_theory[3],
+                        (1 + random.uniform(-0.1, 0.1)/10)*b_theory[4],
+                        (1 + random.uniform(-0.1, 0.1)/10)*b_theory[5]
                         )
         
-        linear_f = np.ndarray((7,), 'object')
-        for i in range(7):
+        linear_f = np.ndarray((6,), 'object')
+        for i in range(6):
             coeff_f = np.ndarray((len(unknown) + 1,), 'object')
             coeff_f[0] = diff(f[i], unknown[0])
             coeff_f[1] = diff(f[i], unknown[1])
@@ -394,38 +396,38 @@ if __name__ == '__main__':
     
     
     # Verification
-    g12 = experiment.term_x_taylor_g12(x)
+    g12 = experiment.term_linear_x_taylor_g12(x)
     g12 = lambdify(unknown, g12, 'numpy')
-#    g12 = g12(a_theory[3],
-#              a_theory[4],
-#              a_theory[5],
-#              b_theory[3],
-#              b_theory[4],
-#              b_theory[5])
-    g12 = g12(unknown_theory[0],
-              unknown_theory[1],
-              unknown_theory[2],
-              unknown_theory[3],
-              unknown_theory[4],
-              unknown_theory[5])
+    g12 = g12(a_theory[3],
+              a_theory[4],
+              a_theory[5],
+              b_theory[3],
+              b_theory[4],
+              b_theory[5])
+#    g12 = g12(unknown_theory[0],
+#              unknown_theory[1],
+#              unknown_theory[2],
+#              unknown_theory[3],
+#              unknown_theory[4],
+#              unknown_theory[5])
     print('Verificaiton of g12')
     [print(round(item, 4)) for item in g12]
     print('')
     
     laplacian_u = experiment.term_linear_x_taylor_laplacian_u(s, x)
     laplacian_u = lambdify(unknown, laplacian_u, 'numpy')
-#    laplacian_u = laplacian_u(a_theory[3],
-#                              a_theory[4],
-#                              a_theory[5],
-#                              b_theory[3],
-#                              b_theory[4],
-#                              b_theory[5])
-    laplacian_u = laplacian_u(unknown_theory[0],
-                              unknown_theory[1],
-                              unknown_theory[2],
-                              unknown_theory[3],
-                              unknown_theory[4],
-                              unknown_theory[5])
+    laplacian_u = laplacian_u(a_theory[3],
+                              a_theory[4],
+                              a_theory[5],
+                              b_theory[3],
+                              b_theory[4],
+                              b_theory[5])
+#    laplacian_u = laplacian_u(unknown_theory[0],
+#                              unknown_theory[1],
+#                              unknown_theory[2],
+#                              unknown_theory[3],
+#                              unknown_theory[4],
+#                              unknown_theory[5])
     print('Verificaiton of Laplacian u')
     [print(round(item, 4)) for item in laplacian_u]
     print('')
