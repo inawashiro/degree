@@ -186,15 +186,15 @@ class Experiment(laplace_theory.Theory):
         for i in range(2):
             for j in range(2):
                 coeff_dx_ds = np.ndarray((3,), 'object')
-                coeff_dx_ds[2] = dx_ds[i, j]
                 coeff_dx_ds[0] = diff(dx_ds[i, j], x[0])
                 coeff_dx_ds[1] = diff(dx_ds[i, j], x[1])
-                for k in range(3):
+                coeff_dx_ds[2] = dx_ds[i, j]
+                for k in range(len(x_value) + 1):
                     coeff_dx_ds[k] = lambdify(x, coeff_dx_ds[k], 'numpy')
                     coeff_dx_ds[k] = coeff_dx_ds[k](x_value[0], x_value[1])
                 linear_dx_ds[i, j] = coeff_dx_ds[2] \
-                                    + coeff_dx_ds[0]*x[0] \
-                                    + coeff_dx_ds[1]*x[1]
+                                     + coeff_dx_ds[0]*x[0] \
+                                     + coeff_dx_ds[1]*x[1]
                
 #        det = ds_dx[0, 0]*ds_dx[1, 1] - ds_dx[0, 1]*ds_dx[1, 0]
 #                          
@@ -271,18 +271,15 @@ class Experiment(laplace_theory.Theory):
                       + (g11*modified_dg22_ds1 - \
                          g22*modified_dg11_ds1)*du_ds1
         
-        coeff_0_laplacian_u = lambdify(x, laplacian_u, 'numpy')
-        coeff_1_laplacian_u = lambdify(x, diff(laplacian_u, x[0]), 'numpy')
-        coeff_2_laplacian_u = lambdify(x, diff(laplacian_u, x[1]), 'numpy')
-        coeff_0_laplacian_u = coeff_0_laplacian_u(x_value[0], x_value[1])
-        coeff_1_laplacian_u = coeff_1_laplacian_u(x_value[0], x_value[1])
-        coeff_2_laplacian_u = coeff_2_laplacian_u(x_value[0], x_value[1])
-
-        test = []
-        test = [coeff_0_laplacian_u, 
-                coeff_1_laplacian_u,
-                coeff_2_laplacian_u]
-        return test
+        coeff_laplacian_u = np.ndarray((len(x_value) + 1,), 'object')
+        coeff_laplacian_u[0] = diff(laplacian_u, x[0])
+        coeff_laplacian_u[1] = diff(laplacian_u, x[1])
+        coeff_laplacian_u[2] = laplacian_u
+        for i in range(len(x_value) + 1):
+            coeff_laplacian_u[i] = lambdify(x, coeff_laplacian_u[i], 'numpy')
+            coeff_laplacian_u[i] = coeff_laplacian_u[i](x_value[0], x_value[1]) 
+         
+        return coeff_laplacian_u
     
     def term_x_taylor_g12(self, x):
         g12 = self.x_taylor_submetric(x)[0, 1]
@@ -299,7 +296,7 @@ class Experiment(laplace_theory.Theory):
         a_theory = self.a_theory[0][0]
         b_theory = self.b_theory[0][0]
         
-        f = np.ndarray((7, ), 'object')
+        f = np.ndarray((7,), 'object')
         f[0] = self.term_x_taylor_g12(x)[0]
         f[1] = self.term_x_taylor_g12(x)[1]
         f[2] = self.term_x_taylor_g12(x)[2]
@@ -307,21 +304,27 @@ class Experiment(laplace_theory.Theory):
         f[4] = self.term_x_taylor_g12(x)[4]
         f[5] = self.term_x_taylor_g12(x)[5]
         f[6] = self.term_linear_x_taylor_laplacian_u(s, x)[0]
-        unknown_init = ((1 + random.uniform(-0.1, 0.1)/10)*a_theory[3],
-                        (1 + random.uniform(-0.1, 0.1)/10)*a_theory[4],
-                        (1 + random.uniform(-0.1, 0.1)/10)*a_theory[5],
-                        (1 + random.uniform(-0.1, 0.1)/10)*b_theory[3],
-                        (1 + random.uniform(-0.1, 0.1)/10)*b_theory[4],
-                        (1 + random.uniform(-0.1, 0.1)/10)*b_theory[5]
+#        f[7] = self.term_linear_x_taylor_laplacian_u(s, x)[1]
+#        f[8] = self.term_linear_x_taylor_laplacian_u(s, x)[2]
+        unknown_init = ((1 + random.uniform(-1.0, 1.0)/10)*a_theory[3],
+                        (1 + random.uniform(-1.0, 1.0)/10)*a_theory[4],
+                        (1 + random.uniform(-1.0, 1.0)/10)*a_theory[5],
+                        (1 + random.uniform(-1.0, 1.0)/10)*b_theory[3],
+                        (1 + random.uniform(-1.0, 1.0)/10)*b_theory[4],
+                        (1 + random.uniform(-1.0, 1.0)/10)*b_theory[5]
                         )
         
         linear_f = np.ndarray((7,), 'object')
         for i in range(7):
-            coeff_f = np.ndarray((7,), 'object')
+            coeff_f = np.ndarray((len(unknown) + 1,), 'object')
+            coeff_f[0] = diff(f[i], unknown[0])
+            coeff_f[1] = diff(f[i], unknown[1])
+            coeff_f[2] = diff(f[i], unknown[2])
+            coeff_f[3] = diff(f[i], unknown[3])
+            coeff_f[4] = diff(f[i], unknown[4])
+            coeff_f[5] = diff(f[i], unknown[5])
             coeff_f[6] = f[i]
-            for j in range(6):
-                coeff_f[j] = diff(f[i], unknown[j])
-            for j in range(7):
+            for j in range(len(unknown) + 1):
                 coeff_f[j] = lambdify(unknown, coeff_f[j], 'numpy')
                 coeff_f[j] = coeff_f[j](unknown_init[0],
                                         unknown_init[1],
@@ -339,25 +342,7 @@ class Experiment(laplace_theory.Theory):
                          + coeff_f[5]*unknown[5]
                    
         solution = nsolve(linear_f, unknown, unknown_init)
-        
-#        x_taylor_u = self.x_taylor_u(known, unknown, s, x)
-#        u_experiment = lambdify([unknown, x], x_taylor_u, 'numpy')
-#        u_experiment = u_experiment((a_experiment[0],
-#                                     a_experiment[1],
-#                                     a_experiment[2],
-#                                     b_experiment[0],
-#                                     b_experiment[1],
-#                                     b_experiment[2]),
-#                                    (x_value[0],
-#                                     x_value[1])
-#                                    )
-#                                    
-#        u_theory = lambdify(x, u_theory, 'numpy')
-#        u_theory = u_theory(x_value[0], x_value[1])     
-#        
-#        result = np.ndarray((2,))
-#        result[0] = u_theory
-#        result[1] = u_experiment
+
         return solution
 
         
@@ -389,46 +374,58 @@ if __name__ == '__main__':
     print(theory.x_values(x))
     print('')
     
-    temp = [a_theory[3], 
-            a_theory[4],
-            a_theory[5],
-            b_theory[3],
-            b_theory[4],
-            b_theory[5]] 
+    unknown_theory = [a_theory[3], 
+                      a_theory[4],
+                      a_theory[5],
+                      b_theory[3],
+                      b_theory[4],
+                      b_theory[5]] 
     print('(a_theory, b_theory) = ')
-    [print(round(item, 4)) for item in temp]
+    [print(round(item, 4)) for item in unknown_theory]
     print('')
     
     
     experiment = Experiment(s, x)
-    temp = experiment.solution(s, x)
+    unknown_experiment = experiment.solution(s, x)
     
     print('(a_experiment, b_experiment) = ')
-    [print(round(item, 4)) for item in temp]
+    [print(round(item, 4)) for item in unknown_experiment]
     print('')
     
     
     # Verification
     g12 = experiment.term_x_taylor_g12(x)
     g12 = lambdify(unknown, g12, 'numpy')
-    g12 = g12(a_theory[3],
-              a_theory[4],
-              a_theory[5],
-              b_theory[3],
-              b_theory[4],
-              b_theory[5])
+#    g12 = g12(a_theory[3],
+#              a_theory[4],
+#              a_theory[5],
+#              b_theory[3],
+#              b_theory[4],
+#              b_theory[5])
+    g12 = g12(unknown_theory[0],
+              unknown_theory[1],
+              unknown_theory[2],
+              unknown_theory[3],
+              unknown_theory[4],
+              unknown_theory[5])
     print('Verificaiton of g12')
     [print(round(item, 4)) for item in g12]
     print('')
     
     laplacian_u = experiment.term_linear_x_taylor_laplacian_u(s, x)
     laplacian_u = lambdify(unknown, laplacian_u, 'numpy')
-    laplacian_u = laplacian_u(a_theory[3],
-                              a_theory[4],
-                              a_theory[5],
-                              b_theory[3],
-                              b_theory[4],
-                              b_theory[5])
+#    laplacian_u = laplacian_u(a_theory[3],
+#                              a_theory[4],
+#                              a_theory[5],
+#                              b_theory[3],
+#                              b_theory[4],
+#                              b_theory[5])
+    laplacian_u = laplacian_u(unknown_theory[0],
+                              unknown_theory[1],
+                              unknown_theory[2],
+                              unknown_theory[3],
+                              unknown_theory[4],
+                              unknown_theory[5])
     print('Verificaiton of Laplacian u')
     [print(round(item, 4)) for item in laplacian_u]
     print('')
