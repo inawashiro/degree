@@ -175,82 +175,54 @@ class Experiment(laplace_theory.Theory):
                            [g21, g22]
                            ])
         
-    def modified_x_taylor_dx_ds(self, x):
-        """ 1st Order Modified x_Taylor Series of (dx/ds) """
+    def linear_x_taylor_dx_ds(self, x):
+        """ 1st Order x_Taylor Series of (dx/ds) """
         """ NOT Using Inverse Matrix Computing Library for Comutational Cost"""
         x_value = self.x_values[0][0]
         ds_dx = self.x_taylor_ds_dx(x)
+        dx_ds = ds_dx.inv()
         
-        ds1_dx1 = ds_dx[0, 0]
-        ds1_dx2 = ds_dx[0, 1]
-        ds2_dx1 = ds_dx[1, 0]
-        ds2_dx2 = ds_dx[1, 1]
+        linear_dx_ds = np.ndarray((2, 2), 'object')
+        for i in range(2):
+            for j in range(2):
+                coeff_dx_ds = np.ndarray((3,), 'object')
+                coeff_dx_ds[2] = dx_ds[i, j]
+                coeff_dx_ds[0] = diff(dx_ds[i, j], x[0])
+                coeff_dx_ds[1] = diff(dx_ds[i, j], x[1])
+                for k in range(3):
+                    coeff_dx_ds[k] = lambdify(x, coeff_dx_ds[k], 'numpy')
+                    coeff_dx_ds[k] = coeff_dx_ds[k](x_value[0], x_value[1])
+                linear_dx_ds[i, j] = coeff_dx_ds[2] \
+                                    + coeff_dx_ds[0]*x[0] \
+                                    + coeff_dx_ds[1]*x[1]
                
-        det = ds1_dx1*ds2_dx2 - ds1_dx2*ds2_dx1
-
-        coeff_0_dx1_ds1 = ds2_dx2/det
-        coeff_1_dx1_ds1 = ds2_dx2/det \
-                          *(diff(ds2_dx2, x[0])/ds2_dx2 - diff(det, x[0])/det)
-        coeff_2_dx1_ds1 = ds2_dx2/det \
-                          *(diff(ds2_dx2, x[1])/ds2_dx2 - diff(det, x[1])/det)
-        coeff_0_dx1_ds1 = lambdify(x, coeff_0_dx1_ds1, 'numpy')
-        coeff_1_dx1_ds1 = lambdify(x, coeff_1_dx1_ds1, 'numpy')
-        coeff_2_dx1_ds1 = lambdify(x, coeff_2_dx1_ds1, 'numpy')
-        coeff_0_dx1_ds1 = coeff_0_dx1_ds1(x_value[0], x_value[1])
-        coeff_1_dx1_ds1 = coeff_1_dx1_ds1(x_value[0], x_value[1])
-        coeff_2_dx1_ds1 = coeff_2_dx1_ds1(x_value[0], x_value[1])
+#        det = ds_dx[0, 0]*ds_dx[1, 1] - ds_dx[0, 1]*ds_dx[1, 0]
+#                          
+#        dx_ds_array = np.ndarray((2, 2), 'object')
+#        for i in range(2):
+#            for j in range(2):
+#                coeff_dx_ds = np.ndarray((3,), 'object')
+#                coeff_dx_ds[0] = ds_dx[i, j]/det \
+#                                 *(diff(ds_dx[i, j], x[0])/ds_dx[i, j] \
+#                                   - diff(det, x[0])/det)
+#                coeff_dx_ds[1] = ds_dx[i, j]/det \
+#                                 *(diff(ds_dx[i, j], x[1])/ds_dx[i, j] \
+#                                   - diff(det, x[1]))
+#                coeff_dx_ds[2] = ds_dx[i, j]/det
+#                for k in range(3):
+#                    coeff_dx_ds[k] = lambdify(x, coeff_dx_ds[k], 'numpy')
+#                    coeff_dx_ds[k] = coeff_dx_ds[k](x_value[0], x_value[1])
+#                dx_ds_array[i, j] = coeff_dx_ds[2] \
+#                                    + coeff_dx_ds[0]*x[0] \
+#                                    + coeff_dx_ds[1]*x[1]
         
-        coeff_0_dx1_ds2 = - ds1_dx2/det
-        coeff_1_dx1_ds2 = - ds1_dx2/det \
-                            *(diff(ds1_dx2, x[0])/ds1_dx2 - diff(det, x[0])/det)
-        coeff_2_dx1_ds2 = - ds1_dx2/det \
-                            *(diff(ds1_dx2, x[1])/ds1_dx2 - diff(det, x[1])/det)                    
-        coeff_0_dx1_ds2 = lambdify(x, coeff_0_dx1_ds2, 'numpy')
-        coeff_1_dx1_ds2 = lambdify(x, coeff_1_dx1_ds2, 'numpy')
-        coeff_2_dx1_ds2 = lambdify(x, coeff_2_dx1_ds2, 'numpy')
-        coeff_0_dx1_ds2 = coeff_0_dx1_ds2(x_value[0], x_value[1])
-        coeff_1_dx1_ds2 = coeff_1_dx1_ds2(x_value[0], x_value[1])
-        coeff_2_dx1_ds2 = coeff_2_dx1_ds2(x_value[0], x_value[1])
+        dx1_ds1 = linear_dx_ds[1, 1]
+        dx1_ds2 = - linear_dx_ds[0, 1]
+        dx2_ds1 = - linear_dx_ds[1, 0]
+        dx2_ds2 = linear_dx_ds[0, 0]
         
-        coeff_0_dx2_ds1 = - ds2_dx1/det
-        coeff_1_dx2_ds1 = - ds2_dx1/det \
-                            *(diff(ds2_dx1, x[0])/ds2_dx1 - diff(det, x[0])/det)
-        coeff_2_dx2_ds1 = - ds2_dx1/det \
-                            *(diff(ds2_dx1, x[1])/ds2_dx1 - diff(det, x[1])/det)
-        coeff_0_dx2_ds1 = lambdify(x, coeff_0_dx2_ds1, 'numpy')
-        coeff_1_dx2_ds1 = lambdify(x, coeff_1_dx2_ds1, 'numpy')
-        coeff_2_dx2_ds1 = lambdify(x, coeff_2_dx2_ds1, 'numpy')
-        coeff_0_dx2_ds1 = coeff_0_dx2_ds1(x_value[0], x_value[1])
-        coeff_1_dx2_ds1 = coeff_1_dx2_ds1(x_value[0], x_value[1])
-        coeff_2_dx2_ds1 = coeff_2_dx2_ds1(x_value[0], x_value[1])
-        
-        coeff_0_dx2_ds2 = ds1_dx1/det
-        coeff_1_dx2_ds2 = ds1_dx1/det \
-                          *(diff(ds1_dx1, x[0])/ds1_dx1 - diff(det, x[0])/det)
-        coeff_2_dx2_ds2 = ds1_dx1/det \
-                          *(diff(ds1_dx1, x[1])/ds1_dx1 - diff(det, x[1])/det)
-        coeff_0_dx2_ds2 = lambdify(x, coeff_0_dx2_ds2, 'numpy')
-        coeff_1_dx2_ds2 = lambdify(x, coeff_1_dx2_ds2, 'numpy')
-        coeff_2_dx2_ds2 = lambdify(x, coeff_2_dx2_ds2, 'numpy')
-        coeff_0_dx2_ds2 = coeff_0_dx2_ds2(x_value[0], x_value[1])
-        coeff_1_dx2_ds2 = coeff_1_dx2_ds2(x_value[0], x_value[1])
-        coeff_2_dx2_ds2 = coeff_2_dx2_ds2(x_value[0], x_value[1])
-        
-        modified_dx1_ds1 = coeff_0_dx1_ds1 \
-                           + coeff_1_dx1_ds1*x[0] \
-                           + coeff_2_dx1_ds1*x[1]
-        modified_dx1_ds2 = coeff_0_dx1_ds2 \
-                           + coeff_1_dx1_ds2*x[0] \
-                           + coeff_2_dx1_ds2*x[1]
-        modified_dx2_ds1 = coeff_0_dx2_ds1 \
-                           + coeff_1_dx2_ds1*x[0] \
-                           + coeff_2_dx2_ds1*x[1]
-        modified_dx2_ds2 = coeff_0_dx2_ds2 \
-                           + coeff_1_dx2_ds2*x[0] \
-                           + coeff_2_dx2_ds2*x[1]
-        
-        return sym.Matrix([[modified_dx1_ds1, modified_dx1_ds2],
-                           [modified_dx2_ds1, modified_dx2_ds2]
+        return sym.Matrix([[dx1_ds1, dx1_ds2],
+                           [dx2_ds1, dx2_ds2]
                            ])
   
     def modified_x_taylor_dg_ds1(self, x):
@@ -259,8 +231,8 @@ class Experiment(laplace_theory.Theory):
         """ dg12/ds1 = dx1/ds1*dg12/dx1 + dx2/ds1*dg12/dx2 """
         """ dg21/ds1 = dx1/ds1*dg21/dx1 + dx2/ds1*dg21/dx2 """
         """ dg22/ds1 = dx1/ds1*dg22/dx1 + dx2/ds1*dg22/dx2 """
-        modified_dx1_ds1 = self.modified_x_taylor_dx_ds(x)[0, 0]
-        modified_dx2_ds1 = self.modified_x_taylor_dx_ds(x)[1, 0]
+        linear_dx1_ds1 = self.linear_x_taylor_dx_ds(x)[0, 0]
+        linear_dx2_ds1 = self.linear_x_taylor_dx_ds(x)[1, 0]
         g11 = self.x_taylor_submetric(x)[0, 0]
         g12 = self.x_taylor_submetric(x)[0, 1]
         g21 = self.x_taylor_submetric(x)[1, 0]
@@ -275,16 +247,16 @@ class Experiment(laplace_theory.Theory):
         dg22_dx1 = diff(g22, x[0])
         dg22_dx2 = diff(g22, x[1])
         
-        dg11_ds1 = modified_dx1_ds1*dg11_dx1 + modified_dx2_ds1*dg11_dx2
-        dg12_ds1 = modified_dx1_ds1*dg12_dx1 + modified_dx2_ds1*dg12_dx2
-        dg21_ds1 = modified_dx1_ds1*dg21_dx1 + modified_dx2_ds1*dg21_dx2
-        dg22_ds1 = modified_dx1_ds1*dg22_dx1 + modified_dx2_ds1*dg22_dx2
+        dg11_ds1 = linear_dx1_ds1*dg11_dx1 + linear_dx2_ds1*dg11_dx2
+        dg12_ds1 = linear_dx1_ds1*dg12_dx1 + linear_dx2_ds1*dg12_dx2
+        dg21_ds1 = linear_dx1_ds1*dg21_dx1 + linear_dx2_ds1*dg21_dx2
+        dg22_ds1 = linear_dx1_ds1*dg22_dx1 + linear_dx2_ds1*dg22_dx2
         
         return sym.Matrix([[dg11_ds1, dg12_ds1],
                            [dg21_ds1, dg22_ds1]
                            ])
     
-    def term_modified_x_taylor_laplacian_u(self, s, x):
+    def term_linear_x_taylor_laplacian_u(self, s, x):
         """ 1st Order x_Taylor Series of Laplacian of u """
         """ 2*g11*g22*u,11 + (g11*g22,1 - g11,1*g22)*u,1 """
         x_value = self.x_values[0][0]
@@ -334,7 +306,7 @@ class Experiment(laplace_theory.Theory):
         f[3] = self.term_x_taylor_g12(x)[3]
         f[4] = self.term_x_taylor_g12(x)[4]
         f[5] = self.term_x_taylor_g12(x)[5]
-        f[6] = self.term_modified_x_taylor_laplacian_u(s, x)[0]
+        f[6] = self.term_linear_x_taylor_laplacian_u(s, x)[0]
         unknown_init = ((1 + random.uniform(-0.1, 0.1)/10)*a_theory[3],
                         (1 + random.uniform(-0.1, 0.1)/10)*a_theory[4],
                         (1 + random.uniform(-0.1, 0.1)/10)*a_theory[5],
@@ -343,7 +315,7 @@ class Experiment(laplace_theory.Theory):
                         (1 + random.uniform(-0.1, 0.1)/10)*b_theory[5]
                         )
         
-        f_array = np.ndarray((7,), 'object')
+        linear_f = np.ndarray((7,), 'object')
         for i in range(7):
             coeff_f = np.ndarray((7,), 'object')
             coeff_f[6] = f[i]
@@ -358,7 +330,7 @@ class Experiment(laplace_theory.Theory):
                                         unknown_init[4],
                                         unknown_init[5]
                                         )
-            f_array[i] = coeff_f[6] \
+            linear_f[i] = coeff_f[6] \
                          + coeff_f[0]*unknown[0] \
                          + coeff_f[1]*unknown[1] \
                          + coeff_f[2]*unknown[2] \
@@ -366,7 +338,7 @@ class Experiment(laplace_theory.Theory):
                          + coeff_f[4]*unknown[4] \
                          + coeff_f[5]*unknown[5]
                    
-        solution = nsolve(f_array, unknown, unknown_init)
+        solution = nsolve(linear_f, unknown, unknown_init)
         
 #        x_taylor_u = self.x_taylor_u(known, unknown, s, x)
 #        u_experiment = lambdify([unknown, x], x_taylor_u, 'numpy')
@@ -449,7 +421,7 @@ if __name__ == '__main__':
     [print(round(item, 4)) for item in g12]
     print('')
     
-    laplacian_u = experiment.term_modified_x_taylor_laplacian_u(s, x)
+    laplacian_u = experiment.term_linear_x_taylor_laplacian_u(s, x)
     laplacian_u = lambdify(unknown, laplacian_u, 'numpy')
     laplacian_u = laplacian_u(a_theory[3],
                               a_theory[4],

@@ -85,7 +85,9 @@ class Theory():
         s1_interval = self.s1_interval
         s2_interval = self.s2_interval
         number_of_points_on_line = self.number_of_points_on_line
-        temp = np.ndarray((number_of_points_on_line[1],number_of_points_on_line[0], 2))
+        temp = np.ndarray((number_of_points_on_line[1],
+                           number_of_points_on_line[0], 
+                           2))
         for i in range(number_of_points_on_line[0]):
             for j in range(number_of_points_on_line[1]):
                 temp[i][j][0] = s1_interval*(- j - 1)
@@ -96,7 +98,9 @@ class Theory():
         number_of_points_on_line = self.number_of_points_on_line
         s1 = self.s1(x)
         s2 = self.s2(x)
-        temp = np.ndarray((number_of_points_on_line[1],number_of_points_on_line[0], 2))
+        temp = np.ndarray((number_of_points_on_line[1],
+                           number_of_points_on_line[0], 
+                           2))
         for i in range(number_of_points_on_line[0]):
             for j in range(number_of_points_on_line[1]):
                 s_values = self.s_values()[i][j]
@@ -110,7 +114,9 @@ class Theory():
     def r_theory(self, x):
         number_of_points_on_line = self.number_of_points_on_line
         r = self.r()
-        temp = np.ndarray((number_of_points_on_line[1],number_of_points_on_line[0], 6))
+        temp = np.ndarray((number_of_points_on_line[1],
+                           number_of_points_on_line[0], 
+                           6))
         for i in range(number_of_points_on_line[0]):
             for j in range(number_of_points_on_line[1]):
                 temp[i][j][0] = r[0]
@@ -124,7 +130,9 @@ class Theory():
     def a_theory(self, x):
         number_of_points_on_line = self.number_of_points_on_line
         a = self.a(x)
-        temp = np.ndarray((number_of_points_on_line[1],number_of_points_on_line[0], 6))
+        temp = np.ndarray((number_of_points_on_line[1],
+                           number_of_points_on_line[0], 
+                           6))
         for i in range(number_of_points_on_line[0]):
             for j in range(number_of_points_on_line[1]):
                 x_value = self.x_values(x)[i][j]
@@ -144,9 +152,10 @@ class Theory():
     
     def b_theory(self, x):
         number_of_points_on_line = self.number_of_points_on_line
-#        number_of_points_on_line = Theory.number_of_points_on_line
         b = self.b(x)
-        temp = np.ndarray((number_of_points_on_line[1],number_of_points_on_line[0], 6))
+        temp = np.ndarray((number_of_points_on_line[1],
+                           number_of_points_on_line[0], 
+                           6))
         for i in range(number_of_points_on_line[0]):
             for j in range(number_of_points_on_line[1]):
                 x_value = self.x_values(x)[i][j]
