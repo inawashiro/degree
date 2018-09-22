@@ -327,13 +327,14 @@ class Experiment(laplace_theory.Theory):
         a_theory = self.a_theory[0][0]
         b_theory = self.b_theory[0][0]
         
-        f0 = self.term_x_taylor_g12(x)[0]
-        f1 = self.term_x_taylor_g12(x)[1]
-        f2 = self.term_x_taylor_g12(x)[2]
-        f3 = self.term_x_taylor_g12(x)[3]
-        f4 = self.term_x_taylor_g12(x)[4]
-        f5 = self.term_x_taylor_g12(x)[5]
-        f6 = self.term_modified_x_taylor_laplacian_u(s, x)[0]
+        f = np.ndarray((7, ), 'object')
+        f[0] = self.term_x_taylor_g12(x)[0]
+        f[1] = self.term_x_taylor_g12(x)[1]
+        f[2] = self.term_x_taylor_g12(x)[2]
+        f[3] = self.term_x_taylor_g12(x)[3]
+        f[4] = self.term_x_taylor_g12(x)[4]
+        f[5] = self.term_x_taylor_g12(x)[5]
+        f[6] = self.term_modified_x_taylor_laplacian_u(s, x)[0]
         unknown_init = ((1 + random.uniform(-0.1, 0.1)/10)*a_theory[3],
                         (1 + random.uniform(-0.1, 0.1)/10)*a_theory[4],
                         (1 + random.uniform(-0.1, 0.1)/10)*a_theory[5],
@@ -342,155 +343,30 @@ class Experiment(laplace_theory.Theory):
                         (1 + random.uniform(-0.1, 0.1)/10)*b_theory[5]
                         )
         
-        coeff_f = np.ndarray((7,), 'object')
-        coeff_f[6] = f0
-        for i in range(6):
-            coeff_f[i] = diff(f0, unknown[i])
+        f_array = np.ndarray((7,), 'object')
         for i in range(7):
-            coeff_f[i] = lambdify(unknown, coeff_f[i], 'numpy')
-            coeff_f[i] = coeff_f[i](unknown_init[0],
-                                    unknown_init[1],
-                                    unknown_init[2],
-                                    unknown_init[3],
-                                    unknown_init[4],
-                                    unknown_init[5]
-                                    )
-        f0 = coeff_f[6] \
-             + coeff_f[0]*unknown[0] \
-             + coeff_f[1]*unknown[1] \
-             + coeff_f[2]*unknown[2] \
-             + coeff_f[3]*unknown[3] \
-             + coeff_f[4]*unknown[4] \
-             + coeff_f[5]*unknown[5]  
-             
-        coeff_f = np.ndarray((7,), 'object')
-        coeff_f[6] = f1
-        for i in range(6):
-            coeff_f[i] = diff(f1, unknown[i])
-        for i in range(7):
-            coeff_f[i] = lambdify(unknown, coeff_f[i], 'numpy')
-            coeff_f[i] = coeff_f[i](unknown_init[0],
-                                    unknown_init[1],
-                                    unknown_init[2],
-                                    unknown_init[3],
-                                    unknown_init[4],
-                                    unknown_init[5]
-                                    )
-        f1 = coeff_f[6] \
-             + coeff_f[0]*unknown[0] \
-             + coeff_f[1]*unknown[1] \
-             + coeff_f[2]*unknown[2] \
-             + coeff_f[3]*unknown[3] \
-             + coeff_f[4]*unknown[4] \
-             + coeff_f[5]*unknown[5]  
-        
-        coeff_f = np.ndarray((7,), 'object')
-        coeff_f[6] = f2
-        for i in range(6):
-            coeff_f[i] = diff(f2, unknown[i])
-        for i in range(7):
-            coeff_f[i] = lambdify(unknown, coeff_f[i], 'numpy')
-            coeff_f[i] = coeff_f[i](unknown_init[0],
-                                    unknown_init[1],
-                                    unknown_init[2],
-                                    unknown_init[3],
-                                    unknown_init[4],
-                                    unknown_init[5]
-                                    )
-        f2 = coeff_f[6] \
-             + coeff_f[0]*unknown[0] \
-             + coeff_f[1]*unknown[1] \
-             + coeff_f[2]*unknown[2] \
-             + coeff_f[3]*unknown[3] \
-             + coeff_f[4]*unknown[4] \
-             + coeff_f[5]*unknown[5]  
-             
-        coeff_f = np.ndarray((7,), 'object')
-        coeff_f[6] = f3
-        for i in range(6):
-            coeff_f[i] = diff(f3, unknown[i])
-        for i in range(7):
-            coeff_f[i] = lambdify(unknown, coeff_f[i], 'numpy')
-            coeff_f[i] = coeff_f[i](unknown_init[0],
-                                    unknown_init[1],
-                                    unknown_init[2],
-                                    unknown_init[3],
-                                    unknown_init[4],
-                                    unknown_init[5]
-                                    )
-        f3 = coeff_f[6] \
-             + coeff_f[0]*unknown[0] \
-             + coeff_f[1]*unknown[1] \
-             + coeff_f[2]*unknown[2] \
-             + coeff_f[3]*unknown[3] \
-             + coeff_f[4]*unknown[4] \
-             + coeff_f[5]*unknown[5]  
-             
-        coeff_f = np.ndarray((7,), 'object')
-        coeff_f[6] = f4
-        for i in range(6):
-            coeff_f[i] = diff(f4, unknown[i])
-        for i in range(7):
-            coeff_f[i] = lambdify(unknown, coeff_f[i], 'numpy')
-            coeff_f[i] = coeff_f[i](unknown_init[0],
-                                    unknown_init[1],
-                                    unknown_init[2],
-                                    unknown_init[3],
-                                    unknown_init[4],
-                                    unknown_init[5]
-                                    )
-        f4 = coeff_f[6] \
-             + coeff_f[0]*unknown[0] \
-             + coeff_f[1]*unknown[1] \
-             + coeff_f[2]*unknown[2] \
-             + coeff_f[3]*unknown[3] \
-             + coeff_f[4]*unknown[4] \
-             + coeff_f[5]*unknown[5]  
-        
-        coeff_f = np.ndarray((7,), 'object')
-        coeff_f[6] = f5
-        for i in range(6):
-            coeff_f[i] = diff(f5, unknown[i])
-        for i in range(7):
-            coeff_f[i] = lambdify(unknown, coeff_f[i], 'numpy')
-            coeff_f[i] = coeff_f[i](unknown_init[0],
-                                    unknown_init[1],
-                                    unknown_init[2],
-                                    unknown_init[3],
-                                    unknown_init[4],
-                                    unknown_init[5]
-                                    )
-        f5 = coeff_f[6] \
-             + coeff_f[0]*unknown[0] \
-             + coeff_f[1]*unknown[1] \
-             + coeff_f[2]*unknown[2] \
-             + coeff_f[3]*unknown[3] \
-             + coeff_f[4]*unknown[4] \
-             + coeff_f[5]*unknown[5]  
-             
-        coeff_f = np.ndarray((7,), 'object')
-        coeff_f[6] = f6
-        for i in range(6):
-            coeff_f[i] = diff(f6, unknown[i])
-        for i in range(7):
-            coeff_f[i] = lambdify(unknown, coeff_f[i], 'numpy')
-            coeff_f[i] = coeff_f[i](unknown_init[0],
-                                    unknown_init[1],
-                                    unknown_init[2],
-                                    unknown_init[3],
-                                    unknown_init[4],
-                                    unknown_init[5]
-                                    )
-        f6 = coeff_f[6] \
-             + coeff_f[0]*unknown[0] \
-             + coeff_f[1]*unknown[1] \
-             + coeff_f[2]*unknown[2] \
-             + coeff_f[3]*unknown[3] \
-             + coeff_f[4]*unknown[4] \
-             + coeff_f[5]*unknown[5]  
-
-        f = (f0, f1, f2, f3, f4, f5, f6)
-        solution = nsolve(f, unknown, unknown_init)
+            coeff_f = np.ndarray((7,), 'object')
+            coeff_f[6] = f[i]
+            for j in range(6):
+                coeff_f[j] = diff(f[i], unknown[j])
+            for j in range(7):
+                coeff_f[j] = lambdify(unknown, coeff_f[j], 'numpy')
+                coeff_f[j] = coeff_f[j](unknown_init[0],
+                                        unknown_init[1],
+                                        unknown_init[2],
+                                        unknown_init[3],
+                                        unknown_init[4],
+                                        unknown_init[5]
+                                        )
+            f_array[i] = coeff_f[6] \
+                         + coeff_f[0]*unknown[0] \
+                         + coeff_f[1]*unknown[1] \
+                         + coeff_f[2]*unknown[2] \
+                         + coeff_f[3]*unknown[3] \
+                         + coeff_f[4]*unknown[4] \
+                         + coeff_f[5]*unknown[5]
+                   
+        solution = nsolve(f_array, unknown, unknown_init)
         
 #        x_taylor_u = self.x_taylor_u(known, unknown, s, x)
 #        u_experiment = lambdify([unknown, x], x_taylor_u, 'numpy')
