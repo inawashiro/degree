@@ -207,16 +207,12 @@ class Experiment(laplace_theory.Theory):
 #                for k in range(len(x_value) + 1):
 #                    coeff_dx_ds[k] = lambdify(x, coeff_dx_ds[k], 'numpy')
 #                    coeff_dx_ds[k] = coeff_dx_ds[k](x_value[0], x_value[1])
-#                linear_dx_ds[i, j] = coeff_dx_ds[2] \
-#                                     + coeff_dx_ds[0]*x[0] \
-#                                     + coeff_dx_ds[1]*x[1]
-#                                     
-#        dx1_ds1 = linear_dx_ds[0, 0]
-#        dx1_ds2 = linear_dx_ds[0, 1]
-#        dx2_ds1 = linear_dx_ds[1, 0]
-#        dx2_ds2 = linear_dx_ds[1, 1]
+#                dx1_ds1 = linear_dx_ds[0, 0]
+#                dx1_ds2 = linear_dx_ds[0, 1]
+#                dx2_ds1 = linear_dx_ds[1, 0]
+#                dx2_ds2 = linear_dx_ds[1, 1]
                
-        det = ds_dx[0, 0]*ds_dx[1, 1] - ds_dx[0, 1]*ds_dx[1, 0]              
+        det = ds_dx[0, 0]*ds_dx[1, 1] - ds_dx[0, 1]*ds_dx[1, 0]
         linear_dx_ds = np.ndarray((2, 2), 'object')
         for i in range(2):
             for j in range(2):
@@ -232,9 +228,8 @@ class Experiment(laplace_theory.Theory):
                     coeff_dx_ds[k] = lambdify(x, coeff_dx_ds[k], 'numpy')
                     coeff_dx_ds[k] = coeff_dx_ds[k](x_value[0], x_value[1])
                 linear_dx_ds[i, j] = coeff_dx_ds[2] \
-                                     + coeff_dx_ds[0]*x[0] \
-                                     + coeff_dx_ds[1]*x[1]
-        
+                                    + coeff_dx_ds[0]*x[0] \
+                                    + coeff_dx_ds[1]*x[1]
         dx1_ds1 = linear_dx_ds[1, 1]
         dx1_ds2 = - linear_dx_ds[0, 1]
         dx2_ds1 = - linear_dx_ds[1, 0]
@@ -399,42 +394,30 @@ if __name__ == '__main__':
     print('')
     
     
-#    # Verification
-#    g12 = experiment.term_linear_x_taylor_g12(x)
-#    g12 = lambdify(unknown, g12, 'numpy')
-#    g12 = g12(a_theory[3],
-#              a_theory[4],
-#              a_theory[5],
-#              b_theory[3],
-#              b_theory[4],
-#              b_theory[5])
-##    g12 = g12(unknown_theory[0],
-##              unknown_theory[1],
-##              unknown_theory[2],
-##              unknown_theory[3],
-##              unknown_theory[4],
-##              unknown_theory[5])
-#    print('Verificaiton of g12')
-#    [print(round(item, 4)) for item in g12]
-#    print('')
-#    
-#    laplacian_u = experiment.term_linear_x_taylor_laplacian_u(s, x)
-#    laplacian_u = lambdify(unknown, laplacian_u, 'numpy')
-#    laplacian_u = laplacian_u(a_theory[3],
-#                              a_theory[4],
-#                              a_theory[5],
-#                              b_theory[3],
-#                              b_theory[4],
-#                              b_theory[5])
-##    laplacian_u = laplacian_u(unknown_theory[0],
-##                              unknown_theory[1],
-##                              unknown_theory[2],
-##                              unknown_theory[3],
-##                              unknown_theory[4],
-##                              unknown_theory[5])
-#    print('Verificaiton of Laplacian u')
-#    [print(round(item, 4)) for item in laplacian_u]
-#    print('')
+    # Verification
+    g12 = experiment.term_linear_x_taylor_g12(x)
+    g12 = lambdify(unknown, g12, 'numpy')
+    g12 = g12(a_theory[3],
+              a_theory[4],
+              a_theory[5],
+              b_theory[3],
+              b_theory[4],
+              b_theory[5])
+    print('Verificaiton of g12')
+    [print(round(item, 4)) for item in g12]
+    print('')
+    
+    laplacian_u = experiment.term_linear_x_taylor_laplacian_u(s, x)
+    laplacian_u = lambdify(unknown, laplacian_u, 'numpy')
+    laplacian_u = laplacian_u(a_theory[3],
+                              a_theory[4],
+                              a_theory[5],
+                              b_theory[3],
+                              b_theory[4],
+                              b_theory[5])
+    print('Verificaiton of Laplacian u')
+    [print(round(item, 4)) for item in laplacian_u]
+    print('')
 
     t1 = time.time()
     
