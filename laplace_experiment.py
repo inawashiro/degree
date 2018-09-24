@@ -196,47 +196,47 @@ class Experiment(laplace_theory.Theory):
         x_value = self.x_values[0][0]
         ds_dx = self.x_taylor_ds_dx(x)
         
-        dx_ds = ds_dx.inv()
-        linear_dx_ds = np.ndarray((2, 2), 'object')
-        for i in range(2):
-            for j in range(2):
-                coeff_dx_ds = np.ndarray((3,), 'object')
-                coeff_dx_ds[0] = diff(dx_ds[i, j], x[0])
-                coeff_dx_ds[1] = diff(dx_ds[i, j], x[1])
-                coeff_dx_ds[2] = dx_ds[i, j]
-                for k in range(len(x_value) + 1):
-                    coeff_dx_ds[k] = lambdify(x, coeff_dx_ds[k], 'numpy')
-                    coeff_dx_ds[k] = coeff_dx_ds[k](x_value[0], x_value[1])
-                linear_dx_ds[i, j] = coeff_dx_ds[2] \
-                                     + coeff_dx_ds[0]*x[0] \
-                                     + coeff_dx_ds[1]*x[1]
-        dx1_ds1 = linear_dx_ds[0, 0]
-        dx1_ds2 = linear_dx_ds[0, 1]
-        dx2_ds1 = linear_dx_ds[1, 0]
-        dx2_ds2 = linear_dx_ds[1, 1]
-               
-#        det = ds_dx[0, 0]*ds_dx[1, 1] - ds_dx[0, 1]*ds_dx[1, 0]
+#        dx_ds = ds_dx.inv()
 #        linear_dx_ds = np.ndarray((2, 2), 'object')
 #        for i in range(2):
 #            for j in range(2):
 #                coeff_dx_ds = np.ndarray((3,), 'object')
-#                coeff_dx_ds[0] = ds_dx[i, j]/det \
-#                                 *(diff(ds_dx[i, j], x[0])/ds_dx[i, j] \
-#                                   - diff(det, x[0])/det)
-#                coeff_dx_ds[1] = ds_dx[i, j]/det \
-#                                 *(diff(ds_dx[i, j], x[1])/ds_dx[i, j] \
-#                                   - diff(det, x[1]))
-#                coeff_dx_ds[2] = ds_dx[i, j]/det
-#                for k in range(3):
+#                coeff_dx_ds[0] = diff(dx_ds[i, j], x[0])
+#                coeff_dx_ds[1] = diff(dx_ds[i, j], x[1])
+#                coeff_dx_ds[2] = dx_ds[i, j]
+#                for k in range(len(x_value) + 1):
 #                    coeff_dx_ds[k] = lambdify(x, coeff_dx_ds[k], 'numpy')
 #                    coeff_dx_ds[k] = coeff_dx_ds[k](x_value[0], x_value[1])
-#                linear_dx_ds[i, j] = coeff_dx_ds[2] \
-#                                    + coeff_dx_ds[0]*x[0] \
-#                                    + coeff_dx_ds[1]*x[1]
-#        dx1_ds1 = linear_dx_ds[1, 1]
-#        dx1_ds2 = - linear_dx_ds[0, 1]
-#        dx2_ds1 = - linear_dx_ds[1, 0]
-#        dx2_ds2 = linear_dx_ds[0, 0]
+#                linear_dx_ds[i, j] = coeff_dx_ds[0]*x[0] \
+#                                     + coeff_dx_ds[1]*x[1] \
+#                                     + coeff_dx_ds[2] \
+#        dx1_ds1 = linear_dx_ds[0, 0]
+#        dx1_ds2 = linear_dx_ds[0, 1]
+#        dx2_ds1 = linear_dx_ds[1, 0]
+#        dx2_ds2 = linear_dx_ds[1, 1]
+               
+        det = ds_dx[0, 0]*ds_dx[1, 1] - ds_dx[0, 1]*ds_dx[1, 0]
+        linear_dx_ds = np.ndarray((2, 2), 'object')
+        for i in range(2):
+            for j in range(2):
+                coeff_dx_ds = np.ndarray((3,), 'object')
+                coeff_dx_ds[0] = ds_dx[i, j]/det \
+                                 *(diff(ds_dx[i, j], x[0])/ds_dx[i, j] \
+                                   - diff(det, x[0])/det)
+                coeff_dx_ds[1] = ds_dx[i, j]/det \
+                                 *(diff(ds_dx[i, j], x[1])/ds_dx[i, j] \
+                                   - diff(det, x[1]))
+                coeff_dx_ds[2] = ds_dx[i, j]/det
+                for k in range(len(x_value) + 1):
+                    coeff_dx_ds[k] = lambdify(x, coeff_dx_ds[k], 'numpy')
+                    coeff_dx_ds[k] = coeff_dx_ds[k](x_value[0], x_value[1])
+                linear_dx_ds[i, j] = coeff_dx_ds[0]*x[0] \
+                                     + coeff_dx_ds[1]*x[1] \
+                                     + coeff_dx_ds[2] 
+        dx1_ds1 = linear_dx_ds[1, 1]
+        dx1_ds2 = - linear_dx_ds[0, 1]
+        dx2_ds1 = - linear_dx_ds[1, 0]
+        dx2_ds2 = linear_dx_ds[0, 0]
         
         return sym.Matrix([[dx1_ds1, dx1_ds2],
                            [dx2_ds1, dx2_ds2]
@@ -318,35 +318,41 @@ class Experiment(laplace_theory.Theory):
                         (1 + random.uniform(-0.0, 0.0)/10)*b_theory[5]
                         )
         
-        linear_f = np.ndarray((6,), 'object')
-        for i in range(6):
-            coeff_f = np.ndarray((len(unknown) + 1,), 'object')
-            coeff_f[0] = diff(f[i], unknown[0])
-            coeff_f[1] = diff(f[i], unknown[1])
-            coeff_f[2] = diff(f[i], unknown[2])
-            coeff_f[3] = diff(f[i], unknown[3])
-            coeff_f[4] = diff(f[i], unknown[4])
-            coeff_f[5] = diff(f[i], unknown[5])
-            coeff_f[6] = f[i]
-            for j in range(len(unknown) + 1):
-                coeff_f[j] = lambdify(unknown, coeff_f[j], 'numpy')
-                coeff_f[j] = coeff_f[j](unknown_init[0],
-                                        unknown_init[1],
-                                        unknown_init[2],
-                                        unknown_init[3],
-                                        unknown_init[4],
-                                        unknown_init[5]
-                                        )
-            linear_f[i] = coeff_f[6] \
-                         + coeff_f[0]*unknown[0] \
-                         + coeff_f[1]*unknown[1] \
-                         + coeff_f[2]*unknown[2] \
-                         + coeff_f[3]*unknown[3] \
-                         + coeff_f[4]*unknown[4] \
-                         + coeff_f[5]*unknown[5]
-                   
-        solution = nsolve(linear_f, unknown, unknown_init)
-
+        for i in range(1):
+            linear_f = np.ndarray((len(unknown),), 'object')
+            for j in range(len(unknown)):
+                coeff_f = np.ndarray((len(unknown) + 1,), 'object')
+                coeff_f[0] = diff(f[j], unknown[0])
+                coeff_f[1] = diff(f[j], unknown[1])
+                coeff_f[2] = diff(f[j], unknown[2])
+                coeff_f[3] = diff(f[j], unknown[3])
+                coeff_f[4] = diff(f[j], unknown[4])
+                coeff_f[5] = diff(f[j], unknown[5])
+                coeff_f[6] = f[j]
+                for k in range(len(unknown) + 1):
+                    coeff_f[k] = lambdify(unknown, coeff_f[k], 'numpy')
+                    coeff_f[k] = coeff_f[k](unknown_init[0],
+                                            unknown_init[1],
+                                            unknown_init[2],
+                                            unknown_init[3],
+                                            unknown_init[4],
+                                            unknown_init[5]
+                                            )
+                linear_f[j] = coeff_f[0]*unknown[0] \
+                              + coeff_f[1]*unknown[1] \
+                              + coeff_f[2]*unknown[2] \
+                              + coeff_f[3]*unknown[3] \
+                              + coeff_f[4]*unknown[4] \
+                              + coeff_f[5]*unknown[5] \
+                              + coeff_f[6]     
+            solution = nsolve(linear_f, unknown, unknown_init)
+            unknown_init = (solution[0],
+                            solution[1],
+                            solution[2],
+                            solution[3],
+                            solution[4],
+                            solution[5],)
+        
         return solution
 
         
