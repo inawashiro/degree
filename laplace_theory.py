@@ -40,8 +40,8 @@ class Theory():
     
     def __init__(self):
         s_interval = np.ndarray((2,))
-        s_interval[0] = 12.5
-        s_interval[1] = 12.5
+        s_interval[0] = 2.5
+        s_interval[1] = 2.5
         self.s_interval = s_interval
     
         number_of_points_on_line = np.ndarray((2,), 'int')
@@ -230,9 +230,6 @@ if __name__ == '__main__':
     print('x_values = ', theory.x_values(x))
     print('')
     
-    print('r_theory = ', theory.r_theory(x))
-    print('')
-    
     print('a_theory = ', theory.a_theory(x))
     print('')
     
@@ -258,8 +255,6 @@ if __name__ == '__main__':
     t1 = time.time()
     
     print('Elapsed Time = ', round(t1 - t0), '(s)')
-    
-    
     
     
     
