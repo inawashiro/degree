@@ -15,7 +15,7 @@ import numpy as np
 
 # For Symbolic Notation
 import sympy as sym
-from sympy import Symbol, diff, Matrix, simplify, factor, S, Poly, nsolve, lambdify
+from sympy import Symbol, diff, nsolve, lambdify
 sym.init_printing()
 
 # For Symbolic Expression Displaying
@@ -32,12 +32,13 @@ import time
 class Experiment(laplace_theory.Theory):
     """ Tayolr Series Expression of Parameters """
     
-    s = [Symbol('s1', real = True), 
-         Symbol('s2', real = True)
-         ]
-    x = [Symbol('x1', real = True), 
-         Symbol('x2', real = True)
-         ]
+    s = np.ndarray((2,), 'object')
+    s[0] = Symbol('s1', real = True)
+    s[1] = Symbol('s2', real = True)
+    
+    x = np.ndarray((2,), 'object')
+    x[0] = Symbol('x1', real = True)
+    x[1] = Symbol('x2', real = True)
     
     def __init__(self, s, x):
         self.theory = laplace_theory.Theory()
@@ -48,26 +49,29 @@ class Experiment(laplace_theory.Theory):
         self.a_theory = self.theory.a_theory(x)
         self.b_theory = self.theory.b_theory(x)
         
-        self.known = [r_theory[0],
-                      r_theory[1],
-                      r_theory[2],
-                      r_theory[3],
-                      r_theory[4],
-                      r_theory[5],
-                      a_theory[0],
-                      a_theory[1],
-                      a_theory[2],
-                      b_theory[0],
-                      b_theory[1],
-                      b_theory[2]
-                      ]
-        self.unknown = [Symbol('a11', real = True),
-                        Symbol('a12', real = True),
-                        Symbol('a22', real = True),
-                        Symbol('b11', real = True),
-                        Symbol('b12', real = True),
-                        Symbol('b22', real = True)
-                        ]
+        known = np.ndarray((12,))
+        known[0] = r_theory[0]
+        known[1] = r_theory[1]
+        known[2] = r_theory[2]
+        known[3] = r_theory[3]
+        known[4] = r_theory[4]
+        known[5] = r_theory[5]
+        known[6] = a_theory[0]
+        known[7] = a_theory[1]
+        known[8] = a_theory[2]
+        known[9] = b_theory[0]
+        known[10] = b_theory[1]
+        known[11] = b_theory[2]
+        self.known = known
+        
+        unknown = np.ndarray((6,), 'object')
+        unknown[0] = Symbol('a11', real = True)
+        unknown[1] = Symbol('a12', real = True)
+        unknown[2] = Symbol('a22', real = True)
+        unknown[3] = Symbol('b11', real = True)
+        unknown[4] = Symbol('b12', real = True)
+        unknown[5] = Symbol('b22', real = True)
+        self.unknown = unknown
 
     def s_taylor_u(self, s):
         """ 2nd Order s_Taylor Series of u """
@@ -235,25 +239,6 @@ class Experiment(laplace_theory.Theory):
         x_value = self.x_values[0][0]
         ds_dx = self.x_taylor_ds_dx(x)
         
-#        dx_ds = ds_dx.inv()
-#        linear_dx_ds = np.ndarray((2, 2), 'object')
-#        for i in range(2):
-#            for j in range(2):
-#                coeff_dx_ds = np.ndarray((3,), 'object')
-#                coeff_dx_ds[0] = diff(dx_ds[i, j], x[0])
-#                coeff_dx_ds[1] = diff(dx_ds[i, j], x[1])
-#                coeff_dx_ds[2] = dx_ds[i, j]
-#                for k in range(len(x_value) + 1):
-#                    coeff_dx_ds[k] = lambdify(x, coeff_dx_ds[k], 'numpy')
-#                    coeff_dx_ds[k] = coeff_dx_ds[k](x_value[0], x_value[1])
-#                linear_dx_ds[i][j] = coeff_dx_ds[0]*x[0] \
-#                                     + coeff_dx_ds[1]*x[1] \
-#                                     + coeff_dx_ds[2] 
-#        dx1_ds1 = linear_dx_ds[0][0]
-#        dx1_ds2 = linear_dx_ds[0][1]
-#        dx2_ds1 = linear_dx_ds[1][0]
-#        dx2_ds2 = linear_dx_ds[1][1]
-        
         det = ds_dx[0][0]*ds_dx[1][1] - ds_dx[0][1]*ds_dx[1][0]
         linear_dx_ds = np.ndarray((2, 2), 'object')
         for i in range(2):
@@ -402,20 +387,21 @@ if __name__ == '__main__':
     
     t0 = time.time()
     
-    s = [Symbol('s1', real = True), 
-         Symbol('s2', real = True)
-         ]
-    x = [Symbol('x1', real = True), 
-         Symbol('x2', real = True)
-         ]
-    unknown = [Symbol('a11', real = True),
-               Symbol('a12', real = True),
-               Symbol('a22', real = True),
-               Symbol('b11', real = True),
-               Symbol('b12', real = True),
-               Symbol('b22', real = True)
-               ]
- 
+    s = np.ndarray((2,), 'object')
+    s[0] = Symbol('s1', real = True)
+    s[1] = Symbol('s2', real = True)
+    
+    x = np.ndarray((2,), 'object')
+    x[0] = Symbol('x1', real = True)
+    x[1] = Symbol('x2', real = True)
+
+    unknown = np.ndarray((6,), 'object')
+    unknown[0] = Symbol('a11', real = True)
+    unknown[1] = Symbol('a12', real = True)
+    unknown[2] = Symbol('a22', real = True)
+    unknown[3] = Symbol('b11', real = True)
+    unknown[4] = Symbol('b12', real = True)
+    unknown[5] = Symbol('b22', real = True)
     
     theory = laplace_theory.Theory()
     x_values = theory.x_values(x)[0][0]
@@ -427,12 +413,13 @@ if __name__ == '__main__':
     print(x_values)
     print('')
     
-    unknown_theory = [a_theory[3], 
-                      a_theory[4],
-                      a_theory[5],
-                      b_theory[3],
-                      b_theory[4],
-                      b_theory[5]] 
+    unknown_theory = np.ndarray((6,))
+    unknown_theory[0] = a_theory[3]
+    unknown_theory[1] = a_theory[4]
+    unknown_theory[2] = a_theory[5]
+    unknown_theory[3] = b_theory[3]
+    unknown_theory[4] = b_theory[4]
+    unknown_theory[5] = b_theory[5]
     print('(a_theory, b_theory) = ')
     [print(round(item, 4)) for item in unknown_theory]
     print('')
