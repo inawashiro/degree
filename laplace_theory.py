@@ -20,8 +20,8 @@ import sympy as sym
 from sympy import Symbol, diff, nsolve, lambdify
 sym.init_printing()
 
-## For Symbolic Expression Displaying
-#from IPython.display import display
+# For Symbolic Expression Displaying
+from IPython.display import display
 
 # For Getting Access to Another Directory
 import os
@@ -227,13 +227,16 @@ if __name__ == '__main__':
     x[0] = Symbol('x1', real = True)
     x[1] = Symbol('x2', real = True)
 
-    print('x_values = ', theory.x_values(x))
+    print('x_values = ')
+    print(theory.x_values(x))
     print('')
     
-    print('a_theory = ', theory.a_theory(x))
+    print('a_theory = ')
+    print(theory.a_theory(x))
     print('')
     
-    print('b_theory = ', theory.b_theory(x))
+    print('b_theory = ')
+    print(theory.b_theory(x))
     print('')
     
     
