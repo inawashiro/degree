@@ -60,10 +60,11 @@ class Theory():
     def s2(self, x):
         return -x[1]**3 + 3*x[0]**2*x[1]
 
-    def r(self):
+    def r(self, x):
         """ Theoretical Values of Taylor Series of u w.r.t. x """
-        r = np.ndarray((6,))
-        r[0] = 0
+        u = self.u(x)
+        r = np.ndarray((6,), 'object')
+        r[0] = u
         r[1] = 1
         r[2] = 0
         r[3] = 0
@@ -130,14 +131,16 @@ class Theory():
     
     def r_theory(self, x):
         number_of_points_on_line = self.number_of_points_on_line
-        r = self.r()
+        r = self.r(x)
         r_theory = np.ndarray((number_of_points_on_line[1],
                                number_of_points_on_line[0], 
                                6))
         for i in range(number_of_points_on_line[0]):
             for j in range(number_of_points_on_line[1]):
+                x_value = self.x_values(x)[i][j]
                 for k in range(len(r)):
-                    r_theory[i][j][k] = r[k]    
+                    temp = lambdify(x, r[k], 'numpy')
+                    r_theory[i][j][k] = temp(x_value[0], x_value[1]) 
                 
         return r_theory
     
@@ -229,6 +232,10 @@ if __name__ == '__main__':
 
     print('x_values = ')
     print(theory.x_values(x))
+    print('')
+    
+    print('r_theory = ')
+    print(theory.r_theory(x))
     print('')
     
     print('a_theory = ')

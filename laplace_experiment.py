@@ -346,12 +346,12 @@ class Experiment(laplace_theory.Theory):
         f[4] = linear_laplacian_u[1]
         f[5] = linear_laplacian_u[2]
         
-        unknown_init = ((1 + random.uniform(-100.0, 100.0)/100)*a_theory[3],
-                        (1 + random.uniform(-100.0, 100.0)/100)*a_theory[4],
-                        (1 + random.uniform(-100.0, 100.0)/100)*a_theory[5],
-                        (1 + random.uniform(-100.0, 100.0)/100)*b_theory[3],
-                        (1 + random.uniform(-100.0, 100.0)/100)*b_theory[4],
-                        (1 + random.uniform(-100.0, 100.0)/100)*b_theory[5]
+        unknown_init = ((1 + random.uniform(-0.0, 0.0)/100)*a_theory[3],
+                        (1 + random.uniform(-0.0, 0.0)/100)*a_theory[4],
+                        (1 + random.uniform(-0.0, 0.0)/100)*a_theory[5],
+                        (1 + random.uniform(-0.0, 0.0)/100)*b_theory[3],
+                        (1 + random.uniform(-0.0, 0.0)/100)*b_theory[4],
+                        (1 + random.uniform(-0.0, 0.0)/100)*b_theory[5]
                         )
         
         linear_f = np.ndarray((len(f),), 'object')
@@ -455,6 +455,11 @@ if __name__ == '__main__':
     
     # Verification
     g12 = experiment.term_linear_x_taylor_g12(x)
+    
+    print('g12 = ')
+    [display(item) for item in g12]
+    print('')
+    
     g12 = lambdify(unknown, g12, 'numpy')
     g12 = g12(a_theory[3],
               a_theory[4],
