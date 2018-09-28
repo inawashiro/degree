@@ -55,15 +55,18 @@ class Theory():
 
     def s1(self, x):
         s1 = x[0]**3 - 3*x[0]*x[1]**2
+        
         return s1
 
     def s2(self, x):
         s2 = -x[1]**3 + 3*x[0]**2*x[1]
+        
         return s2
 
     def u(self, s):
         """ One of the Polynomial Solutions of Laplace Equation """
         u = s[0]
+        
         return u
 
     def a(self, x):
@@ -190,7 +193,11 @@ class Plot(Theory):
         self.theory = Theory()
     
     def u_plot(self, x):
-        u = self.theory.u(x)
+        u = self.theory.u(s)
+        s1 = self.s1(x)
+        s2 = self.s2(x)
+        u = lambdify(s, u, 'numpy')
+        u = u(s1, s2)
         
         fig = plt.figure()
         ax = fig.gca(projection = '3d')

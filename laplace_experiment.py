@@ -456,9 +456,9 @@ if __name__ == '__main__':
     # Verification
     g12 = experiment.term_linear_x_taylor_g12(x)
     
-    print('g12 = ')
-    [display(item) for item in g12]
-    print('')
+#    print('g12 = ')
+#    [display(item) for item in g12]
+#    print('')
     
     g12 = lambdify(unknown, g12, 'numpy')
     g12 = g12(a_theory[3],
