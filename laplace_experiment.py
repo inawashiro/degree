@@ -153,16 +153,6 @@ class Experiment(laplace_theory.Theory):
             for j in range(2):
                 ddu_dds[i][j] = lambdify(s, ddu_dds[i][j], 'numpy')
                 ddu_dds[i][j] = ddu_dds[i][j](s1, s2)       
-        ddu_dds1 = ddu_dds[0][0]
-        ddu_ds1ds2 = ddu_dds[0][1]
-        ddu_ds2ds1 = ddu_dds[1][0]
-        ddu_dds2 = ddu_dds[1][1]
-        
-        ddu_dds = np.ndarray((2, 2,), 'object')
-        ddu_dds[0][0] = ddu_dds1
-        ddu_dds[0][1] = ddu_ds1ds2
-        ddu_dds[1][0] = ddu_ds2ds1
-        ddu_dds[1][1] = ddu_dds2        
         
         return ddu_dds
        
@@ -171,17 +161,12 @@ class Experiment(laplace_theory.Theory):
         s1 = self.x_taylor_s1(x)
         s2 = self.x_taylor_s2(x)
         
-        ds1_dx1 = diff(s1, x[0])
-        ds1_dx2 = diff(s1, x[1])
-        ds2_dx1 = diff(s2, x[0])
-        ds2_dx2 = diff(s2, x[1])
-        
         ds_dx = np.ndarray((2, 2,), 'object')
-        ds_dx[0][0] = ds1_dx1
-        ds_dx[0][1] = ds1_dx2
-        ds_dx[1][0] = ds2_dx1
-        ds_dx[1][1] = ds2_dx2
-        
+        ds_dx[0][0] = diff(s1, x[0])
+        ds_dx[0][1] = diff(s1, x[1])
+        ds_dx[1][0] = diff(s2, x[0])
+        ds_dx[1][1] = diff(s2, x[1])
+                
         return ds_dx
         
     def x_taylor_submetric(self, x):
@@ -195,16 +180,11 @@ class Experiment(laplace_theory.Theory):
         ds_dx2[0] = ds_dx[0][1]
         ds_dx2[1] = ds_dx[1][1]
         
-        g11 = np.dot(ds_dx1, ds_dx1)
-        g12 = np.dot(ds_dx1, ds_dx2)
-        g21 = np.dot(ds_dx2, ds_dx1)
-        g22 = np.dot(ds_dx2, ds_dx2)
-        
         submetric = np.ndarray((2, 2,), 'object')
-        submetric[0][0] = g11
-        submetric[0][1] = g12
-        submetric[1][0] = g21
-        submetric[1][1] = g22
+        submetric[0][0] = np.dot(ds_dx1, ds_dx1)
+        submetric[0][1] = np.dot(ds_dx1, ds_dx2)
+        submetric[1][0] = np.dot(ds_dx2, ds_dx1)
+        submetric[1][1] = np.dot(ds_dx2, ds_dx2)
         
         return submetric
         
@@ -249,16 +229,12 @@ class Experiment(laplace_theory.Theory):
                 linear_dx_ds[i][j] = coeff_dx_ds[0]*(x[0] - x_value[0]) \
                                      + coeff_dx_ds[1]*(x[1] - x_value[1]) \
                                      + coeff_dx_ds[2] 
-        dx1_ds1 = linear_dx_ds[1][1]
-        dx1_ds2 = - linear_dx_ds[0][1]
-        dx2_ds1 = - linear_dx_ds[1][0]
-        dx2_ds2 = linear_dx_ds[0][0]
         
-        dx_ds = np.ndarray((2, 2,), 'object')
-        dx_ds[0][0] = dx1_ds1
-        dx_ds[0][1] = dx1_ds2
-        dx_ds[1][0] = dx2_ds1
-        dx_ds[1][1] = dx2_ds2
+        dx_ds = np.ndarray((2, 2,), 'object')                             
+        dx_ds[0][0] = linear_dx_ds[1][1]
+        dx_ds[0][1] = - linear_dx_ds[0][1]
+        dx_ds[1][0] = - linear_dx_ds[1][0]
+        dx_ds[1][1] = linear_dx_ds[0][0]
         
         return dx_ds
   
@@ -267,30 +243,22 @@ class Experiment(laplace_theory.Theory):
         """ dg_ij/ds1 = dx1/ds1*dg_ij/dx1 + dx2/ds1*dg_ij/dx2 """
         linear_dx1_ds1 = self.linear_x_taylor_dx_ds(x)[0][0]
         linear_dx2_ds1 = self.linear_x_taylor_dx_ds(x)[1][0]
-        g11 = self.x_taylor_submetric(x)[0][0]
-        g12 = self.x_taylor_submetric(x)[0][1]
-        g21 = self.x_taylor_submetric(x)[1][0]
-        g22 = self.x_taylor_submetric(x)[1][1]
+        submetric = self.x_taylor_submetric(x)
         
-        dg11_dx1 = diff(g11, x[0])
-        dg11_dx2 = diff(g11, x[1])
-        dg12_dx1 = diff(g12, x[0])
-        dg12_dx2 = diff(g12, x[1])
-        dg21_dx1 = diff(g21, x[0])
-        dg21_dx2 = diff(g21, x[1])
-        dg22_dx1 = diff(g22, x[0])
-        dg22_dx2 = diff(g22, x[1])
-        
-        dg11_ds1 = linear_dx1_ds1*dg11_dx1 + linear_dx2_ds1*dg11_dx2
-        dg12_ds1 = linear_dx1_ds1*dg12_dx1 + linear_dx2_ds1*dg12_dx2
-        dg21_ds1 = linear_dx1_ds1*dg21_dx1 + linear_dx2_ds1*dg21_dx2
-        dg22_ds1 = linear_dx1_ds1*dg22_dx1 + linear_dx2_ds1*dg22_dx2
-        
+        dg_dx1 = np.ndarray((2, 2), 'object')
+        for i in range(2):
+            for j in range(2):
+                dg_dx1[i][j] = diff(submetric[i][j], x[0])  
+        dg_dx2 = np.ndarray((2, 2), 'object')
+        for i in range(2):
+            for j in range(2):
+                dg_dx2[i][j] = diff(submetric[i][j], x[1])
+                    
         dg_ds1 = np.ndarray((2, 2,), 'object')
-        dg_ds1[0][0] = dg11_ds1
-        dg_ds1[0][1] = dg12_ds1
-        dg_ds1[1][0] = dg21_ds1
-        dg_ds1[1][1] = dg22_ds1
+        for i in range(2):
+            for j in range(2):
+                dg_ds1[i][j] = linear_dx1_ds1*dg_dx1[i][j] \
+                               + linear_dx2_ds1*dg_dx2[i][j]
         
         return dg_ds1
     
@@ -446,10 +414,6 @@ if __name__ == '__main__':
     # Verification
     g12 = experiment.term_linear_x_taylor_g12(x)
     
-#    print('g12 = ')
-#    [display(item) for item in g12]
-#    print('')
-    
     g12 = lambdify(unknown, g12, 'numpy')
     g12 = g12(a_theory[3],
               a_theory[4],
@@ -478,10 +442,6 @@ if __name__ == '__main__':
     print('Elapsed Time = ', round(t1 - t0), '(s)')
         
     
-
-
-
-
 
 
 
