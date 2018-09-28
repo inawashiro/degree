@@ -38,6 +38,10 @@ class Theory():
     x[0] = Symbol('x1', real = True)
     x[1] = Symbol('x2', real = True)
     
+    s = np.ndarray((2,), 'object')
+    s[0] = Symbol('s1', real = True)
+    s[1] = Symbol('s2', real = True)
+    
     def __init__(self):
         s_interval = np.ndarray((2,))
         s_interval[0] = 2.5
@@ -48,30 +52,19 @@ class Theory():
         number_of_points_on_line[0] = round(12.5/s_interval[0])
         number_of_points_on_line[1] = round(12.5/s_interval[1])
         self.number_of_points_on_line = number_of_points_on_line
-       
-    def u(self, x):
-        """ One of the Polynomial Solutions of Laplace Equation """
-        return x[0]**3 - 3*x[0]*x[1]**2
 
     def s1(self, x):
-        u = self.u(x)
-        return u
+        s1 = x[0]**3 - 3*x[0]*x[1]**2
+        return s1
 
     def s2(self, x):
-        return -x[1]**3 + 3*x[0]**2*x[1]
+        s2 = -x[1]**3 + 3*x[0]**2*x[1]
+        return s2
 
-    def r(self, x):
-        """ Theoretical Values of Taylor Series of u w.r.t. x """
-        u = self.u(x)
-        r = np.ndarray((6,), 'object')
-        r[0] = u
-        r[1] = 1
-        r[2] = 0
-        r[3] = 0
-        r[4] = 0
-        r[5] = 0
-        
-        return r
+    def u(self, s):
+        """ One of the Polynomial Solutions of Laplace Equation """
+        u = s[0]
+        return u
 
     def a(self, x):
         """  Theoretical Values of Taylor Series of s1 w.r.t. x """
@@ -99,50 +92,48 @@ class Theory():
         
         return b
     
+    def r(self, s):
+        """ Theoretical Values of Taylor Series of u w.r.t. x """
+        u = self.u(s)
+        r = np.ndarray((6,), 'object')
+        r[0] = u
+        r[1] = diff(u, s[0])
+        r[2] = diff(u, s[1])
+        r[3] = diff(u, s[0], 2)
+        r[4] = diff(u, s[0], s[1])
+        r[5] = diff(u, s[1], 2)
+        
+        return r
+    
     def s_values(self):
         s1_interval = self.s_interval[0]
         s2_interval = self.s_interval[1]
         number_of_points_on_line = self.number_of_points_on_line
-        temp = np.ndarray((number_of_points_on_line[1],
-                           number_of_points_on_line[0], 
-                           2))
+        s_values = np.ndarray((number_of_points_on_line[1],
+                               number_of_points_on_line[0], 
+                               2))
         for i in range(number_of_points_on_line[0]):
             for j in range(number_of_points_on_line[1]):
-                temp[i][j][0] = s1_interval*(- j - 1)
-                temp[i][j][1] = s2_interval*(i + 1)
-        return temp
+                s_values[i][j][0] = s1_interval*(- j - 1)
+                s_values[i][j][1] = s2_interval*(i + 1)
+        return s_values
 
     def x_values(self, x):
         number_of_points_on_line = self.number_of_points_on_line
         s1 = self.s1(x)
         s2 = self.s2(x)
-        temp = np.ndarray((number_of_points_on_line[1],
-                           number_of_points_on_line[0], 
-                           2))
+        x_values = np.ndarray((number_of_points_on_line[1],
+                               number_of_points_on_line[0], 
+                               2))
         for i in range(number_of_points_on_line[0]):
             for j in range(number_of_points_on_line[1]):
                 s_values = self.s_values()[i][j]
                 f1 = s1 - s_values[0]
                 f2 = s2 - s_values[1]
                 solution = nsolve((f1, f2), x, (1.5, 1.5))
-                temp[i][j][0] = solution[0]
-                temp[i][j][1] = solution[1]
-        return temp
-    
-    def r_theory(self, x):
-        number_of_points_on_line = self.number_of_points_on_line
-        r = self.r(x)
-        r_theory = np.ndarray((number_of_points_on_line[1],
-                               number_of_points_on_line[0], 
-                               6))
-        for i in range(number_of_points_on_line[0]):
-            for j in range(number_of_points_on_line[1]):
-                x_value = self.x_values(x)[i][j]
-                for k in range(len(r)):
-                    temp = lambdify(x, r[k], 'numpy')
-                    r_theory[i][j][k] = temp(x_value[0], x_value[1]) 
-                
-        return r_theory
+                x_values[i][j][0] = solution[0]
+                x_values[i][j][1] = solution[1]
+        return x_values
     
     def a_theory(self, x):
         number_of_points_on_line = self.number_of_points_on_line
@@ -174,7 +165,20 @@ class Theory():
         
         return b_theory
 
-        
+    def r_theory(self, s):
+        number_of_points_on_line = self.number_of_points_on_line
+        r = self.r(s)
+        r_theory = np.ndarray((number_of_points_on_line[1],
+                               number_of_points_on_line[0], 
+                               6))
+        for i in range(number_of_points_on_line[0]):
+            for j in range(number_of_points_on_line[1]):
+                s_value = self.s_values()[i][j]
+                for k in range(len(r)):
+                    temp = lambdify(s, r[k], 'numpy')
+                    r_theory[i][j][k] = temp(s_value[0], s_value[1]) 
+                
+        return r_theory    
         
 class Plot(Theory):
     """ Display Plot """
@@ -229,13 +233,13 @@ if __name__ == '__main__':
     x = np.ndarray((2,), 'object')
     x[0] = Symbol('x1', real = True)
     x[1] = Symbol('x2', real = True)
+    
+    s = np.ndarray((2,), 'object')
+    s[0] = Symbol('s1', real = True)
+    s[1] = Symbol('s2', real = True)
 
     print('x_values = ')
     print(theory.x_values(x))
-    print('')
-    
-    print('r_theory = ')
-    print(theory.r_theory(x))
     print('')
     
     print('a_theory = ')
@@ -246,6 +250,9 @@ if __name__ == '__main__':
     print(theory.b_theory(x))
     print('')
     
+    print('r_theory = ')
+    print(theory.r_theory(s))
+    print('')
     
     plot = Plot()
     
