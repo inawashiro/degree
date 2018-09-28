@@ -42,11 +42,11 @@ class Experiment(laplace_theory.Theory):
     
     def __init__(self, x, s):
         self.theory = laplace_theory.Theory()
-        self.s_values = self.theory.s_values()[4][4]
-        self.x_values = self.theory.x_values(x)[4][4]
-        self.a_theory = self.theory.a_theory(x)[4][4]
-        self.b_theory = self.theory.b_theory(x)[4][4]
-        self.r_theory = self.theory.r_theory(x)[4][4]
+        self.s_values = self.theory.s_values()[0][1]
+        self.x_values = self.theory.x_values(x)[0][1]
+        self.a_theory = self.theory.a_theory(x)[0][1]
+        self.b_theory = self.theory.b_theory(x)[0][1]
+        self.r_theory = self.theory.r_theory(x)[0][1]
         
         known = np.ndarray((12,))
         known[0] = a_theory[0]
@@ -212,17 +212,20 @@ class Experiment(laplace_theory.Theory):
         ds_dx = self.x_taylor_ds_dx(x)
         
         det = ds_dx[0][0]*ds_dx[1][1] - ds_dx[0][1]*ds_dx[1][0]
+        
+        dx_ds = np.ndarray((2, 2), 'object')
+        dx_ds[0][0] = ds_dx[1][1]/det
+        dx_ds[0][1] = - ds_dx[0][1]/det
+        dx_ds[1][0] = - ds_dx[1][0]/det
+        dx_ds[1][1] = ds_dx[0][0]/det
+        
         linear_dx_ds = np.ndarray((2, 2), 'object')
         for i in range(2):
             for j in range(2):
                 coeff_dx_ds = np.ndarray((3,), 'object')
-                coeff_dx_ds[0] = ds_dx[i][j]/det \
-                                 *(diff(ds_dx[i][j], x[0])/ds_dx[i][j] \
-                                   - diff(det, x[0])/det)
-                coeff_dx_ds[1] = ds_dx[i][j]/det \
-                                 *(diff(ds_dx[i][j], x[1])/ds_dx[i][j] \
-                                   - diff(det, x[1])/det)
-                coeff_dx_ds[2] = ds_dx[i, j]/det
+                coeff_dx_ds[0] = diff(dx_ds[i][j], x[0])
+                coeff_dx_ds[1] = diff(dx_ds[i][j], x[1])
+                coeff_dx_ds[2] = dx_ds[i][j]
                 for k in range(len(x_value) + 1):
                     coeff_dx_ds[k] = lambdify(x, coeff_dx_ds[k], 'numpy')
                     coeff_dx_ds[k] = coeff_dx_ds[k](x_value[0], x_value[1])
@@ -230,13 +233,7 @@ class Experiment(laplace_theory.Theory):
                                      + coeff_dx_ds[1]*(x[1] - x_value[1]) \
                                      + coeff_dx_ds[2] 
         
-        dx_ds = np.ndarray((2, 2,), 'object')                             
-        dx_ds[0][0] = linear_dx_ds[1][1]
-        dx_ds[0][1] = - linear_dx_ds[0][1]
-        dx_ds[1][0] = - linear_dx_ds[1][0]
-        dx_ds[1][1] = linear_dx_ds[0][0]
-        
-        return dx_ds
+        return linear_dx_ds
   
     def modified_x_taylor_dg_ds1(self, x):
         """ 2nd Order Modified x_Taylor Series of dg11/ds1 """
@@ -381,10 +378,10 @@ if __name__ == '__main__':
     unknown[5] = Symbol('b22', real = True)
     
     theory = laplace_theory.Theory()
-    x_values = theory.x_values(x)[4][4]
-    r_theory = theory.r_theory(x)[4][4]
-    a_theory = theory.a_theory(x)[4][4]
-    b_theory = theory.b_theory(x)[4][4]
+    x_values = theory.x_values(x)[0][1]
+    r_theory = theory.r_theory(x)[0][1]
+    a_theory = theory.a_theory(x)[0][1]
+    b_theory = theory.b_theory(x)[0][1]
     
     print('x_values = ')
     print(x_values)
