@@ -192,11 +192,12 @@ class Experiment(laplace_theory.Theory):
         x_value = self.x_values
         g12 = self.x_taylor_submetric(x)[0][1]
         
-        coeff_g12 = np.ndarray((len(x_value) + 1,), 'object')
+        coeff_g12 = np.ndarray((len(x_value) + 2,), 'object')
         coeff_g12[0] = diff(g12, x[0])
         coeff_g12[1] = diff(g12, x[1])
-        coeff_g12[2] = g12 
-        for i in range(len(x_value) + 1):
+        coeff_g12[2] = diff(g12, x[0], 2)
+        coeff_g12[3] = g12 
+        for i in range(len(x_value) + 2):
             coeff_g12[i] = lambdify(x, coeff_g12[i], 'numpy')
             coeff_g12[i] = coeff_g12[i](0, 0)
          
@@ -274,13 +275,14 @@ class Experiment(laplace_theory.Theory):
         linear_g12 = self.term_linear_x_taylor_g12(x)
         linear_laplacian_u = self.term_linear_x_taylor_laplacian_u(x)
         
-        f = np.ndarray((len(unknown),), 'object')
+        f = np.ndarray((len(unknown) + 1,), 'object')
         f[0] = linear_g12[0]
         f[1] = linear_g12[1]
         f[2] = linear_g12[2]
-        f[3] = linear_laplacian_u[0]
-        f[4] = linear_laplacian_u[1]
-        f[5] = linear_laplacian_u[2]
+        f[3] = linear_g12[3]
+        f[4] = linear_laplacian_u[0]
+        f[5] = linear_laplacian_u[1]
+        f[6] = linear_laplacian_u[2]
         
         unknown_init = ((1 + random.uniform(-0.0, 0.0)/100)*a_theory[3],
                         (1 + random.uniform(-0.0, 0.0)/100)*a_theory[4],
@@ -303,20 +305,14 @@ class Experiment(laplace_theory.Theory):
                 coeff_f[j][6] = f[j]
                 for k in range(len(unknown) + 1):
                     coeff_f[j][k] = lambdify(unknown, coeff_f[j][k], 'numpy')
-                    coeff_f[j][k] = coeff_f[j][k](0,
-                                                  0,
-                                                  0,
-                                                  0,
-                                                  0,
-                                                  0
-                                                  )
-                    linear_f[j] = coeff_f[j][0]*unknown[0] \
-                                  + coeff_f[j][1]*unknown[1] \
-                                  + coeff_f[j][2]*unknown[2] \
-                                  + coeff_f[j][3]*unknown[3] \
-                                  + coeff_f[j][4]*unknown[4] \
-                                  + coeff_f[j][5]*unknown[5] \
-                                  + coeff_f[j][6]
+                    coeff_f[j][k] = coeff_f[j][k](0, 0, 0, 0, 0, 0)
+                linear_f[j] = coeff_f[j][0]*unknown[0] \
+                              + coeff_f[j][1]*unknown[1] \
+                              + coeff_f[j][2]*unknown[2] \
+                              + coeff_f[j][3]*unknown[3] \
+                              + coeff_f[j][4]*unknown[4] \
+                              + coeff_f[j][5]*unknown[5] \
+                              + coeff_f[j][6]
             solution = nsolve(linear_f, unknown, unknown_init)        
             unknown_init = (solution[0],
                             solution[1],
