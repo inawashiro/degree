@@ -76,9 +76,9 @@ class Theory():
         a[0] = s1
         a[1] = diff(s1, x[0])
         a[2] = diff(s1, x[1])
-        a[3] = diff(s1, x[0], 2)
+        a[3] = diff(s1, x[0], 2)/2
         a[4] = diff(s1, x[0], x[1])
-        a[5] = diff(s1, x[1], 2)
+        a[5] = diff(s1, x[1], 2)/2
         
         return a
     
@@ -89,9 +89,9 @@ class Theory():
         b[0] = s2
         b[1] = diff(s2, x[0])
         b[2] = diff(s2, x[1])
-        b[3] = diff(s2, x[0], 2)
+        b[3] = diff(s2, x[0], 2)/2
         b[4] = diff(s2, x[0], x[1])
-        b[5] = diff(s2, x[1], 2)
+        b[5] = diff(s2, x[1], 2)/2
         
         return b
     
@@ -102,9 +102,9 @@ class Theory():
         r[0] = u
         r[1] = diff(u, s[0])
         r[2] = diff(u, s[1])
-        r[3] = diff(u, s[0], 2)
+        r[3] = diff(u, s[0], 2)/2
         r[4] = diff(u, s[0], s[1])
-        r[5] = diff(u, s[1], 2)
+        r[5] = diff(u, s[1], 2)/2
         
         return r
     

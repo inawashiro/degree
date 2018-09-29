@@ -81,9 +81,9 @@ class Experiment(laplace_theory.Theory):
         return known[0] \
                + known[1]*(x[0] - x_value[0]) \
                + known[2]*(x[1] - x_value[1]) \
-               + unknown[0]*(x[0] - x_value[0])**2/2 \
+               + unknown[0]*(x[0] - x_value[0])**2 \
                + unknown[1]*(x[0] - x_value[0])*(x[1] - x_value[1]) \
-               + unknown[2]*(x[1] - x_value[1])**2/2
+               + unknown[2]*(x[1] - x_value[1])**2
         
     def x_taylor_s2(self, x):
         """ 2nd Order x_Taylor Series of s2 """
@@ -94,9 +94,9 @@ class Experiment(laplace_theory.Theory):
         return known[3] \
                + known[4]*(x[0] - x_value[0]) \
                + known[5]*(x[1] - x_value[1]) \
-               + unknown[3]*(x[0] - x_value[0])**2/2 \
+               + unknown[3]*(x[0] - x_value[0])**2 \
                + unknown[4]*(x[0] - x_value[0])*(x[1] - x_value[1]) \
-               + unknown[5]*(x[1] - x_value[1])**2/2
+               + unknown[5]*(x[1] - x_value[1])**2
     
     def s_taylor_u(self, s):
         """ 2nd Order s_Taylor Series of u """
@@ -106,9 +106,9 @@ class Experiment(laplace_theory.Theory):
         return known[6] \
                + known[7]*(s[0] - s_value[0]) \
                + known[8]*(s[1] - s_value[1]) \
-               + known[9]*(s[0] - s_value[0])**2/2 \
+               + known[9]*(s[0] - s_value[0])**2 \
                + known[10]*(s[0] - s_value[0])*(s[1] - s_value[1]) \
-               + known[11]*(s[1] - s_value[1])**2/2
+               + known[11]*(s[1] - s_value[1])**2
            
     def x_taylor_u(self, x):
         """ 4th Order x_taylor Series of u"""
@@ -198,8 +198,8 @@ class Experiment(laplace_theory.Theory):
         coeff_g12[2] = g12 
         for i in range(len(x_value) + 1):
             coeff_g12[i] = lambdify(x, coeff_g12[i], 'numpy')
-            coeff_g12[i] = coeff_g12[i](x_value[0], x_value[1])
-#            coeff_g12[i] = coeff_g12[i](0, 0)
+#            coeff_g12[i] = coeff_g12[i](x_value[0], x_value[1])
+            coeff_g12[i] = coeff_g12[i](0, 0)
          
         return coeff_g12
     
@@ -265,8 +265,8 @@ class Experiment(laplace_theory.Theory):
         coeff_laplacian_u[2] = laplacian_u 
         for i in range(len(x_value) + 1):
             coeff_laplacian_u[i] = lambdify(x, coeff_laplacian_u[i], 'numpy')
-            coeff_laplacian_u[i] = coeff_laplacian_u[i](x_value[0], x_value[1])
-#            coeff_laplacian_u[i] = coeff_laplacian_u[i](0, 0)
+#            coeff_laplacian_u[i] = coeff_laplacian_u[i](x_value[0], x_value[1])
+            coeff_laplacian_u[i] = coeff_laplacian_u[i](0, 0)
          
         return coeff_laplacian_u
     
