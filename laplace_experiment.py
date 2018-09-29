@@ -284,15 +284,15 @@ class Experiment(laplace_theory.Theory):
         f[5] = linear_laplacian_u[1]
         f[6] = linear_laplacian_u[2]
         
-        unknown_init = ((1 + random.uniform(-0.0, 0.0)/100)*a_theory[3],
-                        (1 + random.uniform(-0.0, 0.0)/100)*a_theory[4],
-                        (1 + random.uniform(-0.0, 0.0)/100)*a_theory[5],
-                        (1 + random.uniform(-0.0, 0.0)/100)*b_theory[3],
-                        (1 + random.uniform(-0.0, 0.0)/100)*b_theory[4],
-                        (1 + random.uniform(-0.0, 0.0)/100)*b_theory[5]
-                        )
+#        unknown_init = ((1 + random.uniform(-0.0, 0.0)/100)*a_theory[3],
+#                        (1 + random.uniform(-0.0, 0.0)/100)*a_theory[4],
+#                        (1 + random.uniform(-0.0, 0.0)/100)*a_theory[5],
+#                        (1 + random.uniform(-0.0, 0.0)/100)*b_theory[3],
+#                        (1 + random.uniform(-0.0, 0.0)/100)*b_theory[4],
+#                        (1 + random.uniform(-0.0, 0.0)/100)*b_theory[5]
+#                        )
         
-        linear_f = np.ndarray((len(f),), 'object')
+#        linear_f = np.ndarray((len(f),), 'object')
         for i in range(1):
             for j in range(len(f)):
                 coeff_f = np.ndarray((len(f), len(unknown) + 1,), 'object')
@@ -306,21 +306,25 @@ class Experiment(laplace_theory.Theory):
                 for k in range(len(unknown) + 1):
                     coeff_f[j][k] = lambdify(unknown, coeff_f[j][k], 'numpy')
                     coeff_f[j][k] = coeff_f[j][k](0, 0, 0, 0, 0, 0)
-                linear_f[j] = coeff_f[j][0]*unknown[0] \
-                              + coeff_f[j][1]*unknown[1] \
-                              + coeff_f[j][2]*unknown[2] \
-                              + coeff_f[j][3]*unknown[3] \
-                              + coeff_f[j][4]*unknown[4] \
-                              + coeff_f[j][5]*unknown[5] \
-                              + coeff_f[j][6]
-            solution = nsolve(linear_f, unknown, unknown_init)        
-            unknown_init = (solution[0],
-                            solution[1],
-                            solution[2],
-                            solution[3],
-                            solution[4],
-                            solution[5]
-                            )
+#                linear_f[j] = coeff_f[j][0]*unknown[0] \
+#                              + coeff_f[j][1]*unknown[1] \
+#                              + coeff_f[j][2]*unknown[2] \
+#                              + coeff_f[j][3]*unknown[3] \
+#                              + coeff_f[j][4]*unknown[4] \
+#                              + coeff_f[j][5]*unknown[5] \
+#                              + coeff_f[j][6]
+#            solution = nsolve(linear_f, unknown, unknown_init)        
+#            unknown_init = (solution[0],
+#                            solution[1],
+#                            solution[2],
+#                            solution[3],
+#                            solution[4],
+#                            solution[5]
+#                            )
+            b = np.ndarray((len(unknown),))
+            for i in range(len(unknown)):
+                b[i] = 0
+            solution = np.linalg.lstsq(coeff_f, b).x
             
         return solution
 
