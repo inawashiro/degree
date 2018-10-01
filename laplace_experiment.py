@@ -204,7 +204,7 @@ class Experiment(laplace_theory.Theory):
         return coeff_g12
     
     
-    def linear_x_taylor_dx_ds(self, x):
+    def x_taylor_dx_ds(self, x):
         """ 1st Order x_Taylor Series of (dx/ds) """
         """ Inverse Matrix Library NOT Used due to High Computational Cost """
         ds_dx = self.x_taylor_ds_dx(x)
@@ -219,11 +219,11 @@ class Experiment(laplace_theory.Theory):
     
         return dx_ds
   
-    def modified_x_taylor_dg_ds1(self, x):
+    def x_taylor_dg_ds1(self, x):
         """ 2nd Order Modified x_Taylor Series of dg11/ds1 """
         """ dg_ij/ds1 = dx1/ds1*dg_ij/dx1 + dx2/ds1*dg_ij/dx2 """
-        linear_dx1_ds1 = self.linear_x_taylor_dx_ds(x)[0][0]
-        linear_dx2_ds1 = self.linear_x_taylor_dx_ds(x)[1][0]
+        dx1_ds1 = self.x_taylor_dx_ds(x)[0][0]
+        dx2_ds1 = self.x_taylor_dx_ds(x)[1][0]
         submetric = self.x_taylor_submetric(x)
         
         dg_dx1 = np.ndarray((2, 2), 'object')
@@ -238,8 +238,8 @@ class Experiment(laplace_theory.Theory):
         dg_ds1 = np.ndarray((2, 2,), 'object')
         for i in range(2):
             for j in range(2):
-                dg_ds1[i][j] = linear_dx1_ds1*dg_dx1[i][j] \
-                               + linear_dx2_ds1*dg_dx2[i][j]
+                dg_ds1[i][j] = dx1_ds1*dg_dx1[i][j] \
+                               + dx2_ds1*dg_dx2[i][j]
         
         return dg_ds1
     
@@ -251,12 +251,12 @@ class Experiment(laplace_theory.Theory):
         ddu_dds1 = self.x_taylor_ddu_dds(x)[0][0]
         g11 = self.x_taylor_submetric(x)[0][0]
         g22 = self.x_taylor_submetric(x)[1][1]
-        modified_dg11_ds1 = self.modified_x_taylor_dg_ds1(x)[0][0]
-        modified_dg22_ds1 = self.modified_x_taylor_dg_ds1(x)[1][1]
+        dg11_ds1 = self.x_taylor_dg_ds1(x)[0][0]
+        dg22_ds1 = self.x_taylor_dg_ds1(x)[1][1]
         
         laplacian_u = 2*g11*g22*ddu_dds1 \
-                      + (g11*modified_dg22_ds1 \
-                         - g22*modified_dg11_ds1)*du_ds1
+                      + (g11*dg22_ds1 \
+                         - g22*dg11_ds1)*du_ds1
         
         coeff_laplacian_u = np.ndarray((len(x_value) + 1,), 'object')
         coeff_laplacian_u[0] = diff(laplacian_u, x[0])
