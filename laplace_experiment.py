@@ -15,7 +15,7 @@ import numpy as np
 
 # For Symbolic Notation
 import sympy as sym
-from sympy import Symbol, diff, nsolve, lambdify
+from sympy import Symbol, diff, lambdify
 sym.init_printing()
 
 # For Symbolic Expression Displaying
@@ -203,7 +203,7 @@ class Experiment(laplace_theory.Theory):
         return coeff_g12
     
     
-    def linear_x_taylor_dx_ds(self, x):
+    def x_taylor_dx_ds(self, x):
         """ 1st Order x_Taylor Series of (dx/ds) """
         """ Inverse Matrix Library NOT Used due to High Computational Cost """
         ds_dx = self.x_taylor_ds_dx(x)
@@ -218,11 +218,11 @@ class Experiment(laplace_theory.Theory):
     
         return dx_ds
   
-    def modified_x_taylor_dg_ds1(self, x):
+    def x_taylor_dg_ds1(self, x):
         """ 2nd Order Modified x_Taylor Series of dg11/ds1 """
         """ dg_ij/ds1 = dx1/ds1*dg_ij/dx1 + dx2/ds1*dg_ij/dx2 """
-        linear_dx1_ds1 = self.linear_x_taylor_dx_ds(x)[0][0]
-        linear_dx2_ds1 = self.linear_x_taylor_dx_ds(x)[1][0]
+        dx1_ds1 = self.x_taylor_dx_ds(x)[0][0]
+        dx2_ds1 = self.x_taylor_dx_ds(x)[1][0]
         submetric = self.x_taylor_submetric(x)
         
         dg_dx1 = np.ndarray((2, 2), 'object')
@@ -237,8 +237,8 @@ class Experiment(laplace_theory.Theory):
         dg_ds1 = np.ndarray((2, 2,), 'object')
         for i in range(2):
             for j in range(2):
-                dg_ds1[i][j] = linear_dx1_ds1*dg_dx1[i][j] \
-                               + linear_dx2_ds1*dg_dx2[i][j]
+                dg_ds1[i][j] = dx1_ds1*dg_dx1[i][j] \
+                               + dx2_ds1*dg_dx2[i][j]
         
         return dg_ds1
     
@@ -250,12 +250,12 @@ class Experiment(laplace_theory.Theory):
         ddu_dds1 = self.x_taylor_ddu_dds(x)[0][0]
         g11 = self.x_taylor_submetric(x)[0][0]
         g22 = self.x_taylor_submetric(x)[1][1]
-        modified_dg11_ds1 = self.modified_x_taylor_dg_ds1(x)[0][0]
-        modified_dg22_ds1 = self.modified_x_taylor_dg_ds1(x)[1][1]
+        dg11_ds1 = self.x_taylor_dg_ds1(x)[0][0]
+        dg22_ds1 = self.x_taylor_dg_ds1(x)[1][1]
         
         laplacian_u = 2*g11*g22*ddu_dds1 \
-                      + (g11*modified_dg22_ds1 \
-                         - g22*modified_dg11_ds1)*du_ds1
+                      + (g11*dg22_ds1 \
+                         - g22*dg11_ds1)*du_ds1
         
         coeff_laplacian_u = np.ndarray((len(x_value) + 1,), 'object')
         coeff_laplacian_u[0] = diff(laplacian_u, x[0])
@@ -269,6 +269,8 @@ class Experiment(laplace_theory.Theory):
     
     def solution(self):
         unknown = self.unknown
+#        a_theory = self.a_theory
+#        b_theory = self.b_theory
         linear_g12 = self.term_linear_x_taylor_g12(x)
         linear_laplacian_u = self.term_linear_x_taylor_laplacian_u(x)
         
@@ -279,23 +281,50 @@ class Experiment(laplace_theory.Theory):
         f[3] = linear_laplacian_u[0]
         f[4] = linear_laplacian_u[1]
         f[5] = linear_laplacian_u[2]
+        
+        unknown_init = ((1 + random.uniform(-0.0, 0.0)/100)*a_theory[3],
+                        (1 + random.uniform(-0.0, 0.0)/100)*a_theory[4],
+                        (1 + random.uniform(-0.0, 0.0)/100)*a_theory[5],
+                        (1 + random.uniform(-0.0, 0.0)/100)*b_theory[3],
+                        (1 + random.uniform(-0.0, 0.0)/100)*b_theory[4],
+                        (1 + random.uniform(-0.0, 0.0)/100)*b_theory[5]
+                        )
     
         for i in range(1):
             A = np.ndarray((len(f), len(unknown),), 'object')
             b = np.ndarray((len(f),), 'object')
             for j in range(len(f)):
-                b[j] = - f[j]
+#                b[j] = - f[j]
+                b[j] = - f[j] \
+                       + diff(f[j], unknown[0])*unknown[0] \
+                       + diff(f[j], unknown[1])*unknown[1] \
+                       + diff(f[j], unknown[2])*unknown[2] \
+                       + diff(f[j], unknown[3])*unknown[3] \
+                       + diff(f[j], unknown[4])*unknown[4] \
+                       + diff(f[j], unknown[5])*unknown[5]
                 b[j] = lambdify(unknown, b[j], 'numpy')
-                b[j] = b[j](0, 0, 0, 0, 0, 0)
+                b[j] = b[j](unknown_init[0],
+                            unknown_init[1],
+                            unknown_init[2],
+                            unknown_init[3],
+                            unknown_init[4],
+                            unknown_init[5])
+#                b[j] = b[j](0, 0, 0, 0, 0, 0)
                 for k in range(len(unknown)):
                     A[j][k] = diff(f[j], unknown[k])
                     A[j][k] = lambdify(unknown, A[j][k], 'numpy')
-                    A[j][k] = A[j][k](0, 0, 0, 0, 0, 0)
+                    A[j][k] = A[j][k](unknown_init[0],
+                                      unknown_init[1],
+                                      unknown_init[2],
+                                      unknown_init[3],
+                                      unknown_init[4],
+                                      unknown_init[5])
+#                    A[j][k] = A[j][k](0, 0, 0, 0, 0, 0)
             A = A.astype('float')
             b = b.astype('float')
-#            solution = np.linalg.solve(A, b)
-            
-        return b
+            solution = np.linalg.lstsq(A, b)[0]
+        
+        return solution
 
         
 
@@ -346,14 +375,13 @@ if __name__ == '__main__':
     
     unknown_experiment = experiment.solution()
     print('(a_experiment, b_experiment) = ')
-    print(unknown_experiment)
-#    [print(round(item, 4)) for item in unknown_experiment]
+#    print(unknown_experiment)
+    [print(round(item, 4)) for item in unknown_experiment]
     print('')
     
     
     # Verification
     g12 = experiment.term_linear_x_taylor_g12(x)
-    
     g12 = lambdify(unknown, g12, 'numpy')
     g12 = g12(a_theory[3],
               a_theory[4],
