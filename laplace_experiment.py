@@ -15,7 +15,7 @@ import numpy as np
 
 # For Symbolic Notation
 import sympy as sym
-from sympy import Symbol, diff, nsolve, lambdify
+from sympy import Symbol, diff, lambdify
 sym.init_printing()
 
 # For Symbolic Expression Displaying
@@ -192,12 +192,11 @@ class Experiment(laplace_theory.Theory):
         x_value = self.x_values
         g12 = self.x_taylor_submetric(x)[0][1]
         
-        coeff_g12 = np.ndarray((len(x_value) + 2,), 'object')
+        coeff_g12 = np.ndarray((len(x_value) + 1,), 'object')
         coeff_g12[0] = diff(g12, x[0])
         coeff_g12[1] = diff(g12, x[1])
-        coeff_g12[2] = diff(g12, x[0], 2)
-        coeff_g12[3] = g12 
-        for i in range(len(x_value) + 2):
+        coeff_g12[2] = g12 
+        for i in range(len(x_value) + 1):
             coeff_g12[i] = lambdify(x, coeff_g12[i], 'numpy')
             coeff_g12[i] = coeff_g12[i](0, 0)
          
@@ -208,7 +207,6 @@ class Experiment(laplace_theory.Theory):
         """ 1st Order x_Taylor Series of (dx/ds) """
         """ Inverse Matrix Library NOT Used due to High Computational Cost """
         ds_dx = self.x_taylor_ds_dx(x)
-        
         det = ds_dx[0][0]*ds_dx[1][1] - ds_dx[0][1]*ds_dx[1][0]
         
         dx_ds = np.ndarray((2, 2), 'object')
@@ -275,53 +273,56 @@ class Experiment(laplace_theory.Theory):
         linear_g12 = self.term_linear_x_taylor_g12(x)
         linear_laplacian_u = self.term_linear_x_taylor_laplacian_u(x)
         
-        f = np.ndarray((len(unknown) + 1,), 'object')
+        f = np.ndarray((len(unknown),), 'object')
         f[0] = linear_g12[0]
         f[1] = linear_g12[1]
         f[2] = linear_g12[2]
-        f[3] = linear_g12[3]
-        f[4] = linear_laplacian_u[0]
-        f[5] = linear_laplacian_u[1]
-        f[6] = linear_laplacian_u[2]
+        f[3] = linear_laplacian_u[0]
+        f[4] = linear_laplacian_u[1]
+        f[5] = linear_laplacian_u[2]
         
-        unknown_init = ((1 + random.uniform(-0.0, 0.0)/100)*a_theory[3],
-                        (1 + random.uniform(-0.0, 0.0)/100)*a_theory[4],
-                        (1 + random.uniform(-0.0, 0.0)/100)*a_theory[5],
-                        (1 + random.uniform(-0.0, 0.0)/100)*b_theory[3],
-                        (1 + random.uniform(-0.0, 0.0)/100)*b_theory[4],
-                        (1 + random.uniform(-0.0, 0.0)/100)*b_theory[5]
+        unknown_init = ((1 + random.uniform(-0.1, 0.1)/100)*a_theory[3],
+                        (1 + random.uniform(-0.1, 0.1)/100)*a_theory[4],
+                        (1 + random.uniform(-0.1, 0.1)/100)*a_theory[5],
+                        (1 + random.uniform(-0.1, 0.1)/100)*b_theory[3],
+                        (1 + random.uniform(-0.1, 0.1)/100)*b_theory[4],
+                        (1 + random.uniform(-0.1, 0.1)/100)*b_theory[5]
                         )
-        
-        linear_f = np.ndarray((len(f),), 'object')
+    
         for i in range(1):
+            A = np.ndarray((len(f), len(unknown),), 'object')
+            b = np.ndarray((len(f),), 'object')
             for j in range(len(f)):
-                coeff_f = np.ndarray((len(f), len(unknown) + 1,), 'object')
-                coeff_f[j][0] = diff(f[j], unknown[0])
-                coeff_f[j][1] = diff(f[j], unknown[1])
-                coeff_f[j][2] = diff(f[j], unknown[2])
-                coeff_f[j][3] = diff(f[j], unknown[3])
-                coeff_f[j][4] = diff(f[j], unknown[4])
-                coeff_f[j][5] = diff(f[j], unknown[5])
-                coeff_f[j][6] = f[j]
-                for k in range(len(unknown) + 1):
-                    coeff_f[j][k] = lambdify(unknown, coeff_f[j][k], 'numpy')
-                    coeff_f[j][k] = coeff_f[j][k](0, 0, 0, 0, 0, 0)
-                linear_f[j] = coeff_f[j][0]*unknown[0] \
-                              + coeff_f[j][1]*unknown[1] \
-                              + coeff_f[j][2]*unknown[2] \
-                              + coeff_f[j][3]*unknown[3] \
-                              + coeff_f[j][4]*unknown[4] \
-                              + coeff_f[j][5]*unknown[5] \
-                              + coeff_f[j][6]
-            solution = nsolve(linear_f, unknown, unknown_init)        
-            unknown_init = (solution[0],
-                            solution[1],
-                            solution[2],
-                            solution[3],
-                            solution[4],
-                            solution[5]
+                b[j] = - f[j] \
+                       + diff(f[j], unknown[0])*unknown[0] \
+                       + diff(f[j], unknown[1])*unknown[1] \
+                       + diff(f[j], unknown[2])*unknown[2] \
+                       + diff(f[j], unknown[3])*unknown[3] \
+                       + diff(f[j], unknown[4])*unknown[4] \
+                       + diff(f[j], unknown[5])*unknown[5]
+                b[j] = lambdify(unknown, b[j], 'numpy')
+                b[j] = b[j](unknown_init[0],
+                            unknown_init[1],
+                            unknown_init[2],
+                            unknown_init[3],
+                            unknown_init[4],
+                            unknown_init[5]
                             )
-            
+                for k in range(len(unknown)):
+                    A[j][k] = diff(f[j], unknown[k])
+                    A[j][k] = lambdify(unknown, A[j][k], 'numpy')
+                    A[j][k] = A[j][k](unknown_init[0],
+                                      unknown_init[1],
+                                      unknown_init[2],
+                                      unknown_init[3],
+                                      unknown_init[4],
+                                      unknown_init[5]
+                                      )
+            A = A.astype('float')
+            b = b.astype('float')
+            solution = np.linalg.lstsq(A, b)[0]
+            unknown_init = solution
+        
         return solution
 
         
@@ -373,13 +374,13 @@ if __name__ == '__main__':
     
     unknown_experiment = experiment.solution()
     print('(a_experiment, b_experiment) = ')
+#    print(unknown_experiment)
     [print(round(item, 4)) for item in unknown_experiment]
     print('')
     
     
     # Verification
     g12 = experiment.term_linear_x_taylor_g12(x)
-    
     g12 = lambdify(unknown, g12, 'numpy')
     g12 = g12(a_theory[3],
               a_theory[4],
