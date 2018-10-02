@@ -48,51 +48,28 @@ class Experiment(laplace_theory.Theory):
         self.b_theory = self.theory.b_theory(x)[0][0]
         self.r_theory = self.theory.r_theory(x)[0][0]
         
-#        known = np.ndarray((12,))
-#        known[0] = a_theory[0]
-#        known[1] = a_theory[1]
-#        known[2] = a_theory[2]
-#        known[3] = b_theory[0]
-#        known[4] = b_theory[1]
-#        known[5] = b_theory[2]
-#        known[6] = r_theory[0]
-#        known[7] = r_theory[1]
-#        known[8] = r_theory[2]
-#        known[9] = r_theory[3]
-#        known[10] = r_theory[4]
-#        known[11] = r_theory[5]
-#        self.known = known
-#        
-#        unknown = np.ndarray((6,), 'object')
-#        unknown[0] = Symbol('a11', real = True)
-#        unknown[1] = Symbol('a12', real = True)
-#        unknown[2] = Symbol('a22', real = True)
-#        unknown[3] = Symbol('b11', real = True)
-#        unknown[4] = Symbol('b12', real = True)
-#        unknown[5] = Symbol('b22', real = True)
-#        self.unknown = unknown
-        known = np.ndarray((17,))
+        known = np.ndarray((12,))
         known[0] = a_theory[0]
         known[1] = a_theory[1]
         known[2] = a_theory[2]
-        known[3] = a_theory[3]
-        known[4] = a_theory[4]
-        known[5] = a_theory[5]
-        known[6] = b_theory[0]
-        known[7] = b_theory[1]
-        known[8] = b_theory[2]
-        known[9] = b_theory[3]
-        known[10] = b_theory[4]
-        known[11] = r_theory[0]
-        known[12] = r_theory[1]
-        known[13] = r_theory[2]
-        known[14] = r_theory[3]
-        known[15] = r_theory[4]
-        known[16] = r_theory[5]
+        known[3] = b_theory[0]
+        known[4] = b_theory[1]
+        known[5] = b_theory[2]
+        known[6] = r_theory[0]
+        known[7] = r_theory[1]
+        known[8] = r_theory[2]
+        known[9] = r_theory[3]
+        known[10] = r_theory[4]
+        known[11] = r_theory[5]
         self.known = known
         
-        unknown = np.ndarray((1,), 'object')
-        unknown[0] = Symbol('b22', real = True)
+        unknown = np.ndarray((6,), 'object')
+        unknown[0] = Symbol('a11', real = True)
+        unknown[1] = Symbol('a12', real = True)
+        unknown[2] = Symbol('a22', real = True)
+        unknown[3] = Symbol('b11', real = True)
+        unknown[4] = Symbol('b12', real = True)
+        unknown[5] = Symbol('b22', real = True)
         self.unknown = unknown
     
     def x_taylor_s1(self, x):
@@ -101,18 +78,12 @@ class Experiment(laplace_theory.Theory):
         unknown = self.unknown
         x_value = self.x_values
         
-#        return known[0] \
-#               + known[1]*(x[0] - x_value[0]) \
-#               + known[2]*(x[1] - x_value[1]) \
-#               + unknown[0]*(x[0] - x_value[0])**2/2 \
-#               + unknown[1]*(x[0] - x_value[0])*(x[1] - x_value[1]) \
-#               + unknown[2]*(x[1] - x_value[1])**2/2
         return known[0] \
                + known[1]*(x[0] - x_value[0]) \
                + known[2]*(x[1] - x_value[1]) \
-               + known[3]*(x[0] - x_value[0])**2/2 \
-               + known[4]*(x[0] - x_value[0])*(x[1] - x_value[1]) \
-               + known[5]*(x[1] - x_value[1])**2/2
+               + unknown[0]*(x[0] - x_value[0])**2/2 \
+               + unknown[1]*(x[0] - x_value[0])*(x[1] - x_value[1]) \
+               + unknown[2]*(x[1] - x_value[1])**2/2
         
     def x_taylor_s2(self, x):
         """ 2nd Order x_Taylor Series of s2 """
@@ -120,36 +91,24 @@ class Experiment(laplace_theory.Theory):
         unknown = self.unknown
         x_value = self.x_values
         
-#        return known[3] \
-#               + known[4]*(x[0] - x_value[0]) \
-#               + known[5]*(x[1] - x_value[1]) \
-#               + unknown[3]*(x[0] - x_value[0])**2/2 \
-#               + unknown[4]*(x[0] - x_value[0])*(x[1] - x_value[1]) \
-#               + unknown[5]*(x[1] - x_value[1])**2/2
-        return known[6] \
-               + known[7]*(x[0] - x_value[0]) \
-               + known[8]*(x[1] - x_value[1]) \
-               + known[9]*(x[0] - x_value[0])**2/2 \
-               + known[10]*(x[0] - x_value[0])*(x[1] - x_value[1]) \
-               + unknown[0]*(x[1] - x_value[1])**2/2
+        return known[3] \
+               + known[4]*(x[0] - x_value[0]) \
+               + known[5]*(x[1] - x_value[1]) \
+               + unknown[3]*(x[0] - x_value[0])**2/2 \
+               + unknown[4]*(x[0] - x_value[0])*(x[1] - x_value[1]) \
+               + unknown[5]*(x[1] - x_value[1])**2/2
     
     def s_taylor_u(self, s):
         """ 2nd Order s_Taylor Series of u """
         known = self.known
         s_value = self.s_values
         
-#        return known[6] \
-#               + known[7]*(s[0] - s_value[0]) \
-#               + known[8]*(s[1] - s_value[1]) \
-#               + known[9]*(s[0] - s_value[0])**2/2 \
-#               + known[10]*(s[0] - s_value[0])*(s[1] - s_value[1]) \
-#               + known[11]*(s[1] - s_value[1])**2/2
-        return known[11] \
-               + known[12]*(s[0] - s_value[0]) \
-               + known[13]*(s[1] - s_value[1]) \
-               + known[14]*(s[0] - s_value[0])**2/2 \
-               + known[15]*(s[0] - s_value[0])*(s[1] - s_value[1]) \
-               + known[16]*(s[1] - s_value[1])**2/2
+        return known[6] \
+               + known[7]*(s[0] - s_value[0]) \
+               + known[8]*(s[1] - s_value[1]) \
+               + known[9]*(s[0] - s_value[0])**2/2 \
+               + known[10]*(s[0] - s_value[0])*(s[1] - s_value[1]) \
+               + known[11]*(s[1] - s_value[1])**2/2
            
     def x_taylor_u(self, x):
         """ 4th Order x_taylor Series of u"""
@@ -309,12 +268,12 @@ class Experiment(laplace_theory.Theory):
     
     def solution(self):
         unknown = self.unknown
-#        a_theory = self.a_theory
-#        b_theory = self.b_theory
+        a_theory = self.a_theory
+        b_theory = self.b_theory
         linear_g12 = self.term_linear_x_taylor_g12(x)
         linear_laplacian_u = self.term_linear_x_taylor_laplacian_u(x)
         
-        f = np.ndarray((len(unknown) + 5,), 'object')
+        f = np.ndarray((len(unknown),), 'object')
         f[0] = linear_g12[0]
         f[1] = linear_g12[1]
         f[2] = linear_g12[2]
@@ -322,49 +281,43 @@ class Experiment(laplace_theory.Theory):
         f[4] = linear_laplacian_u[1]
         f[5] = linear_laplacian_u[2]
         
-#        unknown_init = ((1 + random.uniform(-0.0, 0.0)/100)*a_theory[3],
-#                        (1 + random.uniform(-0.0, 0.0)/100)*a_theory[4],
-#                        (1 + random.uniform(-0.0, 0.0)/100)*a_theory[5],
-#                        (1 + random.uniform(-0.0, 0.0)/100)*b_theory[3],
-#                        (1 + random.uniform(-0.0, 0.0)/100)*b_theory[4],
-#                        (1 + random.uniform(-0.0, 0.0)/100)*b_theory[5]
-#                        )
-        unknown_init = [(1 + random.uniform(-0.0, 0.0)/100)*b_theory[5]]
+        unknown_init = ((1 + random.uniform(-0.1, 0.1)/100)*a_theory[3],
+                        (1 + random.uniform(-0.1, 0.1)/100)*a_theory[4],
+                        (1 + random.uniform(-0.1, 0.1)/100)*a_theory[5],
+                        (1 + random.uniform(-0.1, 0.1)/100)*b_theory[3],
+                        (1 + random.uniform(-0.1, 0.1)/100)*b_theory[4],
+                        (1 + random.uniform(-0.1, 0.1)/100)*b_theory[5]
+                        )
     
         for i in range(1):
             A = np.ndarray((len(f), len(unknown),), 'object')
             b = np.ndarray((len(f),), 'object')
             for j in range(len(f)):
-#                b[j] = - f[j]
-#                b[j] = - f[j] \
-#                       + diff(f[j], unknown[0])*unknown[0] \
-#                       + diff(f[j], unknown[1])*unknown[1] \
-#                       + diff(f[j], unknown[2])*unknown[2] \
-#                       + diff(f[j], unknown[3])*unknown[3] \
-#                       + diff(f[j], unknown[4])*unknown[4] \
-#                       + diff(f[j], unknown[5])*unknown[5]
                 b[j] = - f[j] \
-                       + diff(f[j], unknown[0])*unknown[0]
+                       + diff(f[j], unknown[0])*unknown[0] \
+                       + diff(f[j], unknown[1])*unknown[1] \
+                       + diff(f[j], unknown[2])*unknown[2] \
+                       + diff(f[j], unknown[3])*unknown[3] \
+                       + diff(f[j], unknown[4])*unknown[4] \
+                       + diff(f[j], unknown[5])*unknown[5]
                 b[j] = lambdify(unknown, b[j], 'numpy')
-#                b[j] = b[j](unknown_init[0],
-#                            unknown_init[1],
-#                            unknown_init[2],
-#                            unknown_init[3],
-#                            unknown_init[4],
-#                            unknown_init[5])
-#                b[j] = b[j](0)
-                b[j] = b[j](unknown_init[0])
+                b[j] = b[j](unknown_init[0],
+                            unknown_init[1],
+                            unknown_init[2],
+                            unknown_init[3],
+                            unknown_init[4],
+                            unknown_init[5]
+                            )
                 for k in range(len(unknown)):
                     A[j][k] = diff(f[j], unknown[k])
                     A[j][k] = lambdify(unknown, A[j][k], 'numpy')
-#                    A[j][k] = A[j][k](unknown_init[0],
-#                                      unknown_init[1],
-#                                      unknown_init[2],
-#                                      unknown_init[3],
-#                                      unknown_init[4],
-#                                      unknown_init[5])
-#                    A[j][k] = A[j][k](0)
-                    A[j][k] = A[j][k](unknown_init[0])
+                    A[j][k] = A[j][k](unknown_init[0],
+                                      unknown_init[1],
+                                      unknown_init[2],
+                                      unknown_init[3],
+                                      unknown_init[4],
+                                      unknown_init[5]
+                                      )
             A = A.astype('float')
             b = b.astype('float')
 #            solution = np.linalg.solve(A, b)
