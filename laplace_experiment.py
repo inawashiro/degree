@@ -244,6 +244,8 @@ class Experiment(laplace_theory.Theory):
     def term_linear_x_taylor_laplacian_u(self, x):
         """ 1st Order x_Taylor Series of Laplacian of u """
         """ 2*g11*g22*u,11 + (g11*g22,1 - g11,1*g22)*u,1 """
+        """ Get Matrix eq. by using Newton Method """
+        """ Solve Matrix eq. by using least square method"""
         x_value = self.x_values
         du_ds1 = self.x_taylor_du_ds(x)[0]
         ddu_dds1 = self.x_taylor_ddu_dds(x)[0][0]
@@ -281,15 +283,24 @@ class Experiment(laplace_theory.Theory):
         f[4] = linear_laplacian_u[1]
         f[5] = linear_laplacian_u[2]
         
-        unknown_init = ((1 + random.uniform(-0.1, 0.1)/100)*a_theory[3],
-                        (1 + random.uniform(-0.1, 0.1)/100)*a_theory[4],
-                        (1 + random.uniform(-0.1, 0.1)/100)*a_theory[5],
-                        (1 + random.uniform(-0.1, 0.1)/100)*b_theory[3],
-                        (1 + random.uniform(-0.1, 0.1)/100)*b_theory[4],
-                        (1 + random.uniform(-0.1, 0.1)/100)*b_theory[5]
+        unknown_init = ((1 + random.uniform(-10.0, 10.0)/100)*a_theory[3],
+                        (1 + random.uniform(-10.0, 10.0)/100)*a_theory[4],
+                        (1 + random.uniform(-10.0, 10.0)/100)*a_theory[5],
+                        (1 + random.uniform(-10.0, 10.0)/100)*b_theory[3],
+                        (1 + random.uniform(-10.0, 10.0)/100)*b_theory[4],
+                        (1 + random.uniform(-10.0, 10.0)/100)*b_theory[5]
                         )
-    
-        for i in range(1):
+        error = np.ndarray((len(f),))
+        for l in range(len(f)):
+            f[l] = lambdify(unknown, f[l], 'numpy')
+            f[l] = f[l](unknown_init[0],
+                        unknown_init[1],
+                        unknown_init[2],
+                        unknown_init[3],
+                        unknown_init[4],
+                        unknown_init[5])
+            error[l] = f[l]
+        while np.linalg.norm(error) > 1.0e-4:
             A = np.ndarray((len(f), len(unknown),), 'object')
             b = np.ndarray((len(f),), 'object')
             for j in range(len(f)):
@@ -320,10 +331,17 @@ class Experiment(laplace_theory.Theory):
                                       )
             A = A.astype('float')
             b = b.astype('float')
-#            solution = np.linalg.solve(A, b)
             solution = np.linalg.lstsq(A, b)[0]
             unknown_init = solution
-        
+            for l in range(len(f)):
+                f[l] = lambdify(unknown, f[l], 'numpy')
+                f[l] = f[l](unknown_init[0],
+                            unknown_init[1],
+                            unknown_init[2],
+                            unknown_init[3],
+                            unknown_init[4],
+                            unknown_init[5])
+                error[l] = f[l]
         return solution
 
         
