@@ -270,10 +270,8 @@ class Experiment(laplace_theory.Theory):
          
         return coeff_laplacian_u
     
-    def solution(self):
+    def f(self, x):
         unknown = self.unknown
-        a_theory = self.a_theory
-        b_theory = self.b_theory
         linear_g12 = self.term_linear_x_taylor_g12(x)
         linear_laplacian_u = self.term_linear_x_taylor_laplacian_u(x)
         
@@ -285,25 +283,43 @@ class Experiment(laplace_theory.Theory):
         f[4] = linear_laplacian_u[1]
         f[5] = linear_laplacian_u[2]
         
-        solution = ((1 + random.uniform(-0.0, 0.0)/100)*a_theory[3],
-                    (1 + random.uniform(-0.0, 0.0)/100)*a_theory[4],
-                    (1 + random.uniform(-0.0, 0.0)/100)*a_theory[5],
-                    (1 + random.uniform(-0.0, 0.0)/100)*b_theory[3],
-                    (1 + random.uniform(-0.0, 0.0)/100)*b_theory[4],
-                    (1 + random.uniform(-0.0, 0.0)/100)*b_theory[5]
-                    )
+        return f
+    
+    def unknown_init(self):
+        a_theory = self.a_theory
+        b_theory = self.b_theory
         
-        error = np.ndarray((len(f),), 'object')
-        for l in range(len(f)):
-            error[l] = lambdify(unknown, f[l], 'numpy')
-            error[l] = error[l](solution[0],
-                                solution[1],
-                                solution[2],
-                                solution[3],
-                                solution[4],
-                                solution[5])
+        unknown_init = ((1 + random.uniform(-0.1, 0.1)/100)*a_theory[3],
+                        (1 + random.uniform(-0.1, 0.1)/100)*a_theory[4],
+                        (1 + random.uniform(-0.1, 0.1)/100)*a_theory[5],
+                        (1 + random.uniform(-0.1, 0.1)/100)*b_theory[3],
+                        (1 + random.uniform(-0.1, 0.1)/100)*b_theory[4],
+                        (1 + random.uniform(-0.1, 0.1)/100)*b_theory[5]
+                        )
+        
+        return unknown_init
+    
+    def solution(self):
+        unknown = self.unknown
+        f = self.f(x)
+        solution = self.unknown_init()
+        
+        def error_norm(solution):
+            error = np.ndarray((len(f),), 'object')
+            for l in range(len(f)):
+                error[l] = lambdify(unknown, f[l], 'numpy')
+                error[l] = error[l](solution[0],
+                                    solution[1],
+                                    solution[2],
+                                    solution[3],
+                                    solution[4],
+                                    solution[5])
+            error_norm = np.linalg.norm(error)
             
-        while np.linalg.norm(error) > 1.0e-4:
+            return error_norm
+        error = error_norm(solution)
+        
+        while error > 1.0e-4:
             A = np.ndarray((len(f), len(unknown),), 'object')
             b = np.ndarray((len(f),), 'object')
             for j in range(len(f)):
@@ -335,16 +351,8 @@ class Experiment(laplace_theory.Theory):
             A = A.astype('float')
             b = b.astype('float')
 #            solution = np.linalg.lstsq(A, b)[0]
-            solution = np.linalg.solve(A, b)
-            
-            for l in range(len(f)):
-                error[l] = lambdify(unknown, f[l], 'numpy')
-                error[l] = error[l](solution[0],
-                                    solution[1],
-                                    solution[2],
-                                    solution[3],
-                                    solution[4],
-                                    solution[5])
+            solution = np.linalg.solve(A, b)        
+            error = error_norm(solution)
         
         return solution
 
@@ -354,21 +362,13 @@ if __name__ == '__main__':
     
     t0 = time.time()
     
-    s = np.ndarray((2,), 'object')
-    s[0] = Symbol('s1', real = True)
-    s[1] = Symbol('s2', real = True)
-    
     x = np.ndarray((2,), 'object')
     x[0] = Symbol('x1', real = True)
     x[1] = Symbol('x2', real = True)
-
-    unknown = np.ndarray((6,), 'object')
-    unknown[0] = Symbol('a11', real = True)
-    unknown[1] = Symbol('a12', real = True)
-    unknown[2] = Symbol('a22', real = True)
-    unknown[3] = Symbol('b11', real = True)
-    unknown[4] = Symbol('b12', real = True)
-    unknown[5] = Symbol('b22', real = True)
+    
+    s = np.ndarray((2,), 'object')
+    s[0] = Symbol('s1', real = True)
+    s[1] = Symbol('s2', real = True)
     
     theory = laplace_theory.Theory()
     x_values = theory.x_values(x)[0][0]
@@ -390,7 +390,6 @@ if __name__ == '__main__':
     print('(a_theory, b_theory) = ')
     [print(round(item, 4)) for item in unknown_theory]
     print('')
-    
     
     
     experiment = Experiment(x, s)
@@ -431,11 +430,6 @@ if __name__ == '__main__':
     print('Elapsed Time = ', round(t1 - t0), '(s)')
         
     
-
-
-
-
-
 
 
 
