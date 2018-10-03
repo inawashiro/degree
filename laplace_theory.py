@@ -119,6 +119,7 @@ class Theory():
             for j in range(number_of_points_on_line[1]):
                 s_values[i][j][0] = s1_interval*(- j - 1)
                 s_values[i][j][1] = s2_interval*(i + 1)
+                
         return s_values
 
     def x_values(self, x):
@@ -136,6 +137,7 @@ class Theory():
                 solution = nsolve((f1, f2), x, (1.5, 1.5))
                 x_values[i][j][0] = solution[0]
                 x_values[i][j][1] = solution[1]
+                
         return x_values
     
     def a_theory(self, x):
@@ -183,6 +185,7 @@ class Theory():
                 
         return r_theory    
         
+    
 class Plot(Theory):
     """ Display Plot """
     
@@ -279,9 +282,6 @@ if __name__ == '__main__':
     t1 = time.time()
     
     print('Elapsed Time = ', round(t1 - t0), '(s)')
-    
-    
-    
     
     
     
