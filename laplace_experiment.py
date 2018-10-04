@@ -29,8 +29,8 @@ import time
 
 
 
-class Experiment(laplace_theory.Theory):
-    """ Tayolr Series Expression of Parameters """
+class Formula(laplace_theory.Theory):
+    """ Formulas in Taylor Series Expression """
     
     x = np.ndarray((2,), 'object')
     x[0] = Symbol('x1', real = True)
@@ -270,24 +270,30 @@ class Experiment(laplace_theory.Theory):
          
         return coeff_laplacian_u
     
-    def f(self, x):
-        unknown = self.unknown
-        linear_g12 = self.term_linear_x_taylor_g12(x)
-        linear_laplacian_u = self.term_linear_x_taylor_laplacian_u(x)
+    
+class Solve(Formula):
+    """ Solve Equations """
+    def __init__(self):
+        self.formula = Formula(x, s)
+    
+    def f(self):
+        unknown = self.formula.unknown
+        g12 = self.formula.term_linear_x_taylor_g12(x)
+        laplacian_u = self.formula.term_linear_x_taylor_laplacian_u(x)
         
         f = np.ndarray((len(unknown),), 'object')
-        f[0] = linear_g12[0]
-        f[1] = linear_g12[1]
-        f[2] = linear_g12[2]
-        f[3] = linear_laplacian_u[0]
-        f[4] = linear_laplacian_u[1]
-        f[5] = linear_laplacian_u[2]
+        f[0] = g12[0]
+        f[1] = g12[1]
+        f[2] = g12[2]
+        f[3] = laplacian_u[0]
+        f[4] = laplacian_u[1]
+        f[5] = laplacian_u[2]
         
         return f
     
     def unknown_init(self):
-        a_theory = self.a_theory
-        b_theory = self.b_theory
+        a_theory = self.formula.a_theory
+        b_theory = self.formula.b_theory
         
         unknown_init = ((1 + random.uniform(-0.1, 0.1)/100)*a_theory[3],
                         (1 + random.uniform(-0.1, 0.1)/100)*a_theory[4],
@@ -300,8 +306,8 @@ class Experiment(laplace_theory.Theory):
         return unknown_init
     
     def solution(self):
-        unknown = self.unknown
-        f = self.f(x)
+        unknown = self.formula.unknown
+        f = self.f()
         solution = self.unknown_init()
         
         def error_norm(solution):
@@ -317,6 +323,7 @@ class Experiment(laplace_theory.Theory):
             error_norm = np.linalg.norm(error)
             
             return error_norm
+        
         error = error_norm(solution)
         
         while error > 1.0e-4:
@@ -392,44 +399,23 @@ if __name__ == '__main__':
     print('')
     
     
-    experiment = Experiment(x, s)
+    formula = Formula(x, s)
     
-    unknown_experiment = experiment.solution()
+    solve = Solve()
+    
+    unknown_experiment = solve.solution()
     print('(a_experiment, b_experiment) = ')
     [print(round(item, 4)) for item in unknown_experiment]
     print('')
     
-    
-#    # Verification
-#    g12 = experiment.term_linear_x_taylor_g12(x)
-#    g12 = lambdify(unknown, g12, 'numpy')
-#    g12 = g12(a_theory[3],
-#              a_theory[4],
-#              a_theory[5],
-#              b_theory[3],
-#              b_theory[4],
-#              b_theory[5])
-#    print('Verificaiton of g12')
-#    [print(round(item, 4)) for item in g12]
-#    print('')
-#    
-#    laplacian_u = experiment.term_linear_x_taylor_laplacian_u(x)
-#    laplacian_u = lambdify(unknown, laplacian_u, 'numpy')
-#    laplacian_u = laplacian_u(a_theory[3],
-#                              a_theory[4],
-#                              a_theory[5],
-#                              b_theory[3],
-#                              b_theory[4],
-#                              b_theory[5])
-#    print('Verificaiton of Laplacian u')
-#    [print(round(item, 4)) for item in laplacian_u]
-#    print('')
 
     t1 = time.time()
     
     print('Elapsed Time = ', round(t1 - t0), '(s)')
         
     
+
+
 
 
 
