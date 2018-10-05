@@ -295,15 +295,15 @@ class Solve(Formula):
         a_theory = self.formula.a_theory
         b_theory = self.formula.b_theory
         
-        unknown_init = ((1 + random.uniform(-0.1, 0.1)/100)*a_theory[3],
-                        (1 + random.uniform(-0.1, 0.1)/100)*a_theory[4],
-                        (1 + random.uniform(-0.1, 0.1)/100)*a_theory[5],
-                        (1 + random.uniform(-0.1, 0.1)/100)*b_theory[3],
-                        (1 + random.uniform(-0.1, 0.1)/100)*b_theory[4],
-                        (1 + random.uniform(-0.1, 0.1)/100)*b_theory[5]
+        unknown_init = ((1 + random.uniform(-0.0, 0.0)/100)*a_theory[3],
+                        (1 + random.uniform(-0.0, 0.0)/100)*a_theory[4],
+                        (1 + random.uniform(-0.0, 0.0)/100)*a_theory[5],
+                        (1 + random.uniform(-0.0, 0.0)/100)*b_theory[3],
+                        (1 + random.uniform(-0.0, 0.0)/100)*b_theory[4],
+                        (1 + random.uniform(-0.0, 0.0)/100)*b_theory[5]
                         )
         
-        return unknown_init
+        return unknown_init    
     
     def solution(self):
         unknown = self.formula.unknown
@@ -369,6 +369,7 @@ if __name__ == '__main__':
     
     t0 = time.time()
     
+    
     x = np.ndarray((2,), 'object')
     x[0] = Symbol('x1', real = True)
     x[1] = Symbol('x2', real = True)
@@ -401,11 +402,32 @@ if __name__ == '__main__':
     
     formula = Formula(x, s)
     
+    
     solve = Solve()
+    
+    def relative_error_norm(a, b):
+        relative_error_norm = np.linalg.norm(b - a)/np.linalg.norm(a)
+        
+        return relative_error_norm
+        
+    unknown_init = solve.unknown_init()
+    print('(a_init, b_init) = ')
+    [print(round(item, 4)) for item in unknown_init]
+    print('')
+    
+    print('Error of (a_init, b_init) = ')
+    error_init = relative_error_norm(unknown_theory, unknown_init)
+    print(round(error_init, 4))
+    print('')
     
     unknown_experiment = solve.solution()
     print('(a_experiment, b_experiment) = ')
     [print(round(item, 4)) for item in unknown_experiment]
+    print('')
+    
+    print('Error of (a_experimrnt, b_experiment) = ')
+    error_experiment = relative_error_norm(unknown_theory, unknown_experiment)
+    print(round(error_experiment, 4))
     print('')
     
 
@@ -414,6 +436,7 @@ if __name__ == '__main__':
     print('Elapsed Time = ', round(t1 - t0), '(s)')
         
     
+
 
 
 
