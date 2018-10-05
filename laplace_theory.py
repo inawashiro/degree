@@ -197,8 +197,8 @@ class Plot(Theory):
     
     def u_plot(self, x):
         u = self.theory.u(s)
-        s1 = self.s1(x)
-        s2 = self.s2(x)
+        s1 = self.theory.s1(x)
+        s2 = self.theory.s2(x)
         u = lambdify(s, u, 'numpy')
         u = u(s1, s2)
         
@@ -209,7 +209,6 @@ class Plot(Theory):
         plt.savefig('target_function_3d.pdf')
         plt.savefig('target_function_3d.png')
         plt.pause(.01)
-        
         
     def principal_coordinate_system_plot(self, x):
         s1 = self.theory.s1(x)
@@ -282,6 +281,7 @@ if __name__ == '__main__':
     t1 = time.time()
     
     print('Elapsed Time = ', round(t1 - t0), '(s)')
+    
     
     
     
