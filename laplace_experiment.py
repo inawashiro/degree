@@ -417,7 +417,7 @@ if __name__ == '__main__':
     
     print('Error of (a_init, b_init) = ')
     error_init = relative_error_norm(unknown_theory, unknown_init)
-    print(round(error_init, 4))
+    print(round(error_init, 4)*100, '(%)')
     print('')
     
     unknown_experiment = solve.solution()
@@ -427,7 +427,7 @@ if __name__ == '__main__':
     
     print('Error of (a_experimrnt, b_experiment) = ')
     error_experiment = relative_error_norm(unknown_theory, unknown_experiment)
-    print(round(error_experiment, 4))
+    print(round(error_experiment, 4)*100, '(%)')
     print('')
     
 
@@ -436,6 +436,8 @@ if __name__ == '__main__':
     print('Elapsed Time = ', round(t1 - t0), '(s)')
         
     
+
+
 
 
 
