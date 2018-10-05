@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 
 # For Numerical Computation 
 import numpy as np
+from numpy import linalg as la
 
 # For Symbolic Notation
 import sympy as sym
@@ -110,16 +111,16 @@ class Formula(laplace_theory.Theory):
                + known[10]*(s[0] - s_value[0])*(s[1] - s_value[1]) \
                + known[11]*(s[1] - s_value[1])**2/2
            
-    def x_taylor_u(self, x):
-        """ 4th Order x_taylor Series of u"""
-        u = self.s_taylor_u(s)
-        s1 = self.x_taylor_s1(x)
-        s2 = self.x_taylor_s2(x)
-        
-        u = lambdify(s, u, 'numpy')
-        u = u(s1, s2)
-        
-        return u
+#    def x_taylor_u(self, x):
+#        """ 4th Order x_taylor Series of u"""
+#        u = self.s_taylor_u(s)
+#        s1 = self.x_taylor_s1(x)
+#        s2 = self.x_taylor_s2(x)
+#        
+#        u = lambdify(s, u, 'numpy')
+#        u = u(s1, s2)
+#        
+#        return u
     
     def x_taylor_du_ds(self, x):
         """ 1st Order s_Taylor Series of (du/ds) """
@@ -291,25 +292,71 @@ class Solve(Formula):
         
         return f
     
+    def A(self, solution):
+        unknown = self.formula.unknown
+        f = self.f()
+        
+        A = np.ndarray((len(f), len(unknown),), 'object')
+        for j in range(len(unknown)):
+            for k in range(len(unknown)):
+                A[j][k] = diff(f[j], unknown[k])
+                A[j][k] = lambdify(unknown, A[j][k], 'numpy')
+                A[j][k] = A[j][k](solution[0],
+                                  solution[1],
+                                  solution[2],
+                                  solution[3],
+                                  solution[4],
+                                  solution[5]
+                                  )
+        A = A.astype('float')
+        
+        return A
+    
+    def b(self, solution):
+        unknown = self.formula.unknown
+        f = self.f()
+        
+        b = np.ndarray((len(f),), 'object')
+        for j in range(len(f)):
+                b[j] = - f[j] \
+                       + diff(f[j], unknown[0])*unknown[0] \
+                       + diff(f[j], unknown[1])*unknown[1] \
+                       + diff(f[j], unknown[2])*unknown[2] \
+                       + diff(f[j], unknown[3])*unknown[3] \
+                       + diff(f[j], unknown[4])*unknown[4] \
+                       + diff(f[j], unknown[5])*unknown[5]
+                b[j] = lambdify(unknown, b[j], 'numpy')
+                b[j] = b[j](solution[0],
+                            solution[1],
+                            solution[2],
+                            solution[3],
+                            solution[4],
+                            solution[5]
+                            )            
+        b = b.astype('float')
+    
+        return b
+    
     def unknown_init(self):
         a_theory = self.formula.a_theory
         b_theory = self.formula.b_theory
         
-        unknown_init = ((1 + random.uniform(-10.0, 10.0)/100)*a_theory[3],
-                        (1 + random.uniform(-10.0, 10.0)/100)*a_theory[4],
-                        (1 + random.uniform(-10.0, 10.0)/100)*a_theory[5],
-                        (1 + random.uniform(-10.0, 10.0)/100)*b_theory[3],
-                        (1 + random.uniform(-10.0, 10.0)/100)*b_theory[4],
-                        (1 + random.uniform(-10.0, 10.0)/100)*b_theory[5]
+        unknown_init = ((1 + random.uniform(-0.0, 0.0)/100)*a_theory[3],
+                        (1 + random.uniform(-0.0, 0.0)/100)*a_theory[4],
+                        (1 + random.uniform(-0.0, 0.0)/100)*a_theory[5],
+                        (1 + random.uniform(-0.0, 0.0)/100)*b_theory[3],
+                        (1 + random.uniform(-0.0, 0.0)/100)*b_theory[4],
+                        (1 + random.uniform(-0.0, 0.0)/100)*b_theory[5]
                         )
         
         return unknown_init    
     
-    def solution(self):
+    def solution(self, solution):
         unknown = self.formula.unknown
         f = self.f()
-        solution1 = self.unknown_init()
-        solution2 = solution1
+        A = self.A(solution)
+        b = self.b(solution)
+        solution = self.unknown_init()
         
         def error_norm(solution):
             error = np.ndarray((len(f),), 'object')
@@ -325,91 +372,14 @@ class Solve(Formula):
             
             return error_norm
         
-        error1 = error_norm(solution1)
+        error = error_norm(solution)
         
-        while error1 > 1.0e-4:
-            A = np.ndarray((len(f), len(unknown),), 'object')
-            b = np.ndarray((len(f),), 'object')
-            for j in range(len(f)):
-                b[j] = - f[j] \
-                       + diff(f[j], unknown[0])*unknown[0] \
-                       + diff(f[j], unknown[1])*unknown[1] \
-                       + diff(f[j], unknown[2])*unknown[2] \
-                       + diff(f[j], unknown[3])*unknown[3] \
-                       + diff(f[j], unknown[4])*unknown[4] \
-                       + diff(f[j], unknown[5])*unknown[5]
-                b[j] = lambdify(unknown, b[j], 'numpy')
-                b[j] = b[j](solution1[0],
-                            solution1[1],
-                            solution1[2],
-                            solution1[3],
-                            solution1[4],
-                            solution1[5]
-                            )
-                for k in range(len(unknown)):
-                    A[j][k] = diff(f[j], unknown[k])
-                    A[j][k] = lambdify(unknown, A[j][k], 'numpy')
-                    A[j][k] = A[j][k](solution1[0],
-                                      solution1[1],
-                                      solution1[2],
-                                      solution1[3],
-                                      solution1[4],
-                                      solution1[5]
-                                      )
-            A = A.astype('float')
-            b = b.astype('float')
-            solution1 = np.linalg.lstsq(A, b)[0]    
-            error1 = error_norm(solution1)
-            
-        error2 = error_norm(solution2)
-        
-        while error2 > 1.0e-4:
-            A = np.ndarray((len(f), len(unknown),), 'object')
-            b = np.ndarray((len(f),), 'object')
-            for j in range(len(f)):
-                b[j] = - f[j] \
-                       + diff(f[j], unknown[0])*unknown[0] \
-                       + diff(f[j], unknown[1])*unknown[1] \
-                       + diff(f[j], unknown[2])*unknown[2] \
-                       + diff(f[j], unknown[3])*unknown[3] \
-                       + diff(f[j], unknown[4])*unknown[4] \
-                       + diff(f[j], unknown[5])*unknown[5]
-                b[j] = lambdify(unknown, b[j], 'numpy')
-                b[j] = b[j](solution2[0],
-                            solution2[1],
-                            solution2[2],
-                            solution2[3],
-                            solution2[4],
-                            solution2[5]
-                            )
-                for k in range(len(unknown)):
-                    A[j][k] = diff(f[j], unknown[k])
-                    A[j][k] = lambdify(unknown, A[j][k], 'numpy')
-                    A[j][k] = A[j][k](solution2[0],
-                                      solution2[1],
-                                      solution2[2],
-                                      solution2[3],
-                                      solution2[4],
-                                      solution2[5]
-                                      )
-            A = A.astype('float')
-            b = b.astype('float')
-            solution2 = np.linalg.solve(A, b)        
-            error2 = error_norm(solution2)
-        
-        solution = np.ndarray((2*len(unknown),))
-        solution[0] = solution1[0]
-        solution[1] = solution1[1]
-        solution[2] = solution1[2]
-        solution[3] = solution1[3]
-        solution[4] = solution1[4]
-        solution[5] = solution1[5]
-        solution[6] = solution2[0]
-        solution[7] = solution2[1]
-        solution[8] = solution2[2]
-        solution[9] = solution2[3]
-        solution[10] = solution2[4]
-        solution[11] = solution2[5]
+        while error > 1.0e-4:
+            A = A(solution)
+            b = b(solution)
+            solution = la.lstsq(A, b)[0]
+#            solution = np.linalg.solve(A, b)        
+            error = error_norm(solution)
         
         return solution
 
@@ -450,13 +420,10 @@ if __name__ == '__main__':
     print('')
     
     
-    formula = Formula(x, s)
-    
-    
     solve = Solve()
     
     def relative_error_norm(a, b):
-        relative_error_norm = np.linalg.norm(b - a)/np.linalg.norm(a)
+        relative_error_norm = la.norm(b - a)/la.norm(a)
         
         return relative_error_norm
         
@@ -470,38 +437,45 @@ if __name__ == '__main__':
     print(round(error_init, 4)*100, '(%)')
     print('')
     
-    unknown_experiment1 = np.ndarray((len(unknown_theory),))
-    unknown_experiment = solve.solution()
-    for i in range(len(unknown_experiment1)):
-        unknown_experiment1[i] = unknown_experiment[i]
-    print('(a_experiment1, b_experiment1) = ')
-    [print(round(item, 4)) for item in unknown_experiment1]
+    unknown_experiment = solve.solution(unknown_init)
+    print('(a_experiment, b_experiment) = ')
+    [print(round(item, 4)) for item in unknown_experiment]
     print('')
     
-    print('Error of (a_experimrnt1, b_experiment1) = ')
-    error_experiment1 = relative_error_norm(unknown_theory, unknown_experiment1)
-    print(round(error_experiment1, 4)*100, '(%)')
+    print('Error of (a_experimrnt, b_experiment) = ')
+    error_experiment = relative_error_norm(unknown_theory, unknown_experiment)
+    print(round(error_experiment, 4)*100, '(%)')
     print('')
     
-    unknown_experiment2 = np.ndarray((len(unknown_theory),))
-    unknown_experiment = solve.solution()
-    for i in range(len(unknown_experiment2)):
-        unknown_experiment2[i] = unknown_experiment[i + 6]
-    print('(a_experiment2, b_experiment2) = ')
-    [print(round(item, 4)) for item in unknown_experiment2]
+    A_init = solve.A(unknown_init)
+    eig_A_init = la.eig(A_init)[0]
+    print('Eigen Vaule of A_init = ')
+    [print(item) for item in eig_A_init]
     print('')
-    
-    print('Error of (a_experimrnt2, b_experiment2) = ')
-    error_experiment2 = relative_error_norm(unknown_theory, unknown_experiment2)
-    print(round(error_experiment2, 4)*100, '(%)')
-    print('')
-    
 
     t1 = time.time()
     
     print('Elapsed Time = ', round(t1 - t0), '(s)')
         
     
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
