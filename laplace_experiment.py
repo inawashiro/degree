@@ -277,6 +277,20 @@ class Solve(Formula):
     def __init__(self):
         self.formula = Formula(x, s)
     
+    def unknown_init(self):
+        a_theory = self.formula.a_theory
+        b_theory = self.formula.b_theory
+        
+        unknown_init = ((1 + random.uniform(-0.0, 0.0)/100)*a_theory[3],
+                        (1 + random.uniform(-0.0, 0.0)/100)*a_theory[4],
+                        (1 + random.uniform(-0.0, 0.0)/100)*a_theory[5],
+                        (1 + random.uniform(-0.0, 0.0)/100)*b_theory[3],
+                        (1 + random.uniform(-0.0, 0.0)/100)*b_theory[4],
+                        (1 + random.uniform(-0.0, 0.0)/100)*b_theory[5]
+                        )
+        
+        return unknown_init
+    
     def f(self):
         unknown = self.formula.unknown
         g12 = self.formula.term_linear_x_taylor_g12(x)
@@ -335,27 +349,11 @@ class Solve(Formula):
                             )            
         b = b.astype('float')
     
-        return b
+        return b    
     
-    def unknown_init(self):
-        a_theory = self.formula.a_theory
-        b_theory = self.formula.b_theory
-        
-        unknown_init = ((1 + random.uniform(-0.0, 0.0)/100)*a_theory[3],
-                        (1 + random.uniform(-0.0, 0.0)/100)*a_theory[4],
-                        (1 + random.uniform(-0.0, 0.0)/100)*a_theory[5],
-                        (1 + random.uniform(-0.0, 0.0)/100)*b_theory[3],
-                        (1 + random.uniform(-0.0, 0.0)/100)*b_theory[4],
-                        (1 + random.uniform(-0.0, 0.0)/100)*b_theory[5]
-                        )
-        
-        return unknown_init    
-    
-    def solution(self, solution):
+    def solution(self):
         unknown = self.formula.unknown
         f = self.f()
-        A = self.A(solution)
-        b = self.b(solution)
         solution = self.unknown_init()
         
         def error_norm(solution):
@@ -375,8 +373,8 @@ class Solve(Formula):
         error = error_norm(solution)
         
         while error > 1.0e-4:
-            A = A(solution)
-            b = b(solution)
+            A = self.A(solution)
+            b = self.b(solution)
             solution = la.lstsq(A, b)[0]
 #            solution = np.linalg.solve(A, b)        
             error = error_norm(solution)
@@ -437,7 +435,7 @@ if __name__ == '__main__':
     print(round(error_init, 4)*100, '(%)')
     print('')
     
-    unknown_experiment = solve.solution(unknown_init)
+    unknown_experiment = solve.solution()
     print('(a_experiment, b_experiment) = ')
     [print(round(item, 4)) for item in unknown_experiment]
     print('')
