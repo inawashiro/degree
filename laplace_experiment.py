@@ -26,7 +26,7 @@ from IPython.display import display
 # For Random Variables
 import random
 
-# For measuring computation time
+# For Measuring Computation Time
 import time
 
 
@@ -263,8 +263,7 @@ class Experiment(Taylor):
         dg22_ds1 = self.taylor.x_taylor_dg_ds1(x)[1][1]
         
         laplacian_u = 2*g11*g22*ddu_dds1 \
-                      + (g11*dg22_ds1 \
-                         - g22*dg11_ds1)*du_ds1
+                      + (g11*dg22_ds1 - g22*dg11_ds1)*du_ds1
         
         coeff_laplacian_u = np.ndarray((len(x_value) + 1,), 'object')
         coeff_laplacian_u[0] = diff(laplacian_u, x[0])
@@ -311,11 +310,11 @@ class Experiment(Taylor):
         f = self.f()
         
         A = np.ndarray((len(f), len(unknown),), 'object')
-        for j in range(len(unknown)):
-            for k in range(len(unknown)):
-                A[j][k] = diff(f[j], unknown[k])
-                A[j][k] = lambdify(unknown, A[j][k], 'numpy')
-                A[j][k] = A[j][k](solution[0],
+        for i in range(len(unknown)):
+            for j in range(len(unknown)):
+                A[i][j] = diff(f[i], unknown[j])
+                A[i][j] = lambdify(unknown, A[i][j], 'numpy')
+                A[i][j] = A[i][j](solution[0],
                                   solution[1],
                                   solution[2],
                                   solution[3],
@@ -331,16 +330,16 @@ class Experiment(Taylor):
         f = self.f()
         
         b = np.ndarray((len(f),), 'object')
-        for j in range(len(f)):
-                b[j] = - f[j] \
-                       + diff(f[j], unknown[0])*unknown[0] \
-                       + diff(f[j], unknown[1])*unknown[1] \
-                       + diff(f[j], unknown[2])*unknown[2] \
-                       + diff(f[j], unknown[3])*unknown[3] \
-                       + diff(f[j], unknown[4])*unknown[4] \
-                       + diff(f[j], unknown[5])*unknown[5]
-                b[j] = lambdify(unknown, b[j], 'numpy')
-                b[j] = b[j](solution[0],
+        for i in range(len(f)):
+                b[i] = - f[i] \
+                       + diff(f[i], unknown[0])*unknown[0] \
+                       + diff(f[i], unknown[1])*unknown[1] \
+                       + diff(f[i], unknown[2])*unknown[2] \
+                       + diff(f[i], unknown[3])*unknown[3] \
+                       + diff(f[i], unknown[4])*unknown[4] \
+                       + diff(f[i], unknown[5])*unknown[5]
+                b[i] = lambdify(unknown, b[i], 'numpy')
+                b[i] = b[i](solution[0],
                             solution[1],
                             solution[2],
                             solution[3],
@@ -358,9 +357,9 @@ class Experiment(Taylor):
         
         def error_norm(solution):
             error = np.ndarray((len(f),), 'object')
-            for l in range(len(f)):
-                error[l] = lambdify(unknown, f[l], 'numpy')
-                error[l] = error[l](solution[0],
+            for i in range(len(f)):
+                error[i] = lambdify(unknown, f[i], 'numpy')
+                error[i] = error[i](solution[0],
                                     solution[1],
                                     solution[2],
                                     solution[3],
@@ -456,6 +455,7 @@ if __name__ == '__main__':
     print('Elapsed Time = ', round(t1 - t0), '(s)')
         
     
+
 
 
 
