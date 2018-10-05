@@ -12,7 +12,8 @@ import matplotlib.pyplot as plt
 
 # For Numerical Computation 
 import numpy as np
-from numpy import linalg as la
+from numpy import dot
+from numpy.linalg import norm, lstsq, solve, eig
 
 # For Symbolic Notation
 import sympy as sym
@@ -30,8 +31,8 @@ import time
 
 
 
-class Formula(laplace_theory.Theory):
-    """ Formulas in Taylor Series Expression """
+class Taylor(laplace_theory.Theory):
+    """ Taylor Series Expressions of Parameters"""
     
     x = np.ndarray((2,), 'object')
     x[0] = Symbol('x1', real = True)
@@ -182,28 +183,12 @@ class Formula(laplace_theory.Theory):
         ds_dx2[1] = ds_dx[1][1]
         
         submetric = np.ndarray((2, 2,), 'object')
-        submetric[0][0] = np.dot(ds_dx1, ds_dx1)
-        submetric[0][1] = np.dot(ds_dx1, ds_dx2)
-        submetric[1][0] = np.dot(ds_dx2, ds_dx1)
-        submetric[1][1] = np.dot(ds_dx2, ds_dx2)
+        submetric[0][0] = dot(ds_dx1, ds_dx1)
+        submetric[0][1] = dot(ds_dx1, ds_dx2)
+        submetric[1][0] = dot(ds_dx2, ds_dx1)
+        submetric[1][1] = dot(ds_dx2, ds_dx2)
         
         return submetric
-        
-    def term_linear_x_taylor_g12(self, x):
-        x_value = self.x_values
-        g12 = self.x_taylor_submetric(x)[0][1]
-        
-        coeff_g12 = np.ndarray((len(x_value) + 1,), 'object')
-        coeff_g12[0] = diff(g12, x[0])
-        coeff_g12[1] = diff(g12, x[1])
-        coeff_g12[2] = g12
-        
-        for i in range(len(x_value) + 1):
-            coeff_g12[i] = lambdify(x, coeff_g12[i], 'numpy')
-            coeff_g12[i] = coeff_g12[i](0, 0)
-         
-        return coeff_g12
-    
     
     def x_taylor_dx_ds(self, x):
         """ 1st Order x_Taylor Series of (dx/ds) """
@@ -244,17 +229,38 @@ class Formula(laplace_theory.Theory):
         
         return dg_ds1
     
+    
+class Experiment(Taylor):
+    """ Solve Equations """
+    def __init__(self):
+        self.taylor = Taylor(x, s)
+    
+    def term_linear_x_taylor_g12(self, x):
+        """ 1st Order x_Taylor Series of g_12 """
+        x_value = self.taylor.x_values
+        g12 = self.taylor.x_taylor_submetric(x)[0][1]
+        
+        coeff_g12 = np.ndarray((len(x_value) + 1,), 'object')
+        coeff_g12[0] = diff(g12, x[0])
+        coeff_g12[1] = diff(g12, x[1])
+        coeff_g12[2] = g12
+        
+        for i in range(len(x_value) + 1):
+            coeff_g12[i] = lambdify(x, coeff_g12[i], 'numpy')
+            coeff_g12[i] = coeff_g12[i](0, 0)
+         
+        return coeff_g12
+    
     def term_linear_x_taylor_laplacian_u(self, x):
         """ 1st Order x_Taylor Series of Laplacian of u """
         """ 2*g11*g22*u,11 + (g11*g22,1 - g11,1*g22)*u,1 """
-        """ Get Matrix eq. by using Newton Method """
-        x_value = self.x_values
-        du_ds1 = self.x_taylor_du_ds(x)[0]
-        ddu_dds1 = self.x_taylor_ddu_dds(x)[0][0]
-        g11 = self.x_taylor_submetric(x)[0][0]
-        g22 = self.x_taylor_submetric(x)[1][1]
-        dg11_ds1 = self.x_taylor_dg_ds1(x)[0][0]
-        dg22_ds1 = self.x_taylor_dg_ds1(x)[1][1]
+        x_value = self.taylor.x_values
+        du_ds1 = self.taylor.x_taylor_du_ds(x)[0]
+        ddu_dds1 = self.taylor.x_taylor_ddu_dds(x)[0][0]
+        g11 = self.taylor.x_taylor_submetric(x)[0][0]
+        g22 = self.taylor.x_taylor_submetric(x)[1][1]
+        dg11_ds1 = self.taylor.x_taylor_dg_ds1(x)[0][0]
+        dg22_ds1 = self.taylor.x_taylor_dg_ds1(x)[1][1]
         
         laplacian_u = 2*g11*g22*ddu_dds1 \
                       + (g11*dg22_ds1 \
@@ -271,30 +277,10 @@ class Formula(laplace_theory.Theory):
          
         return coeff_laplacian_u
     
-    
-class Solve(Formula):
-    """ Solve Equations """
-    def __init__(self):
-        self.formula = Formula(x, s)
-    
-    def unknown_init(self):
-        a_theory = self.formula.a_theory
-        b_theory = self.formula.b_theory
-        
-        unknown_init = ((1 + random.uniform(-0.0, 0.0)/100)*a_theory[3],
-                        (1 + random.uniform(-0.0, 0.0)/100)*a_theory[4],
-                        (1 + random.uniform(-0.0, 0.0)/100)*a_theory[5],
-                        (1 + random.uniform(-0.0, 0.0)/100)*b_theory[3],
-                        (1 + random.uniform(-0.0, 0.0)/100)*b_theory[4],
-                        (1 + random.uniform(-0.0, 0.0)/100)*b_theory[5]
-                        )
-        
-        return unknown_init
-    
     def f(self):
-        unknown = self.formula.unknown
-        g12 = self.formula.term_linear_x_taylor_g12(x)
-        laplacian_u = self.formula.term_linear_x_taylor_laplacian_u(x)
+        unknown = self.taylor.unknown
+        g12 = self.term_linear_x_taylor_g12(x)
+        laplacian_u = self.term_linear_x_taylor_laplacian_u(x)
         
         f = np.ndarray((len(unknown),), 'object')
         f[0] = g12[0]
@@ -306,8 +292,22 @@ class Solve(Formula):
         
         return f
     
+    def unknown_init(self):
+        a_theory = self.taylor.a_theory
+        b_theory = self.taylor.b_theory
+        
+        unknown_init = ((1 + random.uniform(-0.0, 0.0)/100)*a_theory[3],
+                        (1 + random.uniform(-0.0, 0.0)/100)*a_theory[4],
+                        (1 + random.uniform(-0.0, 0.0)/100)*a_theory[5],
+                        (1 + random.uniform(-0.0, 0.0)/100)*b_theory[3],
+                        (1 + random.uniform(-0.0, 0.0)/100)*b_theory[4],
+                        (1 + random.uniform(-0.0, 0.0)/100)*b_theory[5]
+                        )
+        
+        return unknown_init
+    
     def A(self, solution):
-        unknown = self.formula.unknown
+        unknown = self.taylor.unknown
         f = self.f()
         
         A = np.ndarray((len(f), len(unknown),), 'object')
@@ -327,7 +327,7 @@ class Solve(Formula):
         return A
     
     def b(self, solution):
-        unknown = self.formula.unknown
+        unknown = self.taylor.unknown
         f = self.f()
         
         b = np.ndarray((len(f),), 'object')
@@ -352,7 +352,7 @@ class Solve(Formula):
         return b    
     
     def solution(self):
-        unknown = self.formula.unknown
+        unknown = self.taylor.unknown
         f = self.f()
         solution = self.unknown_init()
         
@@ -366,7 +366,7 @@ class Solve(Formula):
                                     solution[3],
                                     solution[4],
                                     solution[5])
-            error_norm = np.linalg.norm(error)
+            error_norm = norm(error)
             
             return error_norm
         
@@ -375,8 +375,8 @@ class Solve(Formula):
         while error > 1.0e-4:
             A = self.A(solution)
             b = self.b(solution)
-            solution = la.lstsq(A, b)[0]
-#            solution = np.linalg.solve(A, b)        
+            solution = lstsq(A, b)[0]
+#            solution = solve(A, b)        
             error = error_norm(solution)
         
         return solution
@@ -418,14 +418,14 @@ if __name__ == '__main__':
     print('')
     
     
-    solve = Solve()
+    experiment = Experiment()
     
     def relative_error_norm(a, b):
-        relative_error_norm = la.norm(b - a)/la.norm(a)
+        relative_error_norm = norm(b - a)/norm(a)
         
         return relative_error_norm
         
-    unknown_init = solve.unknown_init()
+    unknown_init = experiment.unknown_init()
     print('(a_init, b_init) = ')
     [print(round(item, 4)) for item in unknown_init]
     print('')
@@ -435,7 +435,7 @@ if __name__ == '__main__':
     print(round(error_init, 4)*100, '(%)')
     print('')
     
-    unknown_experiment = solve.solution()
+    unknown_experiment = experiment.solution()
     print('(a_experiment, b_experiment) = ')
     [print(round(item, 4)) for item in unknown_experiment]
     print('')
@@ -445,8 +445,8 @@ if __name__ == '__main__':
     print(round(error_experiment, 4)*100, '(%)')
     print('')
     
-    A_init = solve.A(unknown_init)
-    eig_A_init = la.eig(A_init)[0]
+    A_init = experiment.A(unknown_init)
+    eig_A_init = eig(A_init)[0]
     print('Eigen Vaule of A_init = ')
     [print(item) for item in eig_A_init]
     print('')
@@ -456,24 +456,6 @@ if __name__ == '__main__':
     print('Elapsed Time = ', round(t1 - t0), '(s)')
         
     
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
