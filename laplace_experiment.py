@@ -450,12 +450,12 @@ if __name__ == '__main__':
     [print(item) for item in eig_A_init]
     print('')
 
+
     t1 = time.time()
     
     print('Elapsed Time = ', round(t1 - t0), '(s)')
         
     
-
 
 
 
