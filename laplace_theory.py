@@ -57,46 +57,7 @@ class Theory():
         u = s[0]
         
         return u
-
-    def a(self, x):
-        """  Theoretical Values of Taylor Series of s1 w.r.t. x """
-        s1 = self.s1(x)
-        a = np.ndarray((6,), 'object')
-        a[0] = s1
-        a[1] = diff(s1, x[0])
-        a[2] = diff(s1, x[1])
-        a[3] = diff(s1, x[0], 2)
-        a[4] = diff(s1, x[0], x[1])
-        a[5] = diff(s1, x[1], 2)
-        
-        return a
     
-    def b(self, x):
-        """  Theoretical Values of Taylor Series of s w.r.t. x """
-        s2 = self.s2(x)
-        b = np.ndarray((6,), 'object')
-        b[0] = s2
-        b[1] = diff(s2, x[0])
-        b[2] = diff(s2, x[1])
-        b[3] = diff(s2, x[0], 2)
-        b[4] = diff(s2, x[0], x[1])
-        b[5] = diff(s2, x[1], 2)
-        
-        return b
-    
-    def r(self, s):
-        """ Theoretical Values of Taylor Series of u w.r.t. x """
-        u = self.u(s)
-        r = np.ndarray((6,), 'object')
-        r[0] = u
-        r[1] = diff(u, s[0])
-        r[2] = diff(u, s[1])
-        r[3] = diff(u, s[0], 2)
-        r[4] = diff(u, s[0], s[1])
-        r[5] = diff(u, s[1], 2)
-        
-        return r
-        
     def s_theory(self, x_value):
         s1 = self.s1(x)
         s2 = self.s2(x)
@@ -110,9 +71,18 @@ class Theory():
             s_theory[i] = s_theory[i](x_value[0], x_value[1])
         
         return s_theory
-    
+            
     def a_theory(self, x_value):
-        a = self.a(x)
+        """  Theoretical Values of Taylor Series of s1 w.r.t. x """
+        s1 = self.s1(x)
+        
+        a = np.ndarray((6,), 'object')
+        a[0] = s1
+        a[1] = diff(s1, x[0])
+        a[2] = diff(s1, x[1])
+        a[3] = diff(s1, x[0], 2)
+        a[4] = diff(s1, x[0], x[1])
+        a[5] = diff(s1, x[1], 2)
         
         a_theory = np.ndarray((len(a),))
         for i in range(len(a)):
@@ -122,7 +92,16 @@ class Theory():
         return a_theory
     
     def b_theory(self, x_value):
-        b = self.b(x)
+        """  Theoretical Values of Taylor Series of s w.r.t. x """
+        s2 = self.s2(x)
+        
+        b = np.ndarray((6,), 'object')
+        b[0] = s2
+        b[1] = diff(s2, x[0])
+        b[2] = diff(s2, x[1])
+        b[3] = diff(s2, x[0], 2)
+        b[4] = diff(s2, x[0], x[1])
+        b[5] = diff(s2, x[1], 2)
         
         b_theory = np.ndarray((len(b),))
         for i in range(len(b)):
@@ -132,7 +111,16 @@ class Theory():
         return b_theory
 
     def r_theory(self, s_value):
-        r = self.r(s)
+        """ Theoretical Values of Taylor Series of u w.r.t. x """
+        u = self.u(s)
+        
+        r = np.ndarray((6,), 'object')
+        r[0] = u
+        r[1] = diff(u, s[0])
+        r[2] = diff(u, s[1])
+        r[3] = diff(u, s[0], 2)
+        r[4] = diff(u, s[0], s[1])
+        r[5] = diff(u, s[1], 2)
         
         r_theory = np.ndarray((len(r),))
         for i in range(len(r)):
@@ -269,6 +257,18 @@ if __name__ == '__main__':
     t1 = time.time()
     
     print('Elapsed Time = ', round(t1 - t0), '(s)')
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
     
     
