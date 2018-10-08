@@ -34,7 +34,7 @@ import time
 class Taylor(laplace_theory.Theory):
     """ Taylor Series Expressions of Parameters"""
     
-    def __init__(self, known):
+    def __init__(self):
         x = np.ndarray((2,), 'object')
         x[0] = Symbol('x1', real = True)
         x[1] = Symbol('x2', real = True)
@@ -214,7 +214,7 @@ class Taylor(laplace_theory.Theory):
 class Experiment(Taylor):
     """ Solve Equations """
     def __init__(self):
-        self.taylor = Taylor(known)
+        self.taylor = Taylor()
         
     def term_linear_x_taylor_g12(self, known, x_value):
         """ 1st Order x_Taylor Series of g_12 """
@@ -273,17 +273,17 @@ class Experiment(Taylor):
         return f
     
     def unknown_init(self, unknown_theory):
-        unknown_init = ((1 + random.uniform(-1.0, 1.0)/100)*unknown_theory[0],
-                        (1 + random.uniform(-1.0, 1.0)/100)*unknown_theory[1],
-                        (1 + random.uniform(-1.0, 1.0)/100)*unknown_theory[2],
-                        (1 + random.uniform(-1.0, 1.0)/100)*unknown_theory[3],
-                        (1 + random.uniform(-1.0, 1.0)/100)*unknown_theory[4],
-                        (1 + random.uniform(-1.0, 1.0)/100)*unknown_theory[5]
+        unknown_init = ((1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[0],
+                        (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[1],
+                        (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[2],
+                        (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[3],
+                        (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[4],
+                        (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[5]
                         )
         
         return unknown_init
     
-    def A(self, known, x_value, s_value, solution):
+    def A(self, known, x_value, s_value, unknown_temp):
         unknown = self.taylor.unknown
         f = self.f(known, x_value, s_value)
         
@@ -292,18 +292,18 @@ class Experiment(Taylor):
             for j in range(len(unknown)):
                 A[i][j] = diff(f[i], unknown[j])
                 A[i][j] = lambdify(unknown, A[i][j], 'numpy')
-                A[i][j] = A[i][j](solution[0],
-                                  solution[1],
-                                  solution[2],
-                                  solution[3],
-                                  solution[4],
-                                  solution[5]
+                A[i][j] = A[i][j](unknown_temp[0],
+                                  unknown_temp[1],
+                                  unknown_temp[2],
+                                  unknown_temp[3],
+                                  unknown_temp[4],
+                                  unknown_temp[5]
                                   )
         A = A.astype('float')
         
         return A
     
-    def b(self, known, x_value, s_value, solution):
+    def b(self, known, x_value, s_value, unknown_temp):
         unknown = self.taylor.unknown
         f = self.f(known, x_value, s_value)
         
@@ -317,12 +317,12 @@ class Experiment(Taylor):
                        + diff(f[i], unknown[4])*unknown[4] \
                        + diff(f[i], unknown[5])*unknown[5]
                 b[i] = lambdify(unknown, b[i], 'numpy')
-                b[i] = b[i](solution[0],
-                            solution[1],
-                            solution[2],
-                            solution[3],
-                            solution[4],
-                            solution[5]
+                b[i] = b[i](unknown_temp[0],
+                            unknown_temp[1],
+                            unknown_temp[2],
+                            unknown_temp[3],
+                            unknown_temp[4],
+                            unknown_temp[5]
                             )            
         b = b.astype('float')
     
@@ -373,30 +373,37 @@ if __name__ == '__main__':
         
         return relative_error_norm
     
+    s = theory.s
+    a = theory.a()
+    b = theory.b()
+    r = theory.r()
+    
     n = 1
     x_value = np.ndarray((2,))
-    x_value_array = np.ndarray((n, n, 2,))
-    s_theory_array = np.ndarray((n, n, 2,))
-    a_theory_array = np.ndarray((n, n, 6,))
-    b_theory_array = np.ndarray((n, n, 6,))
-    r_theory_array = np.ndarray((n, n, 6,))
+    x_value_array = np.ndarray((n, n, len(x_value),))
+    s_theory_array = np.ndarray((n, n, len(s)))
+    a_theory_array = np.ndarray((n, n, len(a),))
+    b_theory_array = np.ndarray((n, n, len(b),))
+    r_theory_array = np.ndarray((n, n, len(r),))
     
     known = np.ndarray((12,))
-    known_array = np.ndarray((n, n, 12,))
+    known_array = np.ndarray((n, n, len(known),))
     
-    unknown_theory = np.ndarray((6,))
-    unknown_theory_array = np.ndarray((n, n, 6,))
+    unknown_theory = np.ndarray((18 - len(known),))
+    unknown_theory_array = np.ndarray((n, n, len(unknown_theory),))
     
-    unknown_init_array = np.ndarray((n, n, 6,))
+    unknown_init_array = np.ndarray((n, n, len(unknown_theory),))
     
     error_init_array = np.ndarray((n, n,))
     
-    unknown_experiment = np.ndarray((6,))
-    unknown_experiment_array = np.ndarray((n, n, 6,))
+    unknown_experiment = np.ndarray((len(unknown_theory),))
+    unknown_experiment_array = np.ndarray((n, n, len(unknown_theory),))
     
     error_experiment_array = np.ndarray((n, n,))
     
-    eig_A_init_array = np.ndarray((n, n, 6,))
+    eig_A_init_array = np.ndarray((n, n, len(unknown_theory),))
+    
+    
     
     for i in range(n):
         for j in range(n):
@@ -475,7 +482,7 @@ if __name__ == '__main__':
     print(unknown_experiment_array)
     print('')
     
-    print('Error of unknown_experiment = ')
+    print('Error(%) of unknown_experiment = ')
     print(error_experiment_array)
     print('')
     
