@@ -34,7 +34,7 @@ import time
 class Taylor(laplace_theory.Theory):
     """ Taylor Series Expressions of Parameters"""
     
-    def __init__(self):
+    def __init__(self, known):
         x = np.ndarray((2,), 'object')
         x[0] = Symbol('x1', real = True)
         x[1] = Symbol('x2', real = True)
@@ -45,6 +45,8 @@ class Taylor(laplace_theory.Theory):
         s[1] = Symbol('s2', real = True)
         self.s = s
         
+        self.known = known
+        
         unknown = np.ndarray((6,), 'object')
         unknown[0] = Symbol('a11', real = True)
         unknown[1] = Symbol('a12', real = True)
@@ -54,9 +56,10 @@ class Taylor(laplace_theory.Theory):
         unknown[5] = Symbol('b22', real = True)
         self.unknown = unknown
     
-    def x_taylor_s1(self, known, x_value):
+    def x_taylor_s1(self, x_value):
         """ 2nd Order x_Taylor Series of s1 """
         x = self.x
+        known = self.known
         unknown = self.unknown
         
         return known[0] \
@@ -66,9 +69,10 @@ class Taylor(laplace_theory.Theory):
                + unknown[1]*(x[0] - x_value[0])*(x[1] - x_value[1]) \
                + unknown[2]*(x[1] - x_value[1])**2/2
         
-    def x_taylor_s2(self, known, x_value):
+    def x_taylor_s2(self, x_value):
         """ 2nd Order x_Taylor Series of s2 """
         x = self.x
+        known = self.known
         unknown = self.unknown
         
         return known[3] \
@@ -78,9 +82,10 @@ class Taylor(laplace_theory.Theory):
                + unknown[4]*(x[0] - x_value[0])*(x[1] - x_value[1]) \
                + unknown[5]*(x[1] - x_value[1])**2/2
     
-    def s_taylor_u(self, known, s_value):
+    def s_taylor_u(self, s_value):
         """ 2nd Order s_Taylor Series of u """
         s = self.s
+        known = self.known
         
         return known[6] \
                + known[7]*(s[0] - s_value[0]) \
@@ -100,12 +105,12 @@ class Taylor(laplace_theory.Theory):
 #        
 #        return u
     
-    def x_taylor_du_ds(self, known, x_value, s_value):
+    def x_taylor_du_ds(self, x_value, s_value):
         """ 1st Order s_Taylor Series of (du/ds) """
         s = self.s
-        u = self.s_taylor_u(known, s_value)
-        s1 = self.x_taylor_s1(known, x_value)
-        s2 = self.x_taylor_s2(known, x_value)
+        u = self.s_taylor_u(s_value)
+        s1 = self.x_taylor_s1(x_value)
+        s2 = self.x_taylor_s2(x_value)
         
         du_ds = np.ndarray((2,), 'object')
         du_ds[0] = diff(u, s[0])
@@ -117,12 +122,12 @@ class Taylor(laplace_theory.Theory):
         
         return du_ds
                     
-    def x_taylor_ddu_dds(self, known, x_value, s_value):
+    def x_taylor_ddu_dds(self, x_value, s_value):
         """ 0th Order x_Taylor Series of (ddu/dds) """
         s = self.s
-        u = self.s_taylor_u(known, s_value)
-        s1 = self.x_taylor_s1(known, x_value)
-        s2 = self.x_taylor_s2(known, x_value)
+        u = self.s_taylor_u(s_value)
+        s1 = self.x_taylor_s1(x_value)
+        s2 = self.x_taylor_s2(x_value)
         
         ddu_dds = np.ndarray((2, 2), 'object')
         ddu_dds[0][0] = diff(u, s[0], 2)
@@ -137,11 +142,11 @@ class Taylor(laplace_theory.Theory):
         
         return ddu_dds
        
-    def x_taylor_ds_dx(self, known, x_value):
+    def x_taylor_ds_dx(self, x_value):
         """ 1st Order x_Taylor Series of (ds/dx) """
         x = self.x
-        s1 = self.x_taylor_s1(known, x_value)
-        s2 = self.x_taylor_s2(known, x_value)
+        s1 = self.x_taylor_s1(x_value)
+        s2 = self.x_taylor_s2(x_value)
         
         ds_dx = np.ndarray((2, 2,), 'object')
         ds_dx[0][0] = diff(s1, x[0])
@@ -151,9 +156,9 @@ class Taylor(laplace_theory.Theory):
                 
         return ds_dx
         
-    def x_taylor_submetric(self, known, x_value):
+    def x_taylor_submetric(self, x_value):
         """ 2nd Order x_Taylor Series of Subscript Metric g_ij """
-        ds_dx = self.x_taylor_ds_dx(known, x_value)
+        ds_dx = self.x_taylor_ds_dx(x_value)
         
         ds_dx1 = np.ndarray((2,), 'object')
         ds_dx1[0] = ds_dx[0][0]
@@ -170,10 +175,10 @@ class Taylor(laplace_theory.Theory):
         
         return submetric
     
-    def x_taylor_dx_ds(self, known, x_value):
+    def x_taylor_dx_ds(self, x_value):
         """ 1st Order x_Taylor Series of (dx/ds) """
         """ Inverse Matrix Library NOT Used due to High Computational Cost """
-        ds_dx = self.x_taylor_ds_dx(known, x_value)
+        ds_dx = self.x_taylor_ds_dx(x_value)
         det = ds_dx[0][0]*ds_dx[1][1] - ds_dx[0][1]*ds_dx[1][0]
         
         dx_ds = np.ndarray((2, 2), 'object')
@@ -184,13 +189,13 @@ class Taylor(laplace_theory.Theory):
     
         return dx_ds
   
-    def x_taylor_dg_ds1(self, known, x_value):
+    def x_taylor_dg_ds1(self, x_value):
         """ 2nd Order Modified x_Taylor Series of dg11/ds1 """
         """ dg_ij/ds1 = dx1/ds1*dg_ij/dx1 + dx2/ds1*dg_ij/dx2 """
         x = self.x
-        dx1_ds1 = self.x_taylor_dx_ds(known, x_value)[0][0]
-        dx2_ds1 = self.x_taylor_dx_ds(known, x_value)[1][0]
-        submetric = self.x_taylor_submetric(known, x_value)
+        dx1_ds1 = self.x_taylor_dx_ds(x_value)[0][0]
+        dx2_ds1 = self.x_taylor_dx_ds(x_value)[1][0]
+        submetric = self.x_taylor_submetric(x_value)
         
         dg_dx1 = np.ndarray((2, 2), 'object')
         for i in range(2):
@@ -214,12 +219,12 @@ class Taylor(laplace_theory.Theory):
 class Experiment(Taylor):
     """ Solve Equations """
     def __init__(self):
-        self.taylor = Taylor()
+        self.taylor = Taylor(known)
         
-    def term_linear_x_taylor_g12(self, known, x_value):
+    def term_linear_x_taylor_g12(self, x_value):
         """ 1st Order x_Taylor Series of g_12 """
         x = self.taylor.x
-        g12 = self.taylor.x_taylor_submetric(known, x_value)[0][1]
+        g12 = self.taylor.x_taylor_submetric(x_value)[0][1]
         
         coeff_g12 = np.ndarray((len(x_value) + 1,), 'object')
         coeff_g12[0] = diff(g12, x[0])
@@ -232,16 +237,16 @@ class Experiment(Taylor):
          
         return coeff_g12
     
-    def term_linear_x_taylor_laplacian_u(self, known, x_value, s_value):
+    def term_linear_x_taylor_laplacian_u(self, x_value, s_value):
         """ 1st Order x_Taylor Series of Laplacian of u """
         """ 2*g11*g22*u,11 + (g11*g22,1 - g11,1*g22)*u,1 """
         x = self.taylor.x
-        du_ds1 = self.taylor.x_taylor_du_ds(known, x_value, s_value)[0]
-        ddu_dds1 = self.taylor.x_taylor_ddu_dds(known, x_value, s_value)[0][0]
-        g11 = self.taylor.x_taylor_submetric(known, x_value)[0][0]
-        g22 = self.taylor.x_taylor_submetric(known, x_value)[1][1]
-        dg11_ds1 = self.taylor.x_taylor_dg_ds1(known, x_value)[0][0]
-        dg22_ds1 = self.taylor.x_taylor_dg_ds1(known, x_value)[1][1]
+        du_ds1 = self.taylor.x_taylor_du_ds(x_value, s_value)[0]
+        ddu_dds1 = self.taylor.x_taylor_ddu_dds(x_value, s_value)[0][0]
+        g11 = self.taylor.x_taylor_submetric(x_value)[0][0]
+        g22 = self.taylor.x_taylor_submetric(x_value)[1][1]
+        dg11_ds1 = self.taylor.x_taylor_dg_ds1(x_value)[0][0]
+        dg22_ds1 = self.taylor.x_taylor_dg_ds1(x_value)[1][1]
         
         laplacian_u = 2*g11*g22*ddu_dds1 \
                       + (g11*dg22_ds1 - g22*dg11_ds1)*du_ds1
@@ -257,10 +262,10 @@ class Experiment(Taylor):
          
         return coeff_laplacian_u
     
-    def f(self, known, x_value, s_value):
+    def f(self, x_value, s_value):
         unknown = self.taylor.unknown
-        g12 = self.term_linear_x_taylor_g12(known, x_value)
-        laplacian_u = self.term_linear_x_taylor_laplacian_u(known, x_value, s_value)
+        g12 = self.term_linear_x_taylor_g12(x_value)
+        laplacian_u = self.term_linear_x_taylor_laplacian_u(x_value, s_value)
         
         f = np.ndarray((len(unknown),), 'object')
         f[0] = g12[0]
@@ -283,9 +288,9 @@ class Experiment(Taylor):
         
         return unknown_init
     
-    def A(self, known, x_value, s_value, unknown_temp):
+    def A(self, x_value, s_value, unknown_temp):
         unknown = self.taylor.unknown
-        f = self.f(known, x_value, s_value)
+        f = self.f(x_value, s_value)
         
         A = np.ndarray((len(f), len(unknown),), 'object')
         for i in range(len(unknown)):
@@ -328,9 +333,9 @@ class Experiment(Taylor):
     
         return b    
     
-    def solution(self, known, x_value, s_value, unknown_theory):
+    def solution(self, x_value, s_value, unknown_theory):
         unknown = self.taylor.unknown
-        f = self.f(known, x_value, s_value)
+        f = self.f(x_value, s_value)
         solution = self.unknown_init(unknown_theory)
         
         def error_norm(solution):
@@ -439,11 +444,11 @@ if __name__ == '__main__':
             error_init = relative_error_norm(unknown_theory, unknown_init)
             error_init_array[i][j] = error_init
             
-            unknown_experiment = experiment.solution(known, x_value, s_theory, unknown_theory)
+            unknown_experiment = experiment.solution(x_value, s_theory, unknown_theory)
             error_experiment = relative_error_norm(unknown_theory, unknown_experiment)
             error_experiment_array[i][j] = error_experiment
             
-            A_init = experiment.A(known, x_value, s_theory, unknown_init)
+            A_init = experiment.A(x_value, s_theory, unknown_init)
             eig_A_init = eig(A_init)[0]
     
             
@@ -477,7 +482,7 @@ if __name__ == '__main__':
     print(error_init_array)
     print('')
     
-    unknown_experiment = experiment.solution(known, x_value, s_theory, unknown_theory)
+    unknown_experiment = experiment.solution(x_value, s_theory, unknown_theory)
     print('unknown_experiment = ')
     print(unknown_experiment_array)
     print('')
