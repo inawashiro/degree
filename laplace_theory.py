@@ -34,33 +34,39 @@ import time
 class Theory():
     """" Analytical Experessions of Parameters """
     
-    x = np.ndarray((2,), 'object')
-    x[0] = Symbol('x1', real = True)
-    x[1] = Symbol('x2', real = True)
+    def __init__(self):
+        x = np.ndarray((2,), 'object')
+        x[0] = Symbol('x1', real = True)
+        x[1] = Symbol('x2', real = True)
+        self.x = x
+        
+        s = np.ndarray((2,), 'object')
+        s[0] = Symbol('s1', real = True)
+        s[1] = Symbol('s2', real = True)
+        self.s = s
     
-    s = np.ndarray((2,), 'object')
-    s[0] = Symbol('s1', real = True)
-    s[1] = Symbol('s2', real = True)
-
-    def s1(self, x):
+    def s1(self):
+        x = self.x
         s1 = x[0]**3 - 3*x[0]*x[1]**2
         
         return s1
 
-    def s2(self, x):
+    def s2(self):
+        x = self.x
         s2 = -x[1]**3 + 3*x[0]**2*x[1]
         
         return s2
 
-    def u(self, s):
-        """ One of the Polynomial Solutions of Laplace Equation """
+    def u(self):
+        s = self.s
         u = s[0]
         
         return u
     
     def s_theory(self, x_value):
-        s1 = self.s1(x)
-        s2 = self.s2(x)
+        x = self.x
+        s1 = self.s1()
+        s2 = self.s2()
         
         s_theory = np.ndarray((len(x_value),), 'object')
         s_theory[0] = s1
@@ -74,7 +80,8 @@ class Theory():
             
     def a_theory(self, x_value):
         """  Theoretical Values of Taylor Series of s1 w.r.t. x """
-        s1 = self.s1(x)
+        x = self.x
+        s1 = self.s1()
         
         a = np.ndarray((6,), 'object')
         a[0] = s1
@@ -93,7 +100,8 @@ class Theory():
     
     def b_theory(self, x_value):
         """  Theoretical Values of Taylor Series of s w.r.t. x """
-        s2 = self.s2(x)
+        x = self.x
+        s2 = self.s2()
         
         b = np.ndarray((6,), 'object')
         b[0] = s2
@@ -112,7 +120,8 @@ class Theory():
 
     def r_theory(self, s_value):
         """ Theoretical Values of Taylor Series of u w.r.t. x """
-        u = self.u(s)
+        s = self.s
+        u = self.u()
         
         r = np.ndarray((6,), 'object')
         r[0] = u
@@ -130,50 +139,50 @@ class Theory():
         return r_theory    
         
     
-class Plot(Theory):
-    """ Display Plot """
-    
-    x = np.meshgrid(np.arange(1, 2, 0.01),
-                    np.arange(1, 2, 0.01))
-    
-    def __init__(self):
-        self.theory = Theory()
-    
-    def u_plot(self, x):
-        u = self.theory.u(s)
-        s1 = self.theory.s1(x)
-        s2 = self.theory.s2(x)
-        u = lambdify(s, u, 'numpy')
-        u = u(s1, s2)
-        
-        fig = plt.figure()
-        ax = fig.gca(projection = '3d')
-        ax.plot_wireframe(x[0], x[1], u, linewidth = 0.2)
-
-        plt.savefig('target_function_3d.pdf')
-        plt.savefig('target_function_3d.png')
-        plt.pause(.01)
-        
-    def principal_coordinate_system_plot(self, x):
-        s1 = self.theory.s1(x)
-        s2 = self.theory.s2(x)
-            
-        plt.gca().set_aspect('equal', adjustable='box')
-        
-        interval1 = np.arange(-15.0, 2.5, 2.5)
-        interval2 = np.arange(0.0, 15.0, 2.5)
-        
-        cr_s1 = plt.contour(x[0], x[1], s1, interval1, colors = 'red')
-        levels1 = cr_s1.levels
-        cr_s1.clabel(levels1[::2], fmt = '%3.1f')
-        
-        cr_s2 = plt.contour(x[0], x[1], s2, interval2, colors = 'blue')
-        levels2 = cr_s2.levels
-        cr_s2.clabel(levels2[::2], fmt = '%3.1f')
-        
-        plt.savefig('principal_coordinate_system.pdf')
-        plt.savefig('principal_coordinate_system.png')
-        plt.pause(.01)
+#class Plot(Theory):
+#    """ Display Plot """
+#    
+#    x = np.meshgrid(np.arange(1, 2, 0.01),
+#                    np.arange(1, 2, 0.01))
+#    
+#    def __init__(self):
+#        self.theory = Theory()
+#    
+#    def u_plot(self, x):
+#        u = self.theory.u(s)
+#        s1 = self.theory.s1(x)
+#        s2 = self.theory.s2(x)
+#        u = lambdify(s, u, 'numpy')
+#        u = u(s1, s2)
+#        
+#        fig = plt.figure()
+#        ax = fig.gca(projection = '3d')
+#        ax.plot_wireframe(x[0], x[1], u, linewidth = 0.2)
+#
+#        plt.savefig('target_function_3d.pdf')
+#        plt.savefig('target_function_3d.png')
+#        plt.pause(.01)
+#        
+#    def principal_coordinate_system_plot(self, x):
+#        s1 = self.theory.s1(x)
+#        s2 = self.theory.s2(x)
+#            
+#        plt.gca().set_aspect('equal', adjustable='box')
+#        
+#        interval1 = np.arange(-15.0, 2.5, 2.5)
+#        interval2 = np.arange(0.0, 15.0, 2.5)
+#        
+#        cr_s1 = plt.contour(x[0], x[1], s1, interval1, colors = 'red')
+#        levels1 = cr_s1.levels
+#        cr_s1.clabel(levels1[::2], fmt = '%3.1f')
+#        
+#        cr_s2 = plt.contour(x[0], x[1], s2, interval2, colors = 'blue')
+#        levels2 = cr_s2.levels
+#        cr_s2.clabel(levels2[::2], fmt = '%3.1f')
+#        
+#        plt.savefig('principal_coordinate_system.pdf')
+#        plt.savefig('principal_coordinate_system.png')
+#        plt.pause(.01)
         
 
 
@@ -182,14 +191,6 @@ if __name__ == '__main__':
     t0 = time.time()
     
     theory = Theory()
-    
-    x = np.ndarray((2,), 'object')
-    x[0] = Symbol('x1', real = True)
-    x[1] = Symbol('x2', real = True)
-    
-    s = np.ndarray((2,), 'object')
-    s[0] = Symbol('s1', real = True)
-    s[1] = Symbol('s2', real = True)
     
     n = 5
     x_value = np.ndarray((2,))
@@ -238,26 +239,25 @@ if __name__ == '__main__':
     print('')
 
     
-    plot = Plot()
-    
-    os.chdir('./graph')
-    
-    x = np.meshgrid(np.arange(1, 2, 0.01),
-                    np.arange(1, 2, 0.01))
-    
-    print('3D Plot of u')
-    plot.u_plot(x)
-    print('')
-    
-    print('Principal Coordinate System')
-    plot.principal_coordinate_system_plot(x)
-    print('')    
+#    plot = Plot()
+#    
+#    os.chdir('./graph')
+#    
+#    x = np.meshgrid(np.arange(1, 2, 0.01),
+#                    np.arange(1, 2, 0.01))
+#    
+#    print('3D Plot of u')
+#    plot.u_plot(x)
+#    print('')
+#    
+#    print('Principal Coordinate System')
+#    plot.principal_coordinate_system_plot(x)
+#    print('')    
     
     
     t1 = time.time()
     
     print('Elapsed Time = ', round(t1 - t0), '(s)')
-    
     
     
     
