@@ -412,8 +412,8 @@ if __name__ == '__main__':
     unknown_init_array = np.ndarray((n, n, len(unknown),))
     unknown_experiment_array = np.ndarray((n, n, len(unknown),))
     
-    error_init_array = np.ndarray((n, n,))
-    error_experiment_array = np.ndarray((n, n,))
+    error_init_array = np.ndarray((n, n, 1))
+    error_experiment_array = np.ndarray((n, n, 1))
     
     eig_A_init_array = np.ndarray((n, n, len(unknown),))
     
@@ -454,11 +454,9 @@ if __name__ == '__main__':
             
             unknown_init = experiment.unknown_init(unknown_theory)
             error_init = relative_error_norm(unknown_theory, unknown_init)
-            error_init_array[i][j] = error_init
             
             unknown_experiment = experiment.solution(unknown_theory)
             error_experiment = relative_error_norm(unknown_theory, unknown_experiment)
-            error_experiment_array[i][j] = error_experiment
             
             A_init = experiment.A(unknown_init)
             eig_A_init = eig(A_init)[0]
@@ -494,6 +492,10 @@ if __name__ == '__main__':
                 unknown_init_array[i][j][k] = unknown_init[k]
                 unknown_experiment_array[i][j][k] = unknown_experiment[k]
                 eig_A_init_array[i][j][k] = eig_A_init[k]
+                
+            for k in range(1):
+                error_init_array[i][j][k] = error_init
+                error_experiment_array[i][j][k] = error_experiment
             
     print('x_values = ')
     print(x_value_array)
@@ -530,9 +532,6 @@ if __name__ == '__main__':
     print('Elapsed Time = ', round(t1 - t0), '(s)')
         
     
-
-
-
 
 
 
