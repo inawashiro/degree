@@ -44,7 +44,7 @@ class Theory():
         s[0] = Symbol('s1', real = True)
         s[1] = Symbol('s2', real = True)
         self.s = s
-    
+            
     def s1(self):
         x = self.x
         s1 = x[0]**3 - 3*x[0]*x[1]**2
@@ -212,15 +212,26 @@ if __name__ == '__main__':
     
     t0 = time.time()
     
-    theory = Theory()
     
     n = 5
-    x_value = np.ndarray((2,))
-    x_value_array = np.ndarray((n + 1, n + 1, 2,))
-    s_theory_array = np.ndarray((n + 1, n + 1, 2,))
-    a_theory_array = np.ndarray((n + 1, n + 1, 6,))
-    b_theory_array = np.ndarray((n + 1, n + 1, 6,))
-    r_theory_array = np.ndarray((n + 1, n + 1, 6,))
+    
+    theory = Theory()
+    
+    x = theory.x
+    s = theory.s
+    a = theory.a()
+    b = theory.b()
+    r = theory.r()
+    
+    x_value = np.ndarray((len(x),))
+    s_value = np.ndarray((len(s),))
+    
+    x_value_array = np.ndarray((n + 1, n + 1, len(x),))
+    s_theory_array = np.ndarray((n + 1, n + 1, len(s),))
+    a_theory_array = np.ndarray((n + 1, n + 1, len(a),))
+    b_theory_array = np.ndarray((n + 1, n + 1, len(b),))
+    r_theory_array = np.ndarray((n + 1, n + 1, len(r),))
+    
     for i in range(n + 1):
         for j in range(n + 1):
             x_value[0] = 1.0 + i/n
@@ -231,13 +242,19 @@ if __name__ == '__main__':
             b_theory = theory.b_theory(x_value)
             r_theory = theory.r_theory(s_theory)
             
-            for k in range(len(x_value)):
+            for k in range(len(x)):
                 x_value_array[i][j][k] = x_value[k]
+                
+            for k in range(len(s)):
                 s_theory_array[i][j][k] = s_theory[k]
             
-            for k in range(len(a_theory)):
+            for k in range(len(a)):
                 a_theory_array[i][j][k] = a_theory[k]
+                
+            for k in range(len(b)):
                 b_theory_array[i][j][k] = b_theory[k]
+                
+            for k in range(len(r)):
                 r_theory_array[i][j][k] = r_theory[k]
                 
     print('x_values = ')

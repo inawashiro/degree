@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 
 # For Numerical Computation 
 import numpy as np
-from numpy import dot
+from numpy import dot, absolute
 from numpy.linalg import norm, lstsq, solve, eig
 
 # For Symbolic Notation
@@ -387,49 +387,49 @@ if __name__ == '__main__':
         
         return relative_error_norm
     
+    x = theory.x
     s = theory.s
     a = theory.a()
     b = theory.b()
     r = theory.r()
     
     n = 1
-    x_value = np.ndarray((2,))
-    x_value_array = np.ndarray((n, n, len(x_value),))
+    
+    x_value = np.ndarray((len(x),))
+    
+    x_value_array = np.ndarray((n, n, len(x),))
     s_theory_array = np.ndarray((n, n, len(s)))
     a_theory_array = np.ndarray((n, n, len(a),))
     b_theory_array = np.ndarray((n, n, len(b),))
     r_theory_array = np.ndarray((n, n, len(r),))
     
     known = np.ndarray((12,))
+    unknown = np.ndarray(18 - len(known),)
+    
+    unknown_theory = np.ndarray(len(unknown),)
+    unknown_experiment = np.ndarray(len(unknown),)
+    
     known_array = np.ndarray((n, n, len(known),))
-    
-    unknown_theory = np.ndarray((18 - len(known),))
-    unknown_theory_array = np.ndarray((n, n, len(unknown_theory),))
-    
-    unknown_init_array = np.ndarray((n, n, len(unknown_theory),))
+    unknown_theory_array = np.ndarray((n, n, len(unknown),))
+    unknown_init_array = np.ndarray((n, n, len(unknown),))
+    unknown_experiment_array = np.ndarray((n, n, len(unknown),))
     
     error_init_array = np.ndarray((n, n,))
-    
-    unknown_experiment = np.ndarray((len(unknown_theory),))
-    unknown_experiment_array = np.ndarray((n, n, len(unknown_theory),))
-    
     error_experiment_array = np.ndarray((n, n,))
     
-    eig_A_init_array = np.ndarray((n, n, len(unknown_theory),))
-    
-    
+    eig_A_init_array = np.ndarray((n, n, len(unknown),))
     
     for i in range(n):
         for j in range(n):
             x_value[0] = 1.0 + i/n
             x_value[1] = 1.0 + j/n
             
-            s_value = theory.s_theory(x_value)
+            s_theory = theory.s_theory(x_value)
             a_theory = theory.a_theory(x_value)
             b_theory = theory.b_theory(x_value)
-            r_theory = theory.r_theory(s_value)
+            r_theory = theory.r_theory(s_theory)
             
-            experiment = Experiment(known, x_value, s_value)
+            experiment = Experiment(known, x_value, s_theory)
             
             known[0] = a_theory[0]
             known[1] = a_theory[1]
@@ -461,17 +461,34 @@ if __name__ == '__main__':
             
             A_init = experiment.A(unknown_init)
             eig_A_init = eig(A_init)[0]
-    
             
-            for k in range(len(x_value)):
+            for k in range(len(unknown)):
+                if absolute(eig_A_init[k]) < 1.0e-4:
+                    eig_A_init[k] = 0
+                else:
+                    real = round(eig_A_init[k].real, 4)
+                    imag = round(eig_A_init[k].imag, 4)
+                    eig_A_init[k] = real + imag*1j
+                
+            for k in range(len(x)):
                 x_value_array[i][j][k] = x_value[k]
-                s_theory_array[i][j][k] = s_value[k]
+                
+            for k in range(len(s)):
+                s_theory_array[i][j][k] = s_theory[k]
             
-            for k in range(len(a_theory)):
+            for k in range(len(a)):
                 a_theory_array[i][j][k] = a_theory[k]
+            
+            for k in range(len(b)):
                 b_theory_array[i][j][k] = b_theory[k]
+                
+            for k in range(len(r)):
                 r_theory_array[i][j][k] = r_theory[k]
+                
+            for k in range(len(known)):
                 known_array[i][j][k] = known[k]
+                
+            for k in range(len(unknown)):
                 unknown_theory_array[i][j][k] = unknown_theory[k]
                 unknown_init_array[i][j][k] = unknown_init[k]
                 unknown_experiment_array[i][j][k] = unknown_experiment[k]
@@ -512,6 +529,13 @@ if __name__ == '__main__':
     print('Elapsed Time = ', round(t1 - t0), '(s)')
         
     
+
+
+
+
+
+
+
 
 
 
