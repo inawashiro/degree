@@ -31,7 +31,7 @@ import time
 
 
 
-class Theory():
+class Function():
     """" Analytical Experessions of Parameters """
     
     x = np.ndarray((2,), 'object')
@@ -41,7 +41,7 @@ class Theory():
     s = np.ndarray((2,), 'object')
     s[0] = Symbol('s1', real = True)
     s[1] = Symbol('s2', real = True)
-            
+                
     def s1(self, x):
         s1 = x[0]**3 - 3*x[0]*x[1]**2
         
@@ -57,7 +57,6 @@ class Theory():
         
         return u
     
-            
     def a(self, x):
         """  Theoretical Values of Taylor Series of s1 w.r.t. x """
         s1 = self.s1(x)
@@ -100,9 +99,16 @@ class Theory():
         
         return r    
     
-    def s_theory(self, x, x_value):
-        s1 = self.s1(x)
-        s2 = self.s2(x)
+
+class Theory():
+    """ Compute Theoretical Values """
+    def __init__(self):
+        self.function = Function()
+            
+    def s_theory(self, x_value):
+        x = self.function.x
+        s1 = self.function.s1(x)
+        s2 = self.function.s2(x)
         
         s_theory = np.ndarray((len(x_value),), 'object')
         s_theory[0] = s1
@@ -113,10 +119,11 @@ class Theory():
             s_theory[i] = s_theory[i](x_value[0], x_value[1])
         
         return s_theory
-            
-    def a_theory(self, x, x_value):
+    
+    def a_theory(self, x_value):
         """  Theoretical Values of Taylor Series of s1 w.r.t. x """
-        a = self.a(x)
+        x = self.function.x
+        a = self.function.a(x)
         
         a_theory = np.ndarray((len(a),))
         for i in range(len(a)):
@@ -125,9 +132,10 @@ class Theory():
         
         return a_theory
     
-    def b_theory(self, x, x_value):
+    def b_theory(self, x_value):
         """  Theoretical Values of Taylor Series of s w.r.t. x """
-        b = self.b(x)
+        x = self.function.x
+        b = self.function.b(x)
         
         b_theory = np.ndarray((len(b),))
         for i in range(len(b)):
@@ -136,9 +144,10 @@ class Theory():
         
         return b_theory
 
-    def r_theory(self, s, s_value):
+    def r_theory(self, s_value):
         """ Theoretical Values of Taylor Series of u w.r.t. x """
-        r = self.r(s)
+        s = self.function.s
+        r = self.function.r(s)
         
         r_theory = np.ndarray((len(r),))
         for i in range(len(r)):
@@ -148,20 +157,20 @@ class Theory():
         return r_theory    
         
     
-class Plot(Theory):
+class Plot(Function):
     """ Display Plot """
     
     def __init__(self):
-        self.theory = Theory()
+        self.function = Function()
         
         self.x = np.meshgrid(np.arange(1, 2, 0.01),
                              np.arange(1, 2, 0.01))
     
     def u_plot(self):
         x = self.x
-        u = self.theory.u(s)
-        s1 = self.theory.s1(x)
-        s2 = self.theory.s2(x)
+        u = self.function.u(s)
+        s1 = self.function.s1(x)
+        s2 = self.function.s2(x)
         u = lambdify(s, u, 'numpy')
         u = u(s1, s2)
         
@@ -175,8 +184,8 @@ class Plot(Theory):
        
     def principal_coordinate_system_plot(self):
         x = self.x
-        s1 = self.theory.s1(x)
-        s2 = self.theory.s2(x)
+        s1 = self.function.s1(x)
+        s2 = self.function.s2(x)
             
         plt.gca().set_aspect('equal', adjustable='box')
         
@@ -204,13 +213,13 @@ if __name__ == '__main__':
     
     n = 5
     
-    theory = Theory()
+    function = Function()
     
-    x = theory.x
-    s = theory.s
-    a = theory.a(x)
-    b = theory.b(x)
-    r = theory.r(s)
+    x = function.x
+    s = function.s
+    a = function.a(x)
+    b = function.b(x)
+    r = function.r(s)
     
     x_value = np.ndarray((len(x),))
     s_value = np.ndarray((len(s),))
@@ -221,15 +230,18 @@ if __name__ == '__main__':
     b_theory_array = np.ndarray((n + 1, n + 1, len(b),))
     r_theory_array = np.ndarray((n + 1, n + 1, len(r),))
     
+    
+    theory = Theory()
+    
     for i in range(n + 1):
         for j in range(n + 1):
             x_value[0] = 1.0 + i/n
             x_value[1] = 1.0 + j/n
             
-            s_theory = theory.s_theory(x, x_value)
-            a_theory = theory.a_theory(x, x_value)
-            b_theory = theory.b_theory(x, x_value)
-            r_theory = theory.r_theory(s, s_theory)
+            s_theory = theory.s_theory(x_value)
+            a_theory = theory.a_theory(x_value)
+            b_theory = theory.b_theory(x_value)
+            r_theory = theory.r_theory(s_theory)
             
             for k in range(len(x)):
                 x_value_array[i][j][k] = x_value[k]
@@ -268,7 +280,6 @@ if __name__ == '__main__':
 
     
     plot = Plot()
-    
     
     os.chdir('./graph')
     

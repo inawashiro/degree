@@ -378,20 +378,18 @@ if __name__ == '__main__':
     
     t0 = time.time()
     
-
-    theory = laplace_theory.Theory()
-    
+    function = laplace_theory.Function()
     
     def relative_error_norm(a, b):
         relative_error_norm = round(norm(b - a)/norm(a), 4)*100
         
         return relative_error_norm
     
-    x = theory.x
-    s = theory.s
-    a = theory.a(x)
-    b = theory.b(x)
-    r = theory.r(s)
+    x = function.x
+    s = function.s
+    a = function.a(x)
+    b = function.b(x)
+    r = function.r(s)
     
     n = 1
     
@@ -419,15 +417,18 @@ if __name__ == '__main__':
     
     eig_A_init_array = np.ndarray((n, n, len(unknown),))
     
+    
+    theory = laplace_theory.Theory()
+    
     for i in range(n):
         for j in range(n):
             x_value[0] = 1.0 + i/n
             x_value[1] = 1.0 + j/n
             
-            s_theory = theory.s_theory(x, x_value)
-            a_theory = theory.a_theory(x, x_value)
-            b_theory = theory.b_theory(x, x_value)
-            r_theory = theory.r_theory(s, s_theory)
+            s_theory = theory.s_theory(x_value)
+            a_theory = theory.a_theory(x_value)
+            b_theory = theory.b_theory(x_value)
+            r_theory = theory.r_theory(s_theory)
             
             experiment = Experiment(known, x_value, s_theory)
             
