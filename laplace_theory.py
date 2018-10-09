@@ -151,13 +151,14 @@ class Theory():
 class Plot(Theory):
     """ Display Plot """
     
-    x = np.meshgrid(np.arange(1, 2, 0.01),
-                    np.arange(1, 2, 0.01))
-    
     def __init__(self):
         self.theory = Theory()
+        
+        self.x = np.meshgrid(np.arange(1, 2, 0.01),
+                             np.arange(1, 2, 0.01))
     
     def u_plot(self):
+        x = self.x
         u = self.theory.u(s)
         s1 = self.theory.s1(x)
         s2 = self.theory.s2(x)
@@ -171,8 +172,9 @@ class Plot(Theory):
         plt.savefig('target_function_3d.pdf')
         plt.savefig('target_function_3d.png')
         plt.pause(.01)
-#        
-    def principal_coordinate_system_plot(self, x):
+       
+    def principal_coordinate_system_plot(self):
+        x = self.x
         s1 = self.theory.s1(x)
         s2 = self.theory.s2(x)
             
@@ -270,15 +272,12 @@ if __name__ == '__main__':
     
     os.chdir('./graph')
     
-    x = np.meshgrid(np.arange(1, 2, 0.01),
-                    np.arange(1, 2, 0.01))
-    
     print('3D Plot of u')
     plot.u_plot()
     print('')
     
     print('Principal Coordinate System')
-    plot.principal_coordinate_system_plot(x)
+    plot.principal_coordinate_system_plot()
     print('')    
     
     
