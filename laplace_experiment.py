@@ -225,8 +225,10 @@ class Taylor(laplace_theory.Theory):
     
 class Experiment(Taylor):
     """ Solve Equations """
-    def __init__(self, known, x_value, s_value):
+    def __init__(self, known, unknown_theroy, x_value, s_value):
         self.taylor = Taylor(known, x_value, s_value)
+        
+        self.unknown_theory = unknown_theory
         
     def term_linear_x_taylor_g12(self):
         """ 1st Order x_Taylor Series of g_12 """
@@ -284,7 +286,8 @@ class Experiment(Taylor):
         
         return f
     
-    def unknown_init(self, unknown_theory):
+    def unknown_init(self):
+        unknown_theory = self.unknown_theory
         unknown_init = ((1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[0],
                         (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[1],
                         (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[2],
@@ -340,10 +343,10 @@ class Experiment(Taylor):
     
         return b    
     
-    def solution(self, unknown_theory):
+    def solution(self):
         unknown = self.taylor.unknown
         f = self.f()
-        unknown_temp = self.unknown_init(unknown_theory)
+        unknown_temp = self.unknown_init()
         
         def error_norm(unknown_temp):
             error = np.ndarray((len(f),), 'object')
@@ -430,7 +433,7 @@ if __name__ == '__main__':
             b_theory = theory.b_theory(x_value)
             r_theory = theory.r_theory(s_theory)
             
-            experiment = Experiment(known, x_value, s_theory)
+            experiment = Experiment(known, unknown_theory, x_value, s_theory)
             
             known[0] = a_theory[0]
             known[1] = a_theory[1]
@@ -452,10 +455,10 @@ if __name__ == '__main__':
             unknown_theory[4] = b_theory[4]
             unknown_theory[5] = b_theory[5]
             
-            unknown_init = experiment.unknown_init(unknown_theory)
+            unknown_init = experiment.unknown_init()
             error_init = relative_error_norm(unknown_theory, unknown_init)
             
-            unknown_experiment = experiment.solution(unknown_theory)
+            unknown_experiment = experiment.solution()
             error_experiment = relative_error_norm(unknown_theory, unknown_experiment)
             
             A_init = experiment.A(unknown_init)
@@ -513,7 +516,7 @@ if __name__ == '__main__':
     print(error_init_array)
     print('')
     
-    unknown_experiment = experiment.solution(unknown_theory)
+    unknown_experiment = experiment.solution()
     print('unknown_experiment = ')
     print(unknown_experiment_array)
     print('')
@@ -532,9 +535,6 @@ if __name__ == '__main__':
     print('Elapsed Time = ', round(t1 - t0), '(s)')
         
     
-
-
-
 
 
 
