@@ -389,9 +389,9 @@ if __name__ == '__main__':
     
     x = theory.x
     s = theory.s
-    a = theory.a()
-    b = theory.b()
-    r = theory.r()
+    a = theory.a(x)
+    b = theory.b(x)
+    r = theory.r(s)
     
     n = 1
     
@@ -424,10 +424,10 @@ if __name__ == '__main__':
             x_value[0] = 1.0 + i/n
             x_value[1] = 1.0 + j/n
             
-            s_theory = theory.s_theory(x_value)
-            a_theory = theory.a_theory(x_value)
-            b_theory = theory.b_theory(x_value)
-            r_theory = theory.r_theory(s_theory)
+            s_theory = theory.s_theory(x, x_value)
+            a_theory = theory.a_theory(x, x_value)
+            b_theory = theory.b_theory(x, x_value)
+            r_theory = theory.r_theory(s, s_theory)
             
             experiment = Experiment(known, x_value, s_theory)
             
