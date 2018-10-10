@@ -96,11 +96,8 @@ class Theory(Function):
     """ Compute Theoretical Values """
     def __init__(self, x, s, x_value):
         self.function = Function()
-            
         self.x = x
-        
         self.s = s
-        
         self.x_value = x_value
         
     def s_theory(self):
@@ -163,7 +160,6 @@ class Plot(Function):
     
     def __init__(self, x_plot):
         self.function = Function()
-    
         self.x_plot = x_plot
         
     def u_plot(self):

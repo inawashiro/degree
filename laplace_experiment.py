@@ -34,22 +34,13 @@ import time
 class Taylor(laplace_theory.Theory):
     """ Taylor Series Expressions of Parameters"""
     
-    def __init__(self, known, x, s, x_value, s_value):
-        self.known = known
-        
-        unknown = np.ndarray((6,), 'object')
-        unknown[0] = Symbol('a11', real = True)
-        unknown[1] = Symbol('a12', real = True)
-        unknown[2] = Symbol('a22', real = True)
-        unknown[3] = Symbol('b11', real = True)
-        unknown[4] = Symbol('b12', real = True)
-        unknown[5] = Symbol('b22', real = True)
-        self.unknown = unknown
-    
+    def __init__(self, x, s, x_value, s_value, known, unknown):
         self.x = x
         self.s = s
         self.x_value = x_value
         self.s_value = s_value
+        self.known = known
+        self.unknown = unknown
         
     def x_taylor_s1(self):
         """ 2nd Order x_Taylor Series of s1 """
@@ -216,9 +207,8 @@ class Taylor(laplace_theory.Theory):
     
 class Experiment(Taylor):
     """ Solve Equations """
-    def __init__(self, known, unknown_theroy, x_value, s_value):
-        self.taylor = Taylor(known, x, s, x_value, s_value)
-        
+    def __init__(self, x_value, s_value, known, unknown_theroy):
+        self.taylor = Taylor(x, s, x_value, s_value, known, unknown)
         self.unknown_theory = unknown_theory
         
     def term_linear_x_taylor_g12(self):
@@ -387,6 +377,18 @@ if __name__ == '__main__':
     b = function.b(x)
     r = function.r(s)
     
+    known = np.ndarray((12,))
+    
+    unknown = np.ndarray((18 - len(known),), 'object')
+    unknown[0] = Symbol('a11', real = True)
+    unknown[1] = Symbol('a12', real = True)
+    unknown[2] = Symbol('a22', real = True)
+    unknown[3] = Symbol('b11', real = True)
+    unknown[4] = Symbol('b12', real = True)
+    unknown[5] = Symbol('b22', real = True)
+    
+    
+    
     n = 1
     
     x_value = np.ndarray((len(x),))
@@ -396,9 +398,6 @@ if __name__ == '__main__':
     a_theory_array = np.ndarray((n, n, len(a),))
     b_theory_array = np.ndarray((n, n, len(b),))
     r_theory_array = np.ndarray((n, n, len(r),))
-    
-    known = np.ndarray((12,))
-    unknown = np.ndarray(18 - len(known),)
     
     unknown_theory = np.ndarray(len(unknown),)
     unknown_experiment = np.ndarray(len(unknown),)
@@ -431,7 +430,7 @@ if __name__ == '__main__':
             b_theory = theory.b_theory()
             r_theory = theory.r_theory(s_theory)
             
-            experiment = Experiment(known, unknown_theory, x_value, s_theory)
+            experiment = Experiment(x_value, s_theory, known, unknown_theory)
             
             known[0] = a_theory[0]
             known[1] = a_theory[1]
