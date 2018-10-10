@@ -102,13 +102,16 @@ class Function():
 
 class Theory():
     """ Compute Theoretical Values """
-    def __init__(self):
+    def __init__(self, x_value):
         self.function = Function()
             
-    def s_theory(self, x_value):
+        self.x_value = x_value
+        
+    def s_theory(self):
         x = self.function.x
         s1 = self.function.s1(x)
         s2 = self.function.s2(x)
+        x_value = self.x_value
         
         s_theory = np.ndarray((len(x_value),), 'object')
         s_theory[0] = s1
@@ -120,10 +123,11 @@ class Theory():
         
         return s_theory
     
-    def a_theory(self, x_value):
+    def a_theory(self):
         """  Theoretical Values of Taylor Series of s1 w.r.t. x """
         x = self.function.x
         a = self.function.a(x)
+        x_value = self.x_value
         
         a_theory = np.ndarray((len(a),))
         for i in range(len(a)):
@@ -132,10 +136,11 @@ class Theory():
         
         return a_theory
     
-    def b_theory(self, x_value):
-        """  Theoretical Values of Taylor Series of s w.r.t. x """
+    def b_theory(self):
+        """  Theoretical Values of Taylor Series of s2 w.r.t. x """
         x = self.function.x
         b = self.function.b(x)
+        x_value = self.x_value
         
         b_theory = np.ndarray((len(b),))
         for i in range(len(b)):
@@ -144,15 +149,15 @@ class Theory():
         
         return b_theory
 
-    def r_theory(self, s_value):
-        """ Theoretical Values of Taylor Series of u w.r.t. x """
+    def r_theory(self, s_theory):
+        """ Theoretical Values of Taylor Series of u w.r.t. s """
         s = self.function.s
         r = self.function.r(s)
         
         r_theory = np.ndarray((len(r),))
         for i in range(len(r)):
             temp = lambdify(s, r[i], 'numpy')
-            r_theory[i] = temp(s_value[0], s_value[1])
+            r_theory[i] = temp(s_theory[0], s_theory[1])
         
         return r_theory    
         
@@ -225,29 +230,29 @@ if __name__ == '__main__':
     s_value = np.ndarray((len(s),))
     
     x_value_array = np.ndarray((n + 1, n + 1, len(x),))
-    s_theory_array = np.ndarray((n + 1, n + 1, len(s),))
+    s_value_array = np.ndarray((n + 1, n + 1, len(s),))
     a_theory_array = np.ndarray((n + 1, n + 1, len(a),))
     b_theory_array = np.ndarray((n + 1, n + 1, len(b),))
     r_theory_array = np.ndarray((n + 1, n + 1, len(r),))
     
     
-    theory = Theory()
+    theory = Theory(x_value)
     
     for i in range(n + 1):
         for j in range(n + 1):
             x_value[0] = 1.0 + i/n
             x_value[1] = 1.0 + j/n
             
-            s_theory = theory.s_theory(x_value)
-            a_theory = theory.a_theory(x_value)
-            b_theory = theory.b_theory(x_value)
+            s_theory = theory.s_theory()
+            a_theory = theory.a_theory()
+            b_theory = theory.b_theory()
             r_theory = theory.r_theory(s_theory)
             
             for k in range(len(x)):
                 x_value_array[i][j][k] = x_value[k]
                 
             for k in range(len(s)):
-                s_theory_array[i][j][k] = s_theory[k]
+                s_value_array[i][j][k] = s_value[k]
             
             for k in range(len(a)):
                 a_theory_array[i][j][k] = a_theory[k]
@@ -263,7 +268,7 @@ if __name__ == '__main__':
     print('')
     
     print('s_theory = ')
-    print(s_theory_array)
+    print(s_value_array)
     print('')
     
     print('a_theory = ')
@@ -312,9 +317,4 @@ if __name__ == '__main__':
     
     
     
-    
-    
-    
-    
-    
-    
+                                                                                                                                    
