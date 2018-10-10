@@ -388,8 +388,15 @@ if __name__ == '__main__':
         
         return relative_error_norm
     
-    x = function.x
-    s = function.s
+    
+    x = np.ndarray((2,), 'object')
+    x[0] = Symbol('x1', real = True)
+    x[1] = Symbol('x2', real = True)
+    
+    s = np.ndarray((2,), 'object')
+    s[0] = Symbol('s1', real = True)
+    s[1] = Symbol('s2', real = True)
+    
     a = function.a(x)
     b = function.b(x)
     r = function.r(s)
@@ -421,7 +428,7 @@ if __name__ == '__main__':
     eig_A_init_array = np.ndarray((n, n, len(unknown),))
     
     
-    theory = laplace_theory.Theory(x_value)
+    theory = laplace_theory.Theory(x, s, x_value)
     
     for i in range(n):
         for j in range(n):

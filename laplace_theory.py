@@ -34,14 +34,6 @@ import time
 class Function():
     """" Analytical Experessions of Parameters """
     
-    x = np.ndarray((2,), 'object')
-    x[0] = Symbol('x1', real = True)
-    x[1] = Symbol('x2', real = True)
-    
-    s = np.ndarray((2,), 'object')
-    s[0] = Symbol('s1', real = True)
-    s[1] = Symbol('s2', real = True)
-                
     def s1(self, x):
         s1 = x[0]**3 - 3*x[0]*x[1]**2
         
@@ -100,15 +92,19 @@ class Function():
         return r    
     
 
-class Theory():
+class Theory(Function):
     """ Compute Theoretical Values """
-    def __init__(self, x_value):
+    def __init__(self, x, s, x_value):
         self.function = Function()
             
+        self.x = x
+        
+        self.s = s
+        
         self.x_value = x_value
         
     def s_theory(self):
-        x = self.function.x
+        x = self.x
         s1 = self.function.s1(x)
         s2 = self.function.s2(x)
         x_value = self.x_value
@@ -125,7 +121,7 @@ class Theory():
     
     def a_theory(self):
         """  Theoretical Values of Taylor Series of s1 w.r.t. x """
-        x = self.function.x
+        x = self.x
         a = self.function.a(x)
         x_value = self.x_value
         
@@ -138,7 +134,7 @@ class Theory():
     
     def b_theory(self):
         """  Theoretical Values of Taylor Series of s2 w.r.t. x """
-        x = self.function.x
+        x = self.x
         b = self.function.b(x)
         x_value = self.x_value
         
@@ -151,7 +147,7 @@ class Theory():
 
     def r_theory(self, s_theory):
         """ Theoretical Values of Taylor Series of u w.r.t. s """
-        s = self.function.s
+        s = self.s
         r = self.function.r(s)
         
         r_theory = np.ndarray((len(r),))
@@ -214,13 +210,18 @@ if __name__ == '__main__':
     
     t0 = time.time()
     
+    x = np.ndarray((2,), 'object')
+    x[0] = Symbol('x1', real = True)
+    x[1] = Symbol('x2', real = True)
     
-    n = 5
+    s = np.ndarray((2,), 'object')
+    s[0] = Symbol('s1', real = True)
+    s[1] = Symbol('s2', real = True)
     
     function = Function()
     
-    x = function.x
-    s = function.s
+    n = 5
+
     a = function.a(x)
     b = function.b(x)
     r = function.r(s)
@@ -235,7 +236,7 @@ if __name__ == '__main__':
     r_theory_array = np.ndarray((n + 1, n + 1, len(r),))
     
     
-    theory = Theory(x_value)
+    theory = Theory(x, s, x_value)
     
     for i in range(n + 1):
         for j in range(n + 1):
