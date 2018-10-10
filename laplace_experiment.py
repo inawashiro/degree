@@ -34,7 +34,7 @@ import time
 class Taylor(laplace_theory.Theory):
     """ Taylor Series Expressions of Parameters"""
     
-    def __init__(self, known, x_value, s_value):
+    def __init__(self, known, x, s, x_value, s_value):
         self.known = known
         
         unknown = np.ndarray((6,), 'object')
@@ -45,19 +45,10 @@ class Taylor(laplace_theory.Theory):
         unknown[4] = Symbol('b12', real = True)
         unknown[5] = Symbol('b22', real = True)
         self.unknown = unknown
-        
-        x = np.ndarray((2,), 'object')
-        x[0] = Symbol('x1', real = True)
-        x[1] = Symbol('x2', real = True)
-        self.x = x
     
-        s = np.ndarray((2,), 'object')
-        s[0] = Symbol('s1', real = True)
-        s[1] = Symbol('s2', real = True)
+        self.x = x
         self.s = s
-        
         self.x_value = x_value
-        
         self.s_value = s_value
         
     def x_taylor_s1(self):
@@ -226,7 +217,7 @@ class Taylor(laplace_theory.Theory):
 class Experiment(Taylor):
     """ Solve Equations """
     def __init__(self, known, unknown_theroy, x_value, s_value):
-        self.taylor = Taylor(known, x_value, s_value)
+        self.taylor = Taylor(known, x, s, x_value, s_value)
         
         self.unknown_theory = unknown_theory
         
@@ -381,13 +372,8 @@ if __name__ == '__main__':
     
     t0 = time.time()
     
+    
     function = laplace_theory.Function()
-    
-    def relative_error_norm(a, b):
-        relative_error_norm = round(norm(b - a)/norm(a), 4)*100
-        
-        return relative_error_norm
-    
     
     x = np.ndarray((2,), 'object')
     x[0] = Symbol('x1', real = True)
@@ -429,6 +415,11 @@ if __name__ == '__main__':
     
     
     theory = laplace_theory.Theory(x, s, x_value)
+    
+    def relative_error_norm(a, b):
+        relative_error_norm = round(norm(b - a)/norm(a), 4)*100
+        
+        return relative_error_norm
     
     for i in range(n):
         for j in range(n):
