@@ -338,7 +338,7 @@ class Experiment(Taylor):
             A = self.A(unknown_temp)
             b = self.b(unknown_temp)
             unknown_temp = lstsq(A, b)[0]
-#            solution = solve(A, b)        
+#            unknown_temp = solve(A, b)        
             error = error_norm(unknown_temp)
         
         solution = unknown_temp
