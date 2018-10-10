@@ -165,43 +165,42 @@ class Theory():
 class Plot(Function):
     """ Display Plot """
     
-    def __init__(self):
+    def __init__(self, x_plot):
         self.function = Function()
-        
-        self.x = np.meshgrid(np.arange(1, 2, 0.01),
-                             np.arange(1, 2, 0.01))
     
+        self.x_plot = x_plot
+        
     def u_plot(self):
-        x = self.x
+        x_plot = self.x_plot
         u = self.function.u(s)
-        s1 = self.function.s1(x)
-        s2 = self.function.s2(x)
+        s1 = self.function.s1(x_plot)
+        s2 = self.function.s2(x_plot)
         u = lambdify(s, u, 'numpy')
         u = u(s1, s2)
         
         fig = plt.figure()
         ax = fig.gca(projection = '3d')
-        ax.plot_wireframe(x[0], x[1], u, linewidth = 0.2)
+        ax.plot_wireframe(x_plot[0], x_plot[1], u, linewidth = 0.2)
 
         plt.savefig('target_function_3d.pdf')
         plt.savefig('target_function_3d.png')
         plt.pause(.01)
        
     def principal_coordinate_system_plot(self):
-        x = self.x
-        s1 = self.function.s1(x)
-        s2 = self.function.s2(x)
+        x_plot = self.x_plot
+        s1 = self.function.s1(x_plot)
+        s2 = self.function.s2(x_plot)
             
         plt.gca().set_aspect('equal', adjustable='box')
         
         interval1 = np.arange(-15.0, 2.5, 2.5)
         interval2 = np.arange(0.0, 15.0, 2.5)
         
-        cr_s1 = plt.contour(x[0], x[1], s1, interval1, colors = 'red')
+        cr_s1 = plt.contour(x_plot[0], x_plot[1], s1, interval1, colors = 'red')
         levels1 = cr_s1.levels
         cr_s1.clabel(levels1[::2], fmt = '%3.1f')
         
-        cr_s2 = plt.contour(x[0], x[1], s2, interval2, colors = 'blue')
+        cr_s2 = plt.contour(x_plot[0], x_plot[1], s2, interval2, colors = 'blue')
         levels2 = cr_s2.levels
         cr_s2.clabel(levels2[::2], fmt = '%3.1f')
         
@@ -283,8 +282,12 @@ if __name__ == '__main__':
     print(r_theory_array)
     print('')
 
+
     
-    plot = Plot()
+    x_plot = np.meshgrid(np.arange(1, 2, 0.01),
+                         np.arange(1, 2, 0.01))
+    
+    plot = Plot(x_plot)
     
     os.chdir('./graph')
     
