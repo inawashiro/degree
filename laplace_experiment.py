@@ -53,8 +53,8 @@ class Taylor(laplace_theory.Theory):
                + known[1]*(x[0] - x_value[0]) \
                + known[2]*(x[1] - x_value[1]) \
                + known[3]*(x[0] - x_value[0])**2/2 \
-               + unknown[0]*(x[0] - x_value[0])*(x[1] - x_value[1]) \
-               + unknown[1]*(x[1] - x_value[1])**2/2
+               + known[4]*(x[0] - x_value[0])*(x[1] - x_value[1]) \
+               + unknown[0]*(x[1] - x_value[1])**2/2
         
     def x_taylor_s2(self):
         """ 2nd Order x_Taylor Series of s2 """
@@ -63,12 +63,12 @@ class Taylor(laplace_theory.Theory):
         x = self.x
         x_value = self.x_value
         
-        return known[4] \
-               + known[5]*(x[0] - x_value[0]) \
-               + known[6]*(x[1] - x_value[1]) \
-               + known[7]*(x[0] - x_value[0])**2/2 \
-               + known[8]*(x[0] - x_value[0])*(x[1] - x_value[1]) \
-               + known[9]*(x[1] - x_value[1])**2/2
+        return known[5] \
+               + known[6]*(x[0] - x_value[0]) \
+               + known[7]*(x[1] - x_value[1]) \
+               + known[8]*(x[0] - x_value[0])**2/2 \
+               + known[9]*(x[0] - x_value[0])*(x[1] - x_value[1]) \
+               + known[10]*(x[1] - x_value[1])**2/2
     
     def s_taylor_u(self):
         """ 2nd Order s_Taylor Series of u """
@@ -76,12 +76,12 @@ class Taylor(laplace_theory.Theory):
         s = self.s
         s_value = self.s_value
         
-        return known[10] \
-               + known[11]*(s[0] - s_value[0]) \
-               + known[12]*(s[1] - s_value[1]) \
-               + known[13]*(s[0] - s_value[0])**2/2 \
-               + known[14]*(s[0] - s_value[0])*(s[1] - s_value[1]) \
-               + known[15]*(s[1] - s_value[1])**2/2
+        return known[11] \
+               + known[12]*(s[0] - s_value[0]) \
+               + known[13]*(s[1] - s_value[1]) \
+               + known[14]*(s[0] - s_value[0])**2/2 \
+               + known[15]*(s[0] - s_value[0])*(s[1] - s_value[1]) \
+               + known[16]*(s[1] - s_value[1])**2/2
            
 #    def x_taylor_u(self):
 #        """ 4th Order x_taylor Series of u"""
@@ -259,7 +259,7 @@ class Experiment(Taylor):
         
         f = np.ndarray((len(unknown),), 'object')
         f[0] = g12[0]
-        f[1] = g12[1]
+#        f[1] = g12[1]
 #        f[2] = g12[2]
 #        f[3] = laplacian_u[0]
 #        f[4] = laplacian_u[1]
@@ -277,7 +277,7 @@ class Experiment(Taylor):
                 A[i][j] = diff(f[i], unknown[j])
                 A[i][j] = lambdify(unknown, A[i][j], 'numpy')
                 A[i][j] = A[i][j](unknown_temp[0],
-                                  unknown_temp[1],
+#                                  unknown_temp[1],
 #                                  unknown_temp[2],
 #                                  unknown_temp[3],
 #                                  unknown_temp[4],
@@ -295,14 +295,14 @@ class Experiment(Taylor):
         for i in range(len(f)):
             b[i] = - f[i] \
                    + diff(f[i], unknown[0])*unknown[0] \
-                   + diff(f[i], unknown[1])*unknown[1] \
+#                   + diff(f[i], unknown[1])*unknown[1] \
 #                   + diff(f[i], unknown[2])*unknown[2] \
 #                   + diff(f[i], unknown[3])*unknown[3] \
 #                   + diff(f[i], unknown[4])*unknown[4] \
 #                   + diff(f[i], unknown[5])*unknown[5]
             b[i] = lambdify(unknown, b[i], 'numpy')
             b[i] = b[i](unknown_temp[0],
-                        unknown_temp[1],
+#                        unknown_temp[1],
 #                        unknown_temp[2],
 #                        unknown_temp[3],
 #                        unknown_temp[4],
@@ -322,7 +322,7 @@ class Experiment(Taylor):
             for i in range(len(f)):
                 error[i] = lambdify(unknown, f[i], 'numpy')
                 error[i] = error[i](unknown_temp[0],
-                                    unknown_temp[1],
+#                                    unknown_temp[1],
 #                                    unknown_temp[2],
 #                                    unknown_temp[3],
 #                                    unknown_temp[4],
@@ -366,11 +366,11 @@ if __name__ == '__main__':
     b = function.b(x)
     r = function.r(s)
     
-    known = np.ndarray((16,))
+    known = np.ndarray((17,))
     
     unknown = np.ndarray((18 - len(known),), 'object')
     unknown[0] = Symbol('a11', real = True)
-    unknown[1] = Symbol('a12', real = True)
+#    unknown[1] = Symbol('a12', real = True)
 #    unknown[2] = Symbol('a22', real = True)
 #    unknown[3] = Symbol('b11', real = True)
 #    unknown[4] = Symbol('b12', real = True)
@@ -440,14 +440,14 @@ if __name__ == '__main__':
             known[15] = r_theory[5]
             
             unknown_theory[0] = a_theory[3]
-            unknown_theory[1] = a_theory[4]
+#            unknown_theory[1] = a_theory[4]
 #            unknown_theory[2] = a_theory[5]
 #            unknown_theory[3] = b_theory[3]
 #            unknown_theory[4] = b_theory[4]
 #            unknown_theory[5] = b_theory[5]
             
             unknown_init = ((1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[0],
-                            (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[1],
+#                            (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[1],
 #                            (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[2],
 #                            (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[3],
 #                            (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[4],
