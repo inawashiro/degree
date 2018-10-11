@@ -206,6 +206,7 @@ if __name__ == '__main__':
     
     t0 = time.time()
     
+    
     x = np.ndarray((2,), 'object')
     x[0] = Symbol('x1', real = True)
     x[1] = Symbol('x2', real = True)
@@ -214,8 +215,9 @@ if __name__ == '__main__':
     s[0] = Symbol('s1', real = True)
     s[1] = Symbol('s2', real = True)
     
+    ######################
     function = Function()
-    
+    ######################
     n = 5
 
     a = function.a(x)
@@ -231,18 +233,18 @@ if __name__ == '__main__':
     b_theory_array = np.ndarray((n + 1, n + 1, len(b),))
     r_theory_array = np.ndarray((n + 1, n + 1, len(r),))
     
-    
+    ###############################
     theory = Theory(x, s, x_value)
-    
+    ###############################
     for i in range(n + 1):
         for j in range(n + 1):
             x_value[0] = 1.0 + i/n
             x_value[1] = 1.0 + j/n
             
-            s_theory = theory.s_theory()
+            s_value = theory.s_theory()
             a_theory = theory.a_theory()
             b_theory = theory.b_theory()
-            r_theory = theory.r_theory(s_theory)
+            r_theory = theory.r_theory(s_value)
             
             for k in range(len(x)):
                 x_value_array[i][j][k] = x_value[k]
@@ -279,13 +281,13 @@ if __name__ == '__main__':
     print(r_theory_array)
     print('')
 
-
     
     x_plot = np.meshgrid(np.arange(1, 2, 0.01),
                          np.arange(1, 2, 0.01))
     
+    ####################
     plot = Plot(x_plot)
-    
+    ####################
     os.chdir('./graph')
     
     print('3D Plot of u')
@@ -300,6 +302,7 @@ if __name__ == '__main__':
     t1 = time.time()
     
     print('Elapsed Time = ', round(t1 - t0), '(s)')
+    
     
     
     

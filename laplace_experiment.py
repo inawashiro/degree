@@ -352,8 +352,9 @@ if __name__ == '__main__':
     t0 = time.time()
     
     
+    #####################################
     function = laplace_theory.Function()
-    
+    #####################################
     x = np.ndarray((2,), 'object')
     x[0] = Symbol('x1', real = True)
     x[1] = Symbol('x2', real = True)
@@ -376,21 +377,19 @@ if __name__ == '__main__':
     unknown[4] = Symbol('b12', real = True)
     unknown[5] = Symbol('b22', real = True)
     
-    
-    
     n = 1
     
     x_value = np.ndarray((len(x),))
     
     x_value_array = np.ndarray((n, n, len(x),))
-    s_theory_array = np.ndarray((n, n, len(s)))
+    s_value_array = np.ndarray((n, n, len(s)))
     a_theory_array = np.ndarray((n, n, len(a),))
     b_theory_array = np.ndarray((n, n, len(b),))
     r_theory_array = np.ndarray((n, n, len(r),))
     
     unknown_theory = np.ndarray(len(unknown),)
     unknown_init = np.ndarray(len(unknown),)
-    unknown_experiment = np.ndarray(len(unknown),)
+    unknown_experiment = np.ndarray(1,)
     
     known_array = np.ndarray((n, n, len(known),))
     unknown_theory_array = np.ndarray((n, n, len(unknown),))
@@ -404,9 +403,9 @@ if __name__ == '__main__':
     b_init_array = np.ndarray((n, n, len(unknown),))
     eigvals_A_init_array = np.ndarray((n, n, len(unknown),))
     
-    
+    ##############################################
     theory = laplace_theory.Theory(x, s, x_value)
-    
+    ##############################################
     def relative_error_norm(b, a):
         relative_error_norm = round(norm(b - a)/norm(a), 4)*100
         
@@ -417,12 +416,10 @@ if __name__ == '__main__':
             x_value[0] = 1.0 + i/n
             x_value[1] = 1.0 + j/n
             
-            s_theory = theory.s_theory()
+            s_value = theory.s_theory()
             a_theory = theory.a_theory()
             b_theory = theory.b_theory()
-            r_theory = theory.r_theory(s_theory)
-            
-            experiment = Experiment(x_value, s_theory, known, unknown_theory)
+            r_theory = theory.r_theory(s_value)
             
             known[0] = a_theory[0]
             known[1] = a_theory[1]
@@ -444,22 +441,18 @@ if __name__ == '__main__':
             unknown_theory[4] = b_theory[4]
             unknown_theory[5] = b_theory[5]
             
-#            unknown_init = ((1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[0],
-#                            (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[1],
-#                            (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[2],
-#                            (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[3],
-#                            (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[4],
-#                            (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[5]
-#                            )
-            unknown_init = ((1 + random.uniform(-100.0, 100.0)/100)*unknown_theory[0],
-                            (1 + random.uniform(-100.0, 100.0)/100)*unknown_theory[1],
-                            (1 + random.uniform(-100.0, 100.0)/100)*unknown_theory[2],
-                            (1 + random.uniform(-100.0, 100.0)/100)*unknown_theory[3],
-                            (1 + random.uniform(-100.0, 100.0)/100)*unknown_theory[4],
-                            (1 + random.uniform(-100.0, 100.0)/100)*unknown_theory[5]
+            unknown_init = ((1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[0],
+                            (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[1],
+                            (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[2],
+                            (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[3],
+                            (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[4],
+                            (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[5]
                             )
             error_init = relative_error_norm(unknown_init, unknown_theory)
             
+            ################################################################
+            experiment = Experiment(x_value, s_value, known, unknown_init)
+            ################################################################
             unknown_experiment = experiment.solution()
             error_experiment = relative_error_norm(unknown_experiment, unknown_theory)
             
@@ -479,7 +472,7 @@ if __name__ == '__main__':
                 x_value_array[i][j][k] = x_value[k]
                 
             for k in range(len(s)):
-                s_theory_array[i][j][k] = s_theory[k]
+                s_value_array[i][j][k] = s_value[k]
             
             for k in range(len(a)):
                 a_theory_array[i][j][k] = a_theory[k]
@@ -506,7 +499,7 @@ if __name__ == '__main__':
             for k in range(1):
                 error_init_array[i][j][k] = error_init
                 error_experiment_array[i][j][k] = error_experiment
-            
+              
     print('x_values = ')
     print(x_value_array)
     print('')
@@ -531,10 +524,6 @@ if __name__ == '__main__':
     print(error_experiment_array)
     print('')
     
-    print('A_init = ')
-    print(A_init_array)
-    print('')
-    
     print('Eigen Vaules of A_init = ')
     print(eigvals_A_init_array)
     print('')
@@ -545,6 +534,8 @@ if __name__ == '__main__':
     print('Elapsed Time = ', round(t1 - t0), '(s)')
         
     
+
+
 
 
 
