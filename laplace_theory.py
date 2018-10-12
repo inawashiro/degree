@@ -142,10 +142,11 @@ class Theory(Function):
         
         return b_theory
 
-    def r_theory(self, s_theory):
+    def r_theory(self):
         """ Theoretical Values of Taylor Series of u w.r.t. s """
         s = self.s
         r = self.function.r(s)
+        s_theory = self.s_theory()
         
         r_theory = np.ndarray((len(r),))
         for i in range(len(r)):
@@ -244,7 +245,7 @@ if __name__ == '__main__':
             s_value = theory.s_theory()
             a_theory = theory.a_theory()
             b_theory = theory.b_theory()
-            r_theory = theory.r_theory(s_value)
+            r_theory = theory.r_theory()
             
             for k in range(len(x)):
                 x_value_array[i][j][k] = x_value[k]
@@ -281,7 +282,6 @@ if __name__ == '__main__':
     print(r_theory_array)
     print('')
 
-    
     x_plot = np.meshgrid(np.arange(1, 2, 0.01),
                          np.arange(1, 2, 0.01))
     
@@ -302,9 +302,6 @@ if __name__ == '__main__':
     t1 = time.time()
     
     print('Elapsed Time = ', round(t1 - t0), '(s)')
-    
-    
-    
     
     
     
