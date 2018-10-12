@@ -337,7 +337,6 @@ class Experiment(Taylor):
         while error > 1.0e-8:
             A = self.A(unknown_temp)
             b = self.b(unknown_temp)
-#            unknown_temp = lstsq(A, b)[0]
             unknown_temp = solve(A, b)        
             error = error_norm(unknown_temp)
         
@@ -419,7 +418,7 @@ if __name__ == '__main__':
             s_value = theory.s_theory()
             a_theory = theory.a_theory()
             b_theory = theory.b_theory()
-            r_theory = theory.r_theory(s_value)
+            r_theory = theory.r_theory()
             
             known[0] = a_theory[0]
             known[1] = a_theory[1]
@@ -445,13 +444,13 @@ if __name__ == '__main__':
 #            unknown_theory[4] = b_theory[4]
 #            unknown_theory[5] = b_theory[5]
             
-#            unknown_init = ((1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[0],
-#                            (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[1],
-#                            (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[2],
-##                            (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[3],
-##                            (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[4],
-##                            (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[5]
-#                            )
+            unknown_init = ((1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[0],
+                            (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[1],
+                            (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[2],
+#                            (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[3],
+#                            (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[4],
+#                            (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[5]
+                            )
             unknown_init = ((1 + random.uniform(-100.0, 100.0)/100)*unknown_theory[0],
                             (1 + random.uniform(-100.0, 100.0)/100)*unknown_theory[1],
                             (1 + random.uniform(-100.0, 100.0)/100)*unknown_theory[2],
@@ -550,11 +549,6 @@ if __name__ == '__main__':
     print('Elapsed Time = ', round(t1 - t0), '(s)')
         
     
-
-
-
-
-
 
 
 
