@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 # For Numerical Computation 
 import numpy as np
 from numpy import dot, absolute
-from numpy.linalg import norm, lstsq, solve, eig, eigvals
+from numpy.linalg import norm, solve, eigvals
 
 # For Symbolic Notation
 import sympy as sym
@@ -451,13 +451,13 @@ if __name__ == '__main__':
 #                            (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[4],
 #                            (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[5]
                             )
-            unknown_init = ((1 + random.uniform(-100.0, 100.0)/100)*unknown_theory[0],
-                            (1 + random.uniform(-100.0, 100.0)/100)*unknown_theory[1],
-                            (1 + random.uniform(-100.0, 100.0)/100)*unknown_theory[2],
-#                            (1 + random.uniform(-100.0, 100.0)/100)*unknown_theory[3],
-#                            (1 + random.uniform(-100.0, 100.0)/100)*unknown_theory[4],
-#                            (1 + random.uniform(-100.0, 100.0)/100)*unknown_theory[5]
-                            )
+#            unknown_init = ((1 + random.uniform(-100.0, 100.0)/100)*unknown_theory[0],
+#                            (1 + random.uniform(-100.0, 100.0)/100)*unknown_theory[1],
+#                            (1 + random.uniform(-100.0, 100.0)/100)*unknown_theory[2],
+##                            (1 + random.uniform(-100.0, 100.0)/100)*unknown_theory[3],
+##                            (1 + random.uniform(-100.0, 100.0)/100)*unknown_theory[4],
+##                            (1 + random.uniform(-100.0, 100.0)/100)*unknown_theory[5]
+#                            )
             error_init = relative_error_norm(unknown_init, unknown_theory)
             
             ################################################################
