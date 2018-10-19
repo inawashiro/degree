@@ -33,6 +33,9 @@ import time
 
 class Function():
     """" Analytical Experessions of Parameters """
+    def __init__(self, x, s):
+        self.x = x
+        self.s = s
     
     def s1(self, x):
         s1 = x[0]**3 - 3*x[0]*x[1]**2
@@ -94,10 +97,10 @@ class Function():
 
 class Theory(Function):
     """ Compute Theoretical Values """
-    def __init__(self, x, s, x_value):
-        self.function = Function()
-        self.x = x
-        self.s = s
+    def __init__(self, x_value):
+        self.function = Function(x, s)
+        self.x = self.function.x
+        self.s = self.function.s
         self.x_value = x_value
         
     def s_theory(self):
@@ -160,7 +163,7 @@ class Plot(Function):
     """ Display Plot """
     
     def __init__(self, x_plot):
-        self.function = Function()
+        self.function = Function(x, s)
         self.x_plot = x_plot
         
     def u_plot(self):
@@ -217,7 +220,7 @@ if __name__ == '__main__':
     s[1] = Symbol('s2', real = True)
     
     ######################
-    function = Function()
+    function = Function(x, s)
     ######################
     n = 5
 
@@ -235,7 +238,7 @@ if __name__ == '__main__':
     r_theory_array = np.ndarray((n + 1, n + 1, len(r),))
     
     ###############################
-    theory = Theory(x, s, x_value)
+    theory = Theory(x_value)
     ###############################
     for i in range(n + 1):
         for j in range(n + 1):
