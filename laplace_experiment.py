@@ -26,6 +26,9 @@ import random
 # For Measuring Computation Time
 import time
 
+# For Symbolic Expression Displaying
+from IPython.display import display
+
 
 
 class TaylorExpansion():
@@ -533,10 +536,10 @@ if __name__ == '__main__':
             s_target[0] = a_theory[0]
             s_target[1] = b_theory[0]
             
-            s_boundary[0][0] = s_target[0] - 0.1
+            s_boundary[0][0] = s_target[0] - 1.0
             s_boundary[0][1] = s_target[1] 
             
-            s_boundary[1][0] = s_target[0] + 0.1
+            s_boundary[1][0] = s_target[0] + 1.0
             s_boundary[1][1] = s_target[1] 
             
             for k in range(2):
@@ -612,6 +615,11 @@ if __name__ == '__main__':
                     imag = round(eigvals_A_init[k].imag, 2)
                     eigvals_A_init[k] = real + imag*1j
                 
+                for l in range(len(unknown)):
+#                    if absolute(A_init[k][l]) < 1.0e-3:
+#                        A_init[k][l] = 0
+                    A_init[k][l] = round(A_init[k][l], 4)
+            
             for k in range(len(x)):
                 x_target_array[i][j][k] = x_target[k]
                 
