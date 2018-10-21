@@ -28,20 +28,16 @@ import time
 
 
 class X_Taylor_S(laplace_theory.Function):
-    """ x_Taylor Series Expressions of S """
+    """ x_Taylor Series Expressions of s """
     
     def __init__(self, x, x_target, known, unknown):
-        self.x = x
         self.x_target = x_target
         self.known = known
-        self.unknown = unknown
         
-    def x_taylor_s(self):
+    def x_taylor_s(self, x, unknown):
         """ 2nd Order x_Taylor Series of s1 """
-        x = self.x
         x_target = self.x_target
         known = self.known
-        unknown = self.unknown
         
         s = np.ndarray((2,), 'object')
         
@@ -63,17 +59,14 @@ class X_Taylor_S(laplace_theory.Function):
     
 
 class S_Taylor_U():
-    """ S_Taylor Series Expressions of U """
+    """ S_Taylor Series Expressions of u """
     
     def __init__(self, s, s_target, known, unknown):
-        self.s = s
         self.s_target = s_target
         self.known = known
-        self.unknown = unknown
         
-    def s_taylor_u(self):
+    def s_taylor_u(self, s, unknown):
         """ 2nd Order x_Taylor Series of s1 """
-        s = self.s
         s_target = self.s_target
         known = self.known
 #        unknown = self.unknown
@@ -86,20 +79,36 @@ class S_Taylor_U():
             + known[11]*(s[1] - s_target[1])**2/2
     
         return u
+    
 
+class X_Taylor_U(S_Taylor_U, X_Taylor_S):
+    """ X_Taylor Series of u """
 
+    def __init__(self, x, s, x_target, s_target, known, unknown):
+        self.S_Taylor_U = S_Taylor_U(s, s_target, known, unknown)
+        self.X_Taylor_S = X_Taylor_S(x, x_target, known, unknown)
+        
+    def x_taylor_u(self, x, unknown):
+        x_taylor_s = self.X_Taylor_S.x_taylor_s(x, unknown)
+        u = self.S_Taylor_U.s_taylor_u(x_taylor_s, unknown)
+        
+        return u
+        
+        
 class Known(laplace_theory.Theory):
     """ Known Values """
     
-    def __init__(self, x, s, x_target):
+    def __init__(self, x, s, x_target, unknown):
         self.Theory = laplace_theory.Theory(x, s, x_target)
+        self.unknown = unknown
         
     def known(self):
+        unknown = self.unknown
         a_theory = self.Theory.a_theory(x_target)
         b_theory = self.Theory.b_theory(x_target)
         r_theory = self.Theory.r_theory(x_target)
         
-        known = np.ndarray((12,))
+        known = np.ndarray((18 - len(unknown),))
         known[0] = a_theory[0]
         known[1] = a_theory[1]
         known[2] = a_theory[2]
@@ -119,15 +128,17 @@ class Known(laplace_theory.Theory):
 class Unknown(laplace_theory.Theory):
     """ Unknowns Related """
 
-    def __init__(self, x, s, x_target):
+    def __init__(self, x, s, x_target, unknown):
         self.Theory = laplace_theory.Theory(x, s, x_target)
+        self.unknown = unknown
         
     def unknown_theory(self):
+        unknown = self.unknown
         a_theory = self.Theory.a_theory(x_target)
         b_theory = self.Theory.b_theory(x_target)
 #        r_theory = self.Theory.r_theory(x_target)
         
-        unknown_theory = np.ndarray((6,))
+        unknown_theory = np.ndarray((len(unknown),))
         unknown_theory[0] = a_theory[3]
         unknown_theory[1] = a_theory[4]
         unknown_theory[2] = a_theory[5]
@@ -140,40 +151,31 @@ class Unknown(laplace_theory.Theory):
     def unknown_init(self):
         unknown_theory = self.unknown_theory()
         
-        unknown_init = ((1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[0],
-                        (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[1],
-                        (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[2],
-                        (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[3],
-                        (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[4],
-                        (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[5]
-                        )
+#        unknown_init = ((1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[0],
+#                        (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[1],
+#                        (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[2],
+#                        (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[3],
+#                        (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[4],
+#                        (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[5]
+#                        )
+        r = 0.0
+        unknown_init = np.ndarray((len(unknown),))
+        for i in range(len(unknown)):
+            unknown_init[i] = (1 + random.uniform(-r, r)/100)*unknown_theory[i]
         
         return unknown_init
-
-    def unknown_symbol(self):
-        
-        unknown_symbol = np.ndarray((18 - len(known),), 'object')
-        unknown_symbol[0] = Symbol('a11', real = True)
-        unknown_symbol[1] = Symbol('a12', real = True)
-        unknown_symbol[2] = Symbol('a22', real = True)
-        unknown_symbol[3] = Symbol('b11', real = True)
-        unknown_symbol[4] = Symbol('b12', real = True)
-        unknown_symbol[5] = Symbol('b22', real = True)
-        
-        return unknown_symbol
+    
 
 class S_Target(X_Taylor_S, Unknown):
     """ Target Point """
     
-    def __init__(self, x_target, known, unknown_init):
-        self.X_Taylor_S = X_Taylor_S(x_target, x_target, known, unknown_init)
+    def __init__(self, x, x_target, known, unknown):
+        self.X_Taylor_S = X_Taylor_S(x, x_target, known, unknown)
+        self.Unknown = Unknown(x, s, x_target)
         
     def s_target(self):
-        s = self.X_Taylor_S.x_taylor_s()
-        
-        s_target = np.ndarray((len(s),))
-        for i in range(len(s)):
-            s_target[i] = s[i]
+        unknown_init = self.Unknown.unknown_init()
+        s_target = self.X_Taylor_S.x_taylor_s(x_target, unknown_init)
         
         return s_target
     
@@ -210,16 +212,7 @@ class RelativeErrorNorm():
     
     
 
-    def x_taylor_u(self, x, unknown):
-        """ 4th Order x_taylor Series of u"""
-        u = self.s_taylor_u(s, unknown)
-        s1 = self.x_taylor_s1(x, unknown)
-        s2 = self.x_taylor_s2(x, unknown)
-       
-        u = lambdify(s, u, 'numpy')
-        u = u(s1, s2)
-        
-        return u
+    
 
 
 class Boundary(laplace_theory.Theory, TaylorExpansion):
@@ -624,6 +617,14 @@ if __name__ == '__main__':
     s[0] = Symbol('s1', real = True)
     s[1] = Symbol('s2', real = True)
     
+    unknown = np.ndarray((6,), 'object')
+    unknown[0] = Symbol('a11', real = True)
+    unknown[1] = Symbol('a12', real = True)
+    unknown[2] = Symbol('a22', real = True)
+    unknown[3] = Symbol('b11', real = True)
+    unknown[4] = Symbol('b12', real = True)
+    unknown[5] = Symbol('b22', real = True)
+    
     n = 1
     
     x_target = np.ndarray((len(x),))
@@ -632,30 +633,16 @@ if __name__ == '__main__':
             x_target[0] = 1.0 + i/n
             x_target[1] = 1.0 + j/n
             
-            ##############################
-            Known = Known(x, s, x_target)
-            ##############################
-            known = Known.known()
-            
             ##########################################
-            Unknown = Unknown(x, s, x_target)
+            test = Unknown(x, s, x_target, unknown)
             ##########################################
-            unknown_theory = Unknown.unknown_theory()
-            unknown_init = Unknown.unknown_init()
-            
-            ###################################################
-            S_Target = S_Target(x_target, known, unknown_init)
-            ##################################################3
-            s_target = S_Target.s_target()
+            unknown_theory = test.unknown_theory()
+            unknown_init = test.unknown_init()
             
             ####################################################################
             Error = RelativeErrorNorm()
             ####################################################################
             error_init = Error.relative_error_norm(unknown_theory, unknown_init)
-            
-    print('known = ')
-    print(known)
-    print()
     
     print('unknown_theory = ')
     print(unknown_theory)
@@ -664,14 +651,12 @@ if __name__ == '__main__':
     print('unknown_init = ')
     print(unknown_init)
     print()
-            
-    print('s_target = ')
-    print(s_target)
-    print()
-    
+          
     print('error_init = ')
     print(error_init)
     print()
+    
+    
     
 #    #####################################
 #    function = laplace_theory.Function()
