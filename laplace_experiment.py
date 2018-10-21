@@ -6,7 +6,6 @@ Created on Thu Aug  2 14:00:27 2018
 """
 import laplace_theory
 
-
 # For Visualization
 import matplotlib.pyplot as plt
 
@@ -26,69 +25,225 @@ import random
 # For Measuring Computation Time
 import time
 
-# For Symbolic Expression Displaying
-from IPython.display import display
 
 
-
-class TaylorExpansion():
-    """ x_Taylor Series Expressions of Parameters"""
+class X_Taylor_S(laplace_theory.Function):
+    """ x_Taylor Series Expressions of S """
     
-    def __init__(self, x, s, x_target, s_target, known, unknown):
+    def __init__(self, x, x_target, known, unknown):
+        self.x = x
         self.x_target = x_target
-        self.s_target = s_target
         self.known = known
         self.unknown = unknown
         
-    def x_taylor_s1(self):
+    def x_taylor_s(self):
         """ 2nd Order x_Taylor Series of s1 """
+        x = self.x
+        x_target = self.x_target
+        known = self.known
+        unknown = self.unknown
         
-        return known[0] \
+        s = np.ndarray((2,), 'object')
+        
+        s[0] = known[0] \
                + known[1]*(x[0] - x_target[0]) \
                + known[2]*(x[1] - x_target[1]) \
                + unknown[0]*(x[0] - x_target[0])**2/2 \
                + unknown[1]*(x[0] - x_target[0])*(x[1] - x_target[1]) \
                + unknown[2]*(x[1] - x_target[1])**2/2
-        
-    def x_taylor_s2(self):
-        """ 2nd Order x_Taylor Series of s2 """
-        
-        return known[3] \
+               
+        s[1] = known[3] \
                + known[4]*(x[0] - x_target[0]) \
                + known[5]*(x[1] - x_target[1]) \
                + unknown[3]*(x[0] - x_target[0])**2/2 \
                + unknown[4]*(x[0] - x_target[0])*(x[1] - x_target[1]) \
                + unknown[5]*(x[1] - x_target[1])**2/2
-    
-    def s_taylor_u(self):
-        """ 2nd Order s_Taylor Series of u """
         
-        return known[6] \
-               + known[7]*(s[0] - s_target[0]) \
-               + known[8]*(s[1] - s_target[1]) \
-               + known[9]*(s[0] - s_target[0])**2/2 \
-               + known[10]*(s[0] - s_target[0])*(s[1] - s_target[1]) \
-               + known[11]*(s[1] - s_target[1])**2/2           
+        return s
+    
 
-    def x_taylor_u(self):
+class S_Taylor_U():
+    """ S_Taylor Series Expressions of U """
+    
+    def __init__(self, s, s_target, known, unknown):
+        self.s = s
+        self.s_target = s_target
+        self.known = known
+        self.unknown = unknown
+        
+    def s_taylor_u(self):
+        """ 2nd Order x_Taylor Series of s1 """
+        s = self.s
+        s_target = self.s_target
+        known = self.known
+#        unknown = self.unknown
+        
+        u = known[6] \
+            + known[7]*(s[0] - s_target[0]) \
+            + known[8]*(s[1] - s_target[1]) \
+            + known[9]*(s[0] - s_target[0])**2/2 \
+            + known[10]*(s[0] - s_target[0])*(s[1] - s_target[1]) \
+            + known[11]*(s[1] - s_target[1])**2/2
+    
+        return u
+
+
+class Known(laplace_theory.Theory):
+    """ Known Values """
+    
+    def __init__(self, x, s, x_target):
+        self.Theory = laplace_theory.Theory(x, s, x_target)
+        
+    def known(self):
+        a_theory = self.Theory.a_theory(x_target)
+        b_theory = self.Theory.b_theory(x_target)
+        r_theory = self.Theory.r_theory(x_target)
+        
+        known = np.ndarray((12,))
+        known[0] = a_theory[0]
+        known[1] = a_theory[1]
+        known[2] = a_theory[2]
+        known[3] = b_theory[0]
+        known[4] = b_theory[1]
+        known[5] = b_theory[2]
+        known[6] = r_theory[0]
+        known[7] = r_theory[1]
+        known[8] = r_theory[2]
+        known[9] = r_theory[3]
+        known[10] = r_theory[4]
+        known[11] = r_theory[5]
+        
+        return known
+
+
+class Unknown(laplace_theory.Theory):
+    """ Unknowns Related """
+
+    def __init__(self, x, s, x_target):
+        self.Theory = laplace_theory.Theory(x, s, x_target)
+        
+    def unknown_theory(self):
+        a_theory = self.Theory.a_theory(x_target)
+        b_theory = self.Theory.b_theory(x_target)
+#        r_theory = self.Theory.r_theory(x_target)
+        
+        unknown_theory = np.ndarray((6,))
+        unknown_theory[0] = a_theory[3]
+        unknown_theory[1] = a_theory[4]
+        unknown_theory[2] = a_theory[5]
+        unknown_theory[3] = b_theory[3]
+        unknown_theory[4] = b_theory[4]
+        unknown_theory[5] = b_theory[5]
+        
+        return unknown_theory
+        
+    def unknown_init(self):
+        unknown_theory = self.unknown_theory()
+        
+        unknown_init = ((1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[0],
+                        (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[1],
+                        (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[2],
+                        (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[3],
+                        (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[4],
+                        (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[5]
+                        )
+        
+        return unknown_init
+
+    def unknown_symbol(self):
+        
+        unknown_symbol = np.ndarray((18 - len(known),), 'object')
+        unknown_symbol[0] = Symbol('a11', real = True)
+        unknown_symbol[1] = Symbol('a12', real = True)
+        unknown_symbol[2] = Symbol('a22', real = True)
+        unknown_symbol[3] = Symbol('b11', real = True)
+        unknown_symbol[4] = Symbol('b12', real = True)
+        unknown_symbol[5] = Symbol('b22', real = True)
+        
+        return unknown_symbol
+
+class S_Target(X_Taylor_S, Unknown):
+    """ Target Point """
+    
+    def __init__(self, x_target, known, unknown_init):
+        self.X_Taylor_S = X_Taylor_S(x_target, x_target, known, unknown_init)
+        
+    def s_target(self):
+        s = self.X_Taylor_S.x_taylor_s()
+        
+        s_target = np.ndarray((len(s),))
+        for i in range(len(s)):
+            s_target[i] = s[i]
+        
+        return s_target
+    
+ 
+class RelativeErrorNorm():
+    """ Relative Error Norm of Vector """
+    
+    def relative_error_norm(self, a, b):
+        
+        relative_error_norm = round(norm(b - a)/norm(a), 4)*100
+        
+        return relative_error_norm
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
+    def x_taylor_u(self, x, unknown):
         """ 4th Order x_taylor Series of u"""
-        u = self.s_taylor_u()
-        s1 = self.x_taylor_s1()
-        s2 = self.x_taylor_s2()
+        u = self.s_taylor_u(s, unknown)
+        s1 = self.x_taylor_s1(x, unknown)
+        s2 = self.x_taylor_s2(x, unknown)
        
         u = lambdify(s, u, 'numpy')
         u = u(s1, s2)
         
         return u
-    
 
-class Boundary(TaylorExpansion):
+
+class Boundary(laplace_theory.Theory, TaylorExpansion):
     """ Compute Boundary Point Coordinate """
     
-    def __init__(self, x_target, s_value):
+    def __init__(self, x_target):
+        self.theory = laplace_theory.Theory(x, s, x_target)
         self.taylor = TaylorExpansion(x, s, x_target, s_target, known, unknown)
-        self.x_target = x_target
+        self.x = self.taylor.x
+        self.s = self.taylor.s
+        self.x_target = self.taylor.x_target
         self.s_value = s_value 
+    
+    def s_boundary(self):
+        s = self.s
+        s_target = self.s_target()
+        
+        s_boundary = np.ndarray((2, len(s),))
+        s_boundary[0][0] = s_target[0] - 1.0
+        s_boundary[0][1] = s_target[1]
+        s_boundary[1][0] = s_target[0] + 1.0
+        s_boundary[1][1] = s_target[1]
+        
+        return s_boundary
         
     def f(self):
         s_value = self.s_value
@@ -164,7 +319,7 @@ class BoundaryConditions(Boundary):
     """ Derive Boundary Conditions """
     
     def __init__(self, x_boundary, u_boundary):
-        self.boundary = Boundary(x_target, s_target)
+        self.boundary = Boundary(s_value)
         self.u_boundary = u_boundary    
     
     def bc(self):
@@ -461,10 +616,6 @@ if __name__ == '__main__':
     
     t0 = time.time()
     
-    
-    #####################################
-    function = laplace_theory.Function()
-    #####################################
     x = np.ndarray((2,), 'object')
     x[0] = Symbol('x1', real = True)
     x[1] = Symbol('x2', real = True)
@@ -473,230 +624,290 @@ if __name__ == '__main__':
     s[0] = Symbol('s1', real = True)
     s[1] = Symbol('s2', real = True)
     
-    x_target = np.ndarray((len(x),))
-    s_target = np.ndarray((len(s),))
-    
-    x_boundary = np.ndarray((2, len(x),))
-    s_boundary = np.ndarray((2, len(s),))
-    u_boundary = np.ndarray((2, 1,))
-    
-    a = function.a(x)
-    b = function.b(x)
-    r = function.r(s)
-    
-    known = np.ndarray((12,))
-    unknown = np.ndarray((18 - len(known),), 'object')
-    
     n = 1
     
-    x_target_array = np.ndarray((n, n, len(x),))
-    s_target_array = np.ndarray((n, n, len(s)))
-    
-    x_boundary_array = np.ndarray((n, n, 2, len(x),))
-    s_boundary_array = np.ndarray((n, n, 2, len(s),))
-    u_boundary_array = np.ndarray((n, n, 2, 1,))
-    
-    a_theory_array = np.ndarray((n, n, len(a),))
-    b_theory_array = np.ndarray((n, n, len(b),))
-    r_theory_array = np.ndarray((n, n, len(r),))
-    
-    unknown_theory = np.ndarray(len(unknown),)
-    unknown_init = np.ndarray(len(unknown),)
-    unknown_experiment = np.ndarray(1,)
-    
-    known_array = np.ndarray((n, n, len(known),))
-    unknown_theory_array = np.ndarray((n, n, len(unknown),))
-    unknown_init_array = np.ndarray((n, n, len(unknown),))
-    unknown_experiment_array = np.ndarray((n, n, len(unknown),))
-    
-    error_init_array = np.ndarray((n, n, 1))
-    error_experiment_array = np.ndarray((n, n, 1))
-    
-    A_init_array = np.ndarray((n, n, len(unknown), len(unknown),))
-    b_init_array = np.ndarray((n, n, len(unknown),))
-    eigvals_A_init_array = np.ndarray((n, n, len(unknown),), 'complex')
-    
-    ##############################################
-    theory = laplace_theory.Theory(x, s, x_target)
-    ##############################################
-    def relative_error_norm(b, a):
-        relative_error_norm = round(norm(b - a)/norm(a), 4)*100
-        
-        return relative_error_norm
-    
+    x_target = np.ndarray((len(x),))
     for i in range(n):
         for j in range(n):
             x_target[0] = 1.0 + i/n
             x_target[1] = 1.0 + j/n
             
-            a_theory = theory.a_theory()
-            b_theory = theory.b_theory()
-            r_theory = theory.r_theory()
+            ##############################
+            Known = Known(x, s, x_target)
+            ##############################
+            known = Known.known()
             
-            s_target[0] = a_theory[0]
-            s_target[1] = b_theory[0]
+            ##########################################
+            Unknown = Unknown(x, s, x_target)
+            ##########################################
+            unknown_theory = Unknown.unknown_theory()
+            unknown_init = Unknown.unknown_init()
             
-            s_boundary[0][0] = s_target[0] - 1.0
-            s_boundary[0][1] = s_target[1] 
+            ###################################################
+            S_Target = S_Target(x_target, known, unknown_init)
+            ##################################################3
+            s_target = S_Target.s_target()
             
-            s_boundary[1][0] = s_target[0] + 1.0
-            s_boundary[1][1] = s_target[1] 
+            ####################################################################
+            Error = RelativeErrorNorm()
+            ####################################################################
+            error_init = Error.relative_error_norm(unknown_theory, unknown_init)
             
-            for k in range(2):
-                u_boundary[k] = function.u(s_boundary[k])
-            
-            known[0] = a_theory[0]
-            known[1] = a_theory[1]
-            known[2] = a_theory[2]
-            known[3] = b_theory[0]
-            known[4] = b_theory[1]
-            known[5] = b_theory[2]
-            known[6] = r_theory[0]
-            known[7] = r_theory[1]
-            known[8] = r_theory[2]
-            known[9] = r_theory[3]
-            known[10] = r_theory[4]
-            known[11] = r_theory[5]
-            
-            unknown_theory[0] = a_theory[3]
-            unknown_theory[1] = a_theory[4]
-            unknown_theory[2] = a_theory[5]
-            unknown_theory[3] = b_theory[3]
-            unknown_theory[4] = b_theory[4]
-            unknown_theory[5] = b_theory[5]
-            
-            unknown_init = ((1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[0],
-                            (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[1],
-                            (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[2],
-                            (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[3],
-                            (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[4],
-                            (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[5]
-                            )
-            error_init = relative_error_norm(unknown_init, unknown_theory)
-            
-            for k in range(len(unknown)):
-                unknown[k] = unknown_init[k]
-            
-            ##############################################
-            boundary1 = Boundary(x_target, s_boundary[0])
-            ##############################################
-            
-            x_boundary[0] = boundary1.solution()
-            
-            ##############################################
-            boundary2 = Boundary(x_target, s_boundary[1])
-            ##############################################
-            
-            x_boundary[1] = boundary2.solution()
-            
-            unknown = np.ndarray((18 - len(known),), 'object')
-            unknown[0] = Symbol('a11', real = True)
-            unknown[1] = Symbol('a12', real = True)
-            unknown[2] = Symbol('a22', real = True)
-            unknown[3] = Symbol('b11', real = True)
-            unknown[4] = Symbol('b12', real = True)
-            unknown[5] = Symbol('b22', real = True)
-            
-            ##########################################################################
-            experiment = Experiment(x_target, s_target, known, unknown, unknown_init)
-            ##########################################################################
-            unknown_experiment = experiment.solution()
-            error_experiment = relative_error_norm(unknown_experiment, unknown_theory)
-            
-            A_init = experiment.A(unknown_init)
-            b_init = experiment.b(unknown_init)
-            eigvals_A_init = eigvals(A_init)
-            
-            for k in range(len(unknown)):
-                if absolute(eigvals_A_init[k]) < 1.0e-4:
-                    eigvals_A_init[k] = 0
-                else:
-                    real = round(eigvals_A_init[k].real, 2)
-                    imag = round(eigvals_A_init[k].imag, 2)
-                    eigvals_A_init[k] = real + imag*1j
-                
-                for l in range(len(unknown)):
-#                    if absolute(A_init[k][l]) < 1.0e-3:
-#                        A_init[k][l] = 0
-                    A_init[k][l] = round(A_init[k][l], 4)
-            
-            for k in range(len(x)):
-                x_target_array[i][j][k] = x_target[k]
-                
-            for k in range(len(s)):
-                s_target_array[i][j][k] = s_target[k]
-            
-            for k in range(2):
-                x_boundary_array[i][j][k] = x_boundary[k]
-                s_boundary_array[i][j][k] = s_boundary[k]
-                u_boundary_array[i][j][k] = u_boundary[k]
-                
-            for k in range(len(a)):
-                a_theory_array[i][j][k] = a_theory[k]
-            
-            for k in range(len(b)):
-                b_theory_array[i][j][k] = b_theory[k]
-                
-            for k in range(len(r)):
-                r_theory_array[i][j][k] = r_theory[k]
-                
-            for k in range(len(known)):
-                known_array[i][j][k] = known[k]
-                
-            for k in range(len(unknown)):
-                unknown_theory_array[i][j][k] = unknown_theory[k]
-                unknown_init_array[i][j][k] = unknown_init[k]
-                unknown_experiment_array[i][j][k] = unknown_experiment[k]
-                
-                for l in range(len(unknown)):
-                    A_init_array[i][j][k][l] = A_init[k][l]
-                    
-                b_init_array[i][j][k] = b_init[k]
-                eigvals_A_init_array[i][j][k] = eigvals_A_init[k]
-                
-            for k in range(1):
-                error_init_array[i][j][k] = error_init
-                error_experiment_array[i][j][k] = error_experiment
-            
-    print('x_target = ')
-    print(x_target_array)
-    print('')
-    
-    print('x_boundary = ')
-    print(x_boundary_array)
-    print('')
-    
-    print('u_boundary = ')
-    print(u_boundary_array)
-    print('')
+    print('known = ')
+    print(known)
+    print()
     
     print('unknown_theory = ')
-    print(unknown_theory_array)
-    print('')
-    
+    print(unknown_theory)
+    print()
+            
     print('unknown_init = ')
-    print(unknown_init_array)
-    print('') 
-        
-    print('Error(%) of unknown_init = ')
-    print(error_init_array)
-    print('')
-
-    print('unknown_experiment = ')
-    print(unknown_experiment_array)
-    print('')
+    print(unknown_init)
+    print()
+            
+    print('s_target = ')
+    print(s_target)
+    print()
     
-    print('Error(%) of unknown_experiment = ')
-    print(error_experiment_array)
-    print('')
+    print('error_init = ')
+    print(error_init)
+    print()
     
-    print('A_init = ')
-    print(A_init_array)
-    print('')
-    
-    print('Eigen Vaules of A_init = ')
-    print(eigvals_A_init_array)
-    print('')
+#    #####################################
+#    function = laplace_theory.Function()
+#    #####################################
+#    x = np.ndarray((2,), 'object')
+#    x[0] = Symbol('x1', real = True)
+#    x[1] = Symbol('x2', real = True)
+#    
+#    s = np.ndarray((2,), 'object')
+#    s[0] = Symbol('s1', real = True)
+#    s[1] = Symbol('s2', real = True)
+#    
+#    x_target = np.ndarray((len(x),))
+#    s_target = np.ndarray((len(s),))
+#    
+#    x_boundary = np.ndarray((2, len(x),))
+#    s_boundary = np.ndarray((2, len(s),))
+#    u_boundary = np.ndarray((2, 1,))
+#    
+#    a = function.a(x)
+#    b = function.b(x)
+#    r = function.r(s)
+#    
+#    known = np.ndarray((12,))
+#    unknown = np.ndarray((18 - len(known),), 'object')
+#    
+#    n = 1
+#    
+#    x_target_array = np.ndarray((n, n, len(x),))
+#    s_target_array = np.ndarray((n, n, len(s)))
+#    
+#    x_boundary_array = np.ndarray((n, n, 2, len(x),))
+#    s_boundary_array = np.ndarray((n, n, 2, len(s),))
+#    u_boundary_array = np.ndarray((n, n, 2, 1,))
+#    
+#    a_theory_array = np.ndarray((n, n, len(a),))
+#    b_theory_array = np.ndarray((n, n, len(b),))
+#    r_theory_array = np.ndarray((n, n, len(r),))
+#    
+#    unknown_theory = np.ndarray(len(unknown),)
+#    unknown_init = np.ndarray(len(unknown),)
+#    unknown_experiment = np.ndarray(1,)
+#    
+#    known_array = np.ndarray((n, n, len(known),))
+#    unknown_theory_array = np.ndarray((n, n, len(unknown),))
+#    unknown_init_array = np.ndarray((n, n, len(unknown),))
+#    unknown_experiment_array = np.ndarray((n, n, len(unknown),))
+#    
+#    error_init_array = np.ndarray((n, n, 1))
+#    error_experiment_array = np.ndarray((n, n, 1))
+#    
+#    A_init_array = np.ndarray((n, n, len(unknown), len(unknown),))
+#    b_init_array = np.ndarray((n, n, len(unknown),))
+#    eigvals_A_init_array = np.ndarray((n, n, len(unknown),), 'complex')
+#    
+#    ##############################################
+#    theory = laplace_theory.Theory(x, s, x_target)
+#    ##############################################
+#    def relative_error_norm(b, a):
+#        relative_error_norm = round(norm(b - a)/norm(a), 4)*100
+#        
+#        return relative_error_norm
+#    
+#    for i in range(n):
+#        for j in range(n):
+#            x_target[0] = 1.0 + i/n
+#            x_target[1] = 1.0 + j/n
+#            
+#            a_theory = theory.a_theory()
+#            b_theory = theory.b_theory()
+#            r_theory = theory.r_theory()
+#            
+#            s_target[0] = a_theory[0]
+#            s_target[1] = b_theory[0]
+#            
+#            s_boundary[0][0] = s_target[0] - 1.0
+#            s_boundary[0][1] = s_target[1] 
+#            
+#            s_boundary[1][0] = s_target[0] + 1.0
+#            s_boundary[1][1] = s_target[1] 
+#            
+#            for k in range(2):
+#                u_boundary[k] = function.u(s_boundary[k])
+#            
+#            known[0] = a_theory[0]
+#            known[1] = a_theory[1]
+#            known[2] = a_theory[2]
+#            known[3] = b_theory[0]
+#            known[4] = b_theory[1]
+#            known[5] = b_theory[2]
+#            known[6] = r_theory[0]
+#            known[7] = r_theory[1]
+#            known[8] = r_theory[2]
+#            known[9] = r_theory[3]
+#            known[10] = r_theory[4]
+#            known[11] = r_theory[5]
+#            
+#            unknown_theory[0] = a_theory[3]
+#            unknown_theory[1] = a_theory[4]
+#            unknown_theory[2] = a_theory[5]
+#            unknown_theory[3] = b_theory[3]
+#            unknown_theory[4] = b_theory[4]
+#            unknown_theory[5] = b_theory[5]
+#            
+#            unknown_init = ((1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[0],
+#                            (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[1],
+#                            (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[2],
+#                            (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[3],
+#                            (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[4],
+#                            (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[5]
+#                            )
+#            error_init = relative_error_norm(unknown_init, unknown_theory)
+#            
+#            for k in range(len(unknown)):
+#                unknown[k] = unknown_init[k]
+#            
+#            ##############################################
+#            boundary1 = Boundary(s_boundary[0])
+#            ##############################################
+#            
+#            x_boundary[0] = boundary1.solution()
+#            
+#            ##############################################
+#            boundary2 = Boundary(s_boundary[1])
+#            ##############################################
+#            
+#            x_boundary[1] = boundary2.solution()
+#            
+#            unknown = np.ndarray((18 - len(known),), 'object')
+#            unknown[0] = Symbol('a11', real = True)
+#            unknown[1] = Symbol('a12', real = True)
+#            unknown[2] = Symbol('a22', real = True)
+#            unknown[3] = Symbol('b11', real = True)
+#            unknown[4] = Symbol('b12', real = True)
+#            unknown[5] = Symbol('b22', real = True)
+#            
+#            ##########################################################################
+#            experiment = Experiment(x_target, s_target, known, unknown, unknown_init)
+#            ##########################################################################
+#            unknown_experiment = experiment.solution()
+#            error_experiment = relative_error_norm(unknown_experiment, unknown_theory)
+#            
+#            A_init = experiment.A(unknown_init)
+#            b_init = experiment.b(unknown_init)
+#            eigvals_A_init = eigvals(A_init)
+#            
+#            for k in range(len(unknown)):
+#                if absolute(eigvals_A_init[k]) < 1.0e-4:
+#                    eigvals_A_init[k] = 0
+#                else:
+#                    real = round(eigvals_A_init[k].real, 2)
+#                    imag = round(eigvals_A_init[k].imag, 2)
+#                    eigvals_A_init[k] = real + imag*1j
+#                
+#                for l in range(len(unknown)):
+##                    if absolute(A_init[k][l]) < 1.0e-3:
+##                        A_init[k][l] = 0
+#                    A_init[k][l] = round(A_init[k][l], 4)
+#            
+#            for k in range(len(x)):
+#                x_target_array[i][j][k] = x_target[k]
+#                
+#            for k in range(len(s)):
+#                s_target_array[i][j][k] = s_target[k]
+#            
+#            for k in range(2):
+#                x_boundary_array[i][j][k] = x_boundary[k]
+#                s_boundary_array[i][j][k] = s_boundary[k]
+#                u_boundary_array[i][j][k] = u_boundary[k]
+#                
+#            for k in range(len(a)):
+#                a_theory_array[i][j][k] = a_theory[k]
+#            
+#            for k in range(len(b)):
+#                b_theory_array[i][j][k] = b_theory[k]
+#                
+#            for k in range(len(r)):
+#                r_theory_array[i][j][k] = r_theory[k]
+#                
+#            for k in range(len(known)):
+#                known_array[i][j][k] = known[k]
+#                
+#            for k in range(len(unknown)):
+#                unknown_theory_array[i][j][k] = unknown_theory[k]
+#                unknown_init_array[i][j][k] = unknown_init[k]
+#                unknown_experiment_array[i][j][k] = unknown_experiment[k]
+#                
+#                for l in range(len(unknown)):
+#                    A_init_array[i][j][k][l] = A_init[k][l]
+#                    
+#                b_init_array[i][j][k] = b_init[k]
+#                eigvals_A_init_array[i][j][k] = eigvals_A_init[k]
+#                
+#            for k in range(1):
+#                error_init_array[i][j][k] = error_init
+#                error_experiment_array[i][j][k] = error_experiment
+#            
+#    print('x_target = ')
+#    print(x_target_array)
+#    print('')
+#    
+#    print('x_boundary = ')
+#    print(x_boundary_array)
+#    print('')
+#    
+#    print('u_boundary = ')
+#    print(u_boundary_array)
+#    print('')
+#    
+#    print('unknown_theory = ')
+#    print(unknown_theory_array)
+#    print('')
+#    
+#    print('unknown_init = ')
+#    print(unknown_init_array)
+#    print('') 
+#        
+#    print('Error(%) of unknown_init = ')
+#    print(error_init_array)
+#    print('')
+#
+#    print('unknown_experiment = ')
+#    print(unknown_experiment_array)
+#    print('')
+#    
+#    print('Error(%) of unknown_experiment = ')
+#    print(error_experiment_array)
+#    print('')
+#    
+#    print('A_init = ')
+#    print(A_init_array)
+#    print('')
+#    
+#    print('Eigen Vaules of A_init = ')
+#    print(eigvals_A_init_array)
+#    print('')
 
 
     t1 = time.time()
