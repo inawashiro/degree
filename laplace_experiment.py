@@ -25,6 +25,9 @@ import random
 # For Measuring Computation Time
 import time
 
+# For Symbolic Expression Displaying
+from IPython.display import display
+
 
 
 class Known(laplace_theory.Theory):
@@ -129,6 +132,20 @@ class X_Taylor_S(Known):
         return s
     
 
+class S_Target(X_Taylor_S, Unknown):
+    """ Target s_coordinate """
+    
+    def __init__(self, x, s, x_target, unknown):
+        self.X_Taylor_S = X_Taylor_S(x, s, x_target, unknown)
+        self.Unknown = Unknown(x, s, x_target, unknown)
+        
+    def s_target(self):
+        unknown_init = self.Unknown.unknown_init()
+        s_target = self.X_Taylor_S.x_taylor_s(x_target, unknown_init)
+        
+        return s_target
+
+
 class S_Taylor_U(Known, S_Target):
     """ S_Taylor Series Expressions of u """
     
@@ -165,20 +182,6 @@ class X_Taylor_U(S_Taylor_U, X_Taylor_S):
         
         return u
     
-
-class S_Target(X_Taylor_S, Unknown):
-    """ Target s_coordinate """
-    
-    def __init__(self, x, s, x_target, unknown):
-        self.X_Taylor_S = X_Taylor_S(x, s, x_target, unknown)
-        self.Unknown = Unknown(x, s, x_target, unknown)
-        
-    def s_target(self):
-        unknown_init = self.Unknown.unknown_init()
-        s_target = self.X_Taylor_S.x_taylor_s(x_target, unknown_init)
-        
-        return s_target
-    
  
 class Boundary(S_Target, X_Taylor_U):
     """ Boundary s_coordinate """
@@ -190,6 +193,7 @@ class Boundary(S_Target, X_Taylor_U):
         self.X_Taylor_U = X_Taylor_U(x, s, x_target, unknown)
         self.x = x
         self.x_target = x_target
+        self.unknown = unknown
         
     def s_boundary(self):
         s_target = self.S_Target.s_target()
@@ -234,6 +238,18 @@ class Boundary(S_Target, X_Taylor_U):
             u_boundary[i] = self.X_Taylor_U.x_taylor_u(x_boundary[i], unknown_init)
         
         return u_boundary
+    
+    def boundary_condition(self):
+        u_boundary = self.u_boundary()
+        
+        u = np.ndarray((2,), 'object')
+        bc = np.ndarray((2,), 'object')
+        for i in range(2):
+            u[i] = self.X_Taylor_U.x_taylor_u(x_boundary[i], unknown)
+            bc[i] = u[i] - u_boundary[i]
+        
+        return bc
+        
         
     
 class RelativeErrorNorm():
@@ -253,29 +269,6 @@ class RelativeErrorNorm():
     
     
 
-    
-
-
-
-
-    
-class BoundaryConditions(Boundary):
-    """ Derive Boundary Conditions """
-    
-    def __init__(self, x_boundary, u_boundary):
-        self.boundary = Boundary(s_value)
-        self.u_boundary = u_boundary    
-    
-    def bc(self):
-        u = self.boundary.taylor.x_taylor_u()
-        
-        bc = np.ndarray((2,), 'object')
-        for i in range(2):
-            bc[i] = u - u_boundary[i]
-            bc[i] = lambdify(x, bc[i], 'numpy')
-            bc[i] = bc[i](x_boundary[i][0], x_boundary[i][1])
-        
-        return bc
         
 
 class Derivative(TaylorExpansion):
@@ -596,6 +589,7 @@ if __name__ == '__main__':
             s_boundary = Boundary.s_boundary()
             x_boundary = Boundary.x_boundary()
             u_boundary = Boundary.u_boundary()
+            bc = Boundary.boundary_condition()
             
             ####################################################################
             Error = RelativeErrorNorm()
@@ -624,6 +618,10 @@ if __name__ == '__main__':
 
     print('u_boundary = ')
     print(u_boundary)
+    print('')
+    
+    print('Boundary Condition = ')
+    display(bc)
     print('')
     
     
