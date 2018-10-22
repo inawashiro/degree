@@ -201,23 +201,18 @@ class Boundary(S_Target):
         
         return s_boundary
     
-    def f(self):
+    def x_boundary(self):
+        x = self.x
+        x_target = self.x_target
         unknown_init = self.Unknown.unknown_init()
         s1 = self.X_Taylor_S.x_taylor_s(x, unknown_init)[0]
         s2 = self.X_Taylor_S.x_taylor_s(x, unknown_init)[1]
         s_boundary = self.s_boundary()
         
-        f = np.ndarray((2, 2,), 'object')
+        f = np.ndarray((2, len(x),), 'object')
         for i in range(2):
             f[i][0] = s1 - s_boundary[i][0]
             f[i][1] = s2 - s_boundary[i][1]
-            
-        return f
-    
-    def x_boundary(self):
-        f = self.f()
-        x = self.x
-        x_target = self.x_target
         
         x_boundary = np.ndarray((2, 2,))
         for i in range(2):
