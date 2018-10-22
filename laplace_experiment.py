@@ -155,8 +155,8 @@ class S_Taylor_U(Known, S_Target):
 class X_Taylor_U(S_Taylor_U, X_Taylor_S):
     """ X_Taylor Series of u """
 
-    def __init__(self, x, s, x_target, s_target, unknown):
-        self.S_Taylor_U = S_Taylor_U(x, s, s_target, unknown)
+    def __init__(self, x, s, x_target, unknown):
+        self.S_Taylor_U = S_Taylor_U(x, s, x_target, unknown)
         self.X_Taylor_S = X_Taylor_S(x, s, x_target, unknown)
         
     def x_taylor_u(self, x, unknown):
@@ -180,14 +180,14 @@ class S_Target(X_Taylor_S, Unknown):
         return s_target
     
  
-class Boundary(S_Target, S_Taylor_U):
+class Boundary(S_Target, X_Taylor_U):
     """ Boundary s_coordinate """
     
     def __init__(self, x, s, x_target, unknown):
         self.S_Target = S_Target(x, s, x_target, unknown)
         self.X_Taylor_S = self.S_Target.X_Taylor_S
         self.Unknown = self.S_Target.Unknown
-        self.S_Taylor_U = S_Taylor_U(x, s, x_target, unknown)
+        self.X_Taylor_U = X_Taylor_U(x, s, x_target, unknown)
         self.x = x
         self.x_target = x_target
         
@@ -231,7 +231,7 @@ class Boundary(S_Target, S_Taylor_U):
         
         u_boundary = np.ndarray((2),)
         for i in range(2):
-            u_boundary[i] = self.S_Taylor_U.s_taylor_u(s_boundary[i], unknown_init)
+            u_boundary[i] = self.X_Taylor_U.x_taylor_u(x_boundary[i], unknown_init)
         
         return u_boundary
         
