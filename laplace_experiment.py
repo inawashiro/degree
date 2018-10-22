@@ -156,8 +156,8 @@ class X_Taylor_U(S_Taylor_U, X_Taylor_S):
     """ X_Taylor Series of u """
 
     def __init__(self, x, s, x_target, s_target, unknown):
-        self.S_Taylor_U = S_Taylor_U(s, s_target, unknown)
-        self.X_Taylor_S = X_Taylor_S(x, x_target, unknown)
+        self.S_Taylor_U = S_Taylor_U(x, s, s_target, unknown)
+        self.X_Taylor_S = X_Taylor_S(x, s, x_target, unknown)
         
     def x_taylor_u(self, x, unknown):
         x_taylor_s = self.X_Taylor_S.x_taylor_s(x, unknown)
@@ -180,18 +180,19 @@ class S_Target(X_Taylor_S, Unknown):
         return s_target
     
  
-class Boundary(S_Target):
+class Boundary(S_Target, S_Taylor_U):
     """ Boundary s_coordinate """
     
     def __init__(self, x, s, x_target, unknown):
         self.S_Target = S_Target(x, s, x_target, unknown)
         self.X_Taylor_S = self.S_Target.X_Taylor_S
         self.Unknown = self.S_Target.Unknown
+        self.S_Taylor_U = S_Taylor_U(x, s, x_target, unknown)
         self.x = x
         self.x_target = x_target
         
     def s_boundary(self):
-        s_target = self.s_target()
+        s_target = self.S_Target.s_target()
         s_boundary = np.ndarray((2, len(s_target)))
         
         s_boundary[0][0] = s_target[0] - 1.0
@@ -217,9 +218,22 @@ class Boundary(S_Target):
         x_boundary = np.ndarray((2, 2,))
         for i in range(2):
             for j in range(2):
-                x_boundary[i][j] = nsolve((f[i][0], f[i][1]), (x[0], x[1]), (x_target[0], x_target[1]))[j]
+                x_boundary[i][j] = nsolve((f[i][0], f[i][1]), \
+                                          (x[0], x[1]), \
+                                          (x_target[0], x_target[1]) \
+                                          )[j]
                 
         return x_boundary
+    
+    def u_boundary(self):
+        unknown_init = self.Unknown.unknown_init()
+        x_boundary = self.x_boundary()
+        
+        u_boundary = np.ndarray((2),)
+        for i in range(2):
+            u_boundary[i] = self.S_Taylor_U.s_taylor_u(s_boundary[i], unknown_init)
+        
+        return u_boundary
         
     
 class RelativeErrorNorm():
@@ -581,6 +595,7 @@ if __name__ == '__main__':
             #####################################################
             s_boundary = Boundary.s_boundary()
             x_boundary = Boundary.x_boundary()
+            u_boundary = Boundary.u_boundary()
             
             ####################################################################
             Error = RelativeErrorNorm()
@@ -599,8 +614,16 @@ if __name__ == '__main__':
     print(error_init)
     print()
 
+    print('s_boundary = ')
+    print(s_boundary)
+    print('')
+    
     print('x_boundary = ')
     print(x_boundary)
+    print('')
+
+    print('u_boundary = ')
+    print(u_boundary)
     print('')
     
     
