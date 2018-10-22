@@ -132,20 +132,6 @@ class X_Taylor_S(Known):
         return s
     
 
-class S_Target(X_Taylor_S, Unknown):
-    """ Target s_coordinate """
-    
-    def __init__(self, x, s, x_target, unknown):
-        self.X_Taylor_S = X_Taylor_S(x, s, x_target, unknown)
-        self.Unknown = Unknown(x, s, x_target, unknown)
-        
-    def s_target(self):
-        unknown_init = self.Unknown.unknown_init()
-        s_target = self.X_Taylor_S.x_taylor_s(x_target, unknown_init)
-        
-        return s_target
-
-
 class S_Taylor_U(Known, S_Target):
     """ S_Taylor Series Expressions of u """
     
@@ -182,6 +168,20 @@ class X_Taylor_U(S_Taylor_U, X_Taylor_S):
         
         return u
     
+
+class S_Target(X_Taylor_S, Unknown):
+    """ Target s_coordinate """
+    
+    def __init__(self, x, s, x_target, unknown):
+        self.X_Taylor_S = X_Taylor_S(x, s, x_target, unknown)
+        self.Unknown = Unknown(x, s, x_target, unknown)
+        
+    def s_target(self):
+        unknown_init = self.Unknown.unknown_init()
+        s_target = self.X_Taylor_S.x_taylor_s(x_target, unknown_init)
+        
+        return s_target
+    
  
 class Boundary(S_Target, X_Taylor_U):
     """ Boundary s_coordinate """
@@ -199,9 +199,9 @@ class Boundary(S_Target, X_Taylor_U):
         s_target = self.S_Target.s_target()
         s_boundary = np.ndarray((2, len(s_target)))
         
-        s_boundary[0][0] = s_target[0] - 1.0
+        s_boundary[0][0] = s_target[0] - 2.0
         s_boundary[0][1] = s_target[1]
-        s_boundary[1][0] = s_target[0] + 1.0
+        s_boundary[1][0] = s_target[0] + 2.0
         s_boundary[1][1] = s_target[1]
         
         return s_boundary
@@ -269,6 +269,11 @@ class RelativeErrorNorm():
     
     
 
+    
+    
+    
+    
+    
         
 
 class Derivative(TaylorExpansion):
