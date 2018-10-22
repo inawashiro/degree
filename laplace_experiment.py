@@ -216,8 +216,9 @@ class Boundary(S_Target):
         
         x_boundary = np.ndarray((2, 2,))
         for i in range(2):
-            x_boundary[i] = nsolve(f[i], x, x_target)
-            
+            for j in range(2):
+                x_boundary[i][j] = nsolve((f[i][0], f[i][1]), (x[0], x[1]), (x_target[0], x_target[1]))[j]
+                
         return x_boundary
         
     
