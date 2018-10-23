@@ -32,7 +32,7 @@ class PrincipalCoordSystem():
     """ Define Principal Coordinate System """
     
     def s(self, x):
-        
+        """ Coordintae Transformation """
         s = np.ndarray((2,), 'object')
         s[0] = x[0]**3 - 3*x[0]*x[1]**2
         s[1] = -x[1]**3 + 3*x[0]**2*x[1]
@@ -40,7 +40,7 @@ class PrincipalCoordSystem():
         return s
 
     def u(self, s):
-        
+        """ Target Function under New Coordinate System """
         u = s[0]
         
         return u
