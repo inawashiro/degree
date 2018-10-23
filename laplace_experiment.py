@@ -225,17 +225,12 @@ class BoundaryConditions(Taylor):
         
         return bc
         
-    
-    
-    
-    
 
-class Derivative(S_Taylor_U, X_Taylor_S):
+class Derivative(Taylor):
     """ x_Taylor Series of Derivatives """
     
     def __init__(self, x, s, x_target, unknown):
-        self.S_Taylor_U = S_Taylor_U(x, s, x_target, unknown)
-        self.X_Taylor_S = X_Taylor_S(x, s, x_target, unknown)
+        self.Taylor = Taylor(x, s, x_target, unknown)
         self.x = x
         self.s = s
         self.unknown = unknown
@@ -244,18 +239,16 @@ class Derivative(S_Taylor_U, X_Taylor_S):
         x = self.x
         s = self.s
         unknown = self.unknown
-        u = self.S_Taylor_U.s_taylor_u(s, unknown)
-        s1 = self.X_Taylor_S.x_taylor_s1(x, unknown)[0]
-        s2 = self.X_Taylor_S.x_taylor_s1(x, unknown)[1]
-        
+        s_taylor_u = self.Taylor.s_taylor_u(s, unknown)
+        x_taylor_s = self.Taylor.x_taylor_s(x, unknown)
         
         du_ds = np.ndarray((2,), 'object')
-        du_ds[0] = diff(u, s[0])
-        du_ds[1] = diff(u, s[1])
+        for i in range(2):
+            du_ds[i] = diff(s_taylor_u, s[i])
         
         for i in range(2):
             du_ds[i] = lambdify(s, du_ds[i], 'numpy')
-            du_ds[i] = du_ds[i](s1, s2)
+            du_ds[i] = du_ds[i](x_taylor_s[0], x_taylor_s[1])
         
         return du_ds
                     
@@ -263,35 +256,32 @@ class Derivative(S_Taylor_U, X_Taylor_S):
         x = self.x
         s = self.s
         unknown = self.unknown
-        u = self.S_Taylor_U.s_taylor_u(s, unknown)
-        s1 = self.X_Taylor_S.x_taylor_s1(x, unknown)[0]
-        s2 = self.X_Taylor_S.x_taylor_s1(x, unknown)[1]
+        s_taylor_u = self.Taylor.s_taylor_u(s, unknown)
+        x_taylor_s = self.Taylor.x_taylor_s(x, unknown)
         
         ddu_dds = np.ndarray((2, 2), 'object')
-        ddu_dds[0][0] = diff(u, s[0], 2)
-        ddu_dds[0][1] = diff(u, s[0], s[1])
-        ddu_dds[1][0] = diff(u, s[1], s[0])
-        ddu_dds[1][1] = diff(u, s[1], 2)
+        ddu_dds[0][0] = diff(s_taylor_u, s[0], 2)
+        ddu_dds[0][1] = diff(s_taylor_u, s[0], s[1])
+        ddu_dds[1][0] = diff(s_taylor_u, s[1], s[0])
+        ddu_dds[1][1] = diff(s_taylor_u, s[1], 2)
         
         for i in range(2):
             for j in range(2):
                 ddu_dds[i][j] = lambdify(s, ddu_dds[i][j], 'numpy')
-                ddu_dds[i][j] = ddu_dds[i][j](s1, s2)       
+                ddu_dds[i][j] = ddu_dds[i][j](x_taylor_s[0], x_taylor_s[1])       
         
         return ddu_dds
        
     def ds_dx(self):
         x = self.x
         unknown = self.unknown
-        s1 = self.X_Taylor_S.x_taylor_s1(x, unknown)[0]
-        s2 = self.X_Taylor_S.x_taylor_s1(x, unknown)[1]
-        
+        x_taylor_s = self.Taylor.x_taylor_s(x, unknown)
         
         ds_dx = np.ndarray((2, 2,), 'object')
-        ds_dx[0][0] = diff(s1, x[0])
-        ds_dx[0][1] = diff(s1, x[1])
-        ds_dx[1][0] = diff(s2, x[0])
-        ds_dx[1][1] = diff(s2, x[1])
+        ds_dx[0][0] = diff(x_taylor_s[0], x[0])
+        ds_dx[0][1] = diff(x_taylor_s[0], x[1])
+        ds_dx[1][0] = diff(x_taylor_s[1], x[0])
+        ds_dx[1][1] = diff(x_taylor_s[1], x[1])
                 
         return ds_dx
     
@@ -339,7 +329,7 @@ class Metric(Derivative):
         """ dg_ij/ds1 = dx1/ds1*dg_ij/dx1 + dx2/ds1*dg_ij/dx2 """
         dx1_ds1 = self.Derivative.dx_ds()[0][0]
         dx2_ds1 = self.Derivative.dx_ds()[1][0]
-        submetric = self.x_taylor_submetric()
+        submetric = self.submetric()
         x = self.x
         
         dg_dx1 = np.ndarray((2, 2), 'object')
@@ -361,12 +351,12 @@ class Metric(Derivative):
         return dg_ds1
 
 
-class GoverningEquations(Metric, Unknown):
+class GoverningEquations(Metric):
     """ Derive Governing Equations """
     
     def __init__(self, x, s, x_target, unknown):
         self.Metric = Metric(x, s, x_target, unknown)
-        self.Unknown = Unknown(x, s, x_target, unknown)
+        self.Derivative = self.Metric.Derivative
         self.x =  x
         
     def governing_equation_1(self):
@@ -388,12 +378,12 @@ class GoverningEquations(Metric, Unknown):
     def governing_equation_2(self):
         """ 1st Order x_Taylor Series of Laplacian of u """
         """ 2*g11*g22*u,11 + (g11*g22,1 - g11,1*g22)*u,1 """
-        du_ds1 = self.metric.derivative.du_ds()[0]
-        ddu_dds1 = self.metric.derivative.ddu_dds()[0][0]
-        g11 = self.metric.submetric()[0][0]
-        g22 = self.metric.submetric()[1][1]
-        dg11_ds1 = self.metric.dg_ds1()[0][0]
-        dg22_ds1 = self.metric.dg_ds1()[1][1]
+        du_ds1 = self.Derivative.du_ds()[0]
+        ddu_dds1 = self.Derivative.ddu_dds()[0][0]
+        g11 = self.Metric.submetric()[0][0]
+        g22 = self.Metric.submetric()[1][1]
+        dg11_ds1 = self.Metric.dg_ds1()[0][0]
+        dg22_ds1 = self.Metric.dg_ds1()[1][1]
         x = self.x
         
         laplacian_u = 2*g11*g22*ddu_dds1 \
@@ -414,10 +404,10 @@ class GoverningEquations(Metric, Unknown):
 class Experiment(BoundaryConditions, GoverningEquations):
     """ Solve G.E. & B.C. """
     
-    def __init__(self, x_target, s_target, known, unknown):
+    def __init__(self, x, s, x_target, unknown):
         self.BC = BoundaryConditions(x, s, x_target, unknown)
         self.GE = GoverningEquations(x, s, x_target, unknown)
-        self.Unknown = self.GE.Unknown
+        self.Unknown = self.BC.Taylor.Unknown
         self.unknown = unknown
     
     def f(self):
@@ -576,16 +566,16 @@ if __name__ == '__main__':
             x_boundary = BC.x_boundary()
             u_boundary = BC.u_boundary()
             
-#            #################################################
-#            Experiment = Experiment(x, s, x_target, unknown)
-#            #################################################
-#            unknown_experiment = Experiment.solution()
+            #################################################
+            Experiment = Experiment(x, s, x_target, unknown)
+            #################################################
+            unknown_experiment = Experiment.solution()
             
             ################
             Error = Error()
             ################
             error_init = Error.error(unknown_theory, unknown_init)
-#            error_experiment = Error.error(unknown_theory, unknown_experiment)
+            error_experiment = Error.error(unknown_theory, unknown_experiment)
             
             for k in range(len(x)):
                 x_target_array[i][j][k] = x_target[k]
@@ -593,11 +583,11 @@ if __name__ == '__main__':
             for k in range(len(unknown)):
                 unknown_theory_array[i][j][k] = unknown_theory[k]
                 unknown_init_array[i][j][k] = unknown_init[k]
-#                unknown_experiment_array[i][j][k] = unknown_experiment[k]
+                unknown_experiment_array[i][j][k] = unknown_experiment[k]
                 
             for k in range(1):
                 error_init_array[i][j][k] = error_init
-#                error_experiment_array[i][j][k] = error_experiment
+                error_experiment_array[i][j][k] = error_experiment
         
     print('unknown_theory = ')
     print(unknown_theory_array)
@@ -623,13 +613,13 @@ if __name__ == '__main__':
     print(u_boundary)
     print('')
     
-#    print('unknown_experiment = ')
-#    print(unknown_experiment)
-#    print()
+    print('unknown_experiment = ')
+    print(unknown_experiment)
+    print()
           
-#    print('error_experiment = ')
-#    print(error_experiment)
-#    print()
+    print('error_experiment = ')
+    print(error_experiment)
+    print()
     
     
     
