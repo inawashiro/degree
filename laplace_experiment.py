@@ -84,7 +84,7 @@ class Unknown(laplace_theory.Theory):
     def unknown_init(self):
         unknown_theory = self.unknown_theory()
     
-        r = 0.0
+        r = 0.1
         unknown_init = np.ndarray((len(unknown),))
         for i in range(len(unknown)):
             unknown_init[i] = (1 + random.uniform(-r, r)/100)*unknown_theory[i]
@@ -131,8 +131,8 @@ class Taylor(Known, Unknown):
         
         return x_taylor_s
         
-    def s_target(self):
-        unknown_init = self.Unknown.unknown_init()
+    def s_target(self, unknown_init):
+#        unknown_init = self.Unknown.unknown_init()
         x_target = self.x_target
         s_target = self.x_taylor_s(x_target, unknown_init)
         
@@ -141,7 +141,7 @@ class Taylor(Known, Unknown):
     def s_taylor_u(self, s, unknown):
         """ 2nd Order x_Taylor Series of s1 """
         known = self.Known.known()
-        s_target = self.s_target()
+        s_target = self.s_target(unknown_init)
         
         s_taylor_u = known[6] \
                      + known[7]*(s[0] - s_target[0]) \
@@ -170,8 +170,8 @@ class BoundaryConditions(Taylor):
         self.x_target = x_target
         self.unknown = unknown
         
-    def s_boundary(self):
-        s_target = self.Taylor.s_target()
+    def s_boundary(self, unknown_init):
+        s_target = self.Taylor.s_target(unknown_init)
         s_boundary = np.ndarray((2, len(s_target)))
         
         s_boundary[0][0] = s_target[0] - 2.0
@@ -181,12 +181,12 @@ class BoundaryConditions(Taylor):
         
         return s_boundary
     
-    def x_boundary(self):
+    def x_boundary(self, unknown_init):
         x = self.x
         x_target = self.x_target
-        unknown_init = self.Unknown.unknown_init()
+#        unknown_init = self.Unknown.unknown_init()
         x_taylor_s = self.Taylor.x_taylor_s(x, unknown_init)
-        s_boundary = self.s_boundary()
+        s_boundary = self.s_boundary(unknown_init)
         
         f = np.ndarray((2, len(x),), 'object')
         for i in range(2):
@@ -203,9 +203,9 @@ class BoundaryConditions(Taylor):
                 
         return x_boundary
     
-    def u_boundary(self):
-        unknown_init = self.Unknown.unknown_init()
-        x_boundary = self.x_boundary()
+    def u_boundary(self, unknown_init):
+#        unknown_init = self.Unknown.unknown_init()
+        x_boundary = self.x_boundary(unknown_init)
         
         u_boundary = np.ndarray((2),)
         for i in range(2):
@@ -214,8 +214,8 @@ class BoundaryConditions(Taylor):
         return u_boundary
     
     def boundary_conditions(self):
-        x_boundary = self.x_boundary()
-        u_boundary = self.u_boundary()
+        x_boundary = self.x_boundary(unknown_init)
+        u_boundary = self.u_boundary(unknown_init)
         
         u = np.ndarray((2,), 'object')
         bc = np.ndarray((2,), 'object')
@@ -471,10 +471,11 @@ class Experiment(BoundaryConditions, GoverningEquations):
     
         return b    
     
-    def solution(self):
+    def solution(self, unknown_init):
         unknown = self.unknown
         f = self.f()
-        unknown_temp = self.Unknown.unknown_init()
+#        unknown_temp = self.Unknown.unknown_init()
+        unknown_temp = unknown_init
         
         def error_norm(unknown_temp):
             error = np.ndarray((len(f),), 'object')
@@ -564,14 +565,14 @@ if __name__ == '__main__':
             #################################################
             BC = BoundaryConditions(x, s, x_target, unknown)
             #################################################
-            s_boundary = BC.s_boundary()
-            x_boundary = BC.x_boundary()
-            u_boundary = BC.u_boundary()
+            s_boundary = BC.s_boundary(unknown_init)
+            x_boundary = BC.x_boundary(unknown_init)
+            u_boundary = BC.u_boundary(unknown_init)
             
             #################################################
             Experiment = Experiment(x, s, x_target, unknown)
             #################################################
-            unknown_experiment = Experiment.solution()
+            unknown_experiment = Experiment.solution(unknown_init)
             A_init = Experiment.A(unknown_init)
             eigvals_A_init = eigvals(A_init)
             
