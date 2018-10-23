@@ -548,6 +548,8 @@ if __name__ == '__main__':
     error_init_array = np.ndarray((n, n, 1))
     error_experiment_array = np.ndarray((n, n, 1))
     
+    eigvals_A_init_array = np.ndarray((n, n, len(unknown)), 'complex')
+    
     for i in range(n):
         for j in range(n):
             x_target[0] = 1.0 + i/n
@@ -570,6 +572,8 @@ if __name__ == '__main__':
             Experiment = Experiment(x, s, x_target, unknown)
             #################################################
             unknown_experiment = Experiment.solution()
+            A_init = Experiment.A(unknown_init)
+            eigvals_A_init = eigvals(A_init)
             
             ################
             Error = Error()
@@ -584,6 +588,7 @@ if __name__ == '__main__':
                 unknown_theory_array[i][j][k] = unknown_theory[k]
                 unknown_init_array[i][j][k] = unknown_init[k]
                 unknown_experiment_array[i][j][k] = unknown_experiment[k]
+                eigvals_A_init_array[i][j][k] = eigvals_A_init[k]
                 
             for k in range(1):
                 error_init_array[i][j][k] = error_init
@@ -591,11 +596,11 @@ if __name__ == '__main__':
         
     print('unknown_theory = ')
     print(unknown_theory_array)
-    print()
+    print('')
             
     print('unknown_init = ')
     print(unknown_init_array)
-    print()
+    print('')
           
     print('error_init = ')
     print(error_init_array)
@@ -614,40 +619,27 @@ if __name__ == '__main__':
     print('')
     
     print('unknown_experiment = ')
-    print(unknown_experiment)
-    print()
+    print(unknown_experiment_array)
+    print('')
           
     print('error_experiment = ')
-    print(error_experiment)
-    print()
+    print(error_experiment_array)
+    print('')
     
+    print('eigvals_A_init = ')
+    print(eigvals_A_init_array)
+    print('')
     
+    t1 = time.time()
     
+    print('Elapsed Time = ')
+    print(round(t1 - t0), '(s)')
+    print('')
 
-#            
-#            ##########################################################################
-#            experiment = Experiment(x_target, s_target, known, unknown, unknown_init)
-#            ##########################################################################
-#            unknown_experiment = experiment.solution()
-#            error_experiment = relative_error_norm(unknown_experiment, unknown_theory)
-#            
-#            A_init = experiment.A(unknown_init)
-#            b_init = experiment.b(unknown_init)
-#            eigvals_A_init = eigvals(A_init)
-#            
-#            for k in range(len(unknown)):
-#                if absolute(eigvals_A_init[k]) < 1.0e-4:
-#                    eigvals_A_init[k] = 0
-#                else:
-#                    real = round(eigvals_A_init[k].real, 2)
-#                    imag = round(eigvals_A_init[k].imag, 2)
-#                    eigvals_A_init[k] = real + imag*1j
-#                
-#                for l in range(len(unknown)):
-##                    if absolute(A_init[k][l]) < 1.0e-3:
-##                        A_init[k][l] = 0
-#                    A_init[k][l] = round(A_init[k][l], 4)
-#            
+
+
+
+
 
         
     
