@@ -84,18 +84,10 @@ class Unknown(laplace_theory.Theory):
     def unknown_init(self):
         unknown_theory = self.unknown_theory()
     
-        r = 0.1
+        r = 10.0
         unknown_init = np.ndarray((len(unknown),))
         for i in range(len(unknown)):
             unknown_init[i] = (1 + random.uniform(-r, r)/100)*unknown_theory[i]
-        
-#        unknown_init = ((1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[0],
-#                        (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[1],
-#                        (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[2],
-#                        (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[3],
-#                        (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[4],
-#                        (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[5]
-#                        )
         
         return unknown_init
 
@@ -132,7 +124,6 @@ class Taylor(Known, Unknown):
         return x_taylor_s
         
     def s_target(self, unknown_init):
-#        unknown_init = self.Unknown.unknown_init()
         x_target = self.x_target
         s_target = self.x_taylor_s(x_target, unknown_init)
         
@@ -174,9 +165,9 @@ class BoundaryConditions(Taylor):
         s_target = self.Taylor.s_target(unknown_init)
         s_boundary = np.ndarray((2, len(s_target)))
         
-        s_boundary[0][0] = s_target[0] - 2.0
+        s_boundary[0][0] = s_target[0] - 0.1
         s_boundary[0][1] = s_target[1]
-        s_boundary[1][0] = s_target[0] + 2.0
+        s_boundary[1][0] = s_target[0] + 0.1
         s_boundary[1][1] = s_target[1]
         
         return s_boundary
@@ -184,7 +175,6 @@ class BoundaryConditions(Taylor):
     def x_boundary(self, unknown_init):
         x = self.x
         x_target = self.x_target
-#        unknown_init = self.Unknown.unknown_init()
         x_taylor_s = self.Taylor.x_taylor_s(x, unknown_init)
         s_boundary = self.s_boundary(unknown_init)
         
@@ -204,7 +194,6 @@ class BoundaryConditions(Taylor):
         return x_boundary
     
     def u_boundary(self, unknown_init):
-#        unknown_init = self.Unknown.unknown_init()
         x_boundary = self.x_boundary(unknown_init)
         
         u_boundary = np.ndarray((2),)
@@ -474,7 +463,6 @@ class Experiment(BoundaryConditions, GoverningEquations):
     def solution(self, unknown_init):
         unknown = self.unknown
         f = self.f()
-#        unknown_temp = self.Unknown.unknown_init()
         unknown_temp = unknown_init
         
         def error_norm(unknown_temp):
@@ -644,15 +632,6 @@ if __name__ == '__main__':
 
         
     
-
-
-
-
-
-
-
-
-
 
 
 
