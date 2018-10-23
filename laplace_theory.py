@@ -103,15 +103,15 @@ class Theory(Function):
     """ Compute Theoretical Values """
     
     def __init__(self, x, s, x_value):
-        self.function = Function(x, s)
+        self.Function = Function(x, s)
         self.x = x
         self.s = s
         self.x_value = x_value
         
     def s_theory(self, x_value):
         x = self.x
-        s1 = self.function.s1(x)
-        s2 = self.function.s2(x)
+        s1 = self.Function.s1(x)
+        s2 = self.Function.s2(x)
         x_value = self.x_value
         
         s_theory = np.ndarray((len(x_value),), 'object')
@@ -127,7 +127,7 @@ class Theory(Function):
     def a_theory(self, x_value):
         """  Theoretical Values of Taylor Series of s1 w.r.t. x """
         x = self.x
-        a = self.function.a(x)
+        a = self.Function.a(x)
         x_value = self.x_value
         
         a_theory = np.ndarray((len(a),))
@@ -140,7 +140,7 @@ class Theory(Function):
     def b_theory(self, x_value):
         """  Theoretical Values of Taylor Series of s2 w.r.t. x """
         x = self.x
-        b = self.function.b(x)
+        b = self.Function.b(x)
         x_value = self.x_value
         
         b_theory = np.ndarray((len(b),))
@@ -153,7 +153,7 @@ class Theory(Function):
     def r_theory(self, x_value):
         """ Theoretical Values of Taylor Series of u w.r.t. s """
         s = self.s
-        r = self.function.r(s)
+        r = self.Function.r(s)
         s_theory = self.s_theory(x_value)
         
         r_theory = np.ndarray((len(r),))
@@ -168,14 +168,14 @@ class Plot(Function):
     """ Display Plot """
     
     def __init__(self, x, s, x_plot):
-        self.function = Function(x, s)
+        self.Function = Function(x, s)
         self.x_plot = x_plot
         
     def u_plot(self, x_plot):
         x_plot = self.x_plot
-        u = self.function.u(s)
-        s1 = self.function.s1(x_plot)
-        s2 = self.function.s2(x_plot)
+        u = self.Function.u(s)
+        s1 = self.Function.s1(x_plot)
+        s2 = self.Function.s2(x_plot)
         u = lambdify(s, u, 'numpy')
         u = u(s1, s2)
         
@@ -189,8 +189,8 @@ class Plot(Function):
        
     def principal_coordinate_system_plot(self, x_plot):
         x_plot = self.x_plot
-        s1 = self.function.s1(x_plot)
-        s2 = self.function.s2(x_plot)
+        s1 = self.Function.s1(x_plot)
+        s2 = self.Function.s2(x_plot)
             
         plt.gca().set_aspect('equal', adjustable='box')
         
@@ -224,36 +224,29 @@ if __name__ == '__main__':
     s[0] = Symbol('s1', real = True)
     s[1] = Symbol('s2', real = True)
     
-    ##########################
-    function = Function(x, s)
-    ##########################
     n = 5
-
-    a = function.a(x)
-    b = function.b(x)
-    r = function.r(s)
     
     x_value = np.ndarray((len(x),))
     s_value = np.ndarray((len(s),))
     
     x_value_array = np.ndarray((n + 1, n + 1, len(x),))
     s_value_array = np.ndarray((n + 1, n + 1, len(s),))
-    a_theory_array = np.ndarray((n + 1, n + 1, len(a),))
-    b_theory_array = np.ndarray((n + 1, n + 1, len(b),))
-    r_theory_array = np.ndarray((n + 1, n + 1, len(r),))
+    a_theory_array = np.ndarray((n + 1, n + 1, 6,))
+    b_theory_array = np.ndarray((n + 1, n + 1, 6,))
+    r_theory_array = np.ndarray((n + 1, n + 1, 6,))
     
     ###############################
-    theory = Theory(x, s, x_value)
+    Theory = Theory(x, s, x_value)
     ###############################
     for i in range(n + 1):
         for j in range(n + 1):
             x_value[0] = 1.0 + i/n
             x_value[1] = 1.0 + j/n
             
-            s_value = theory.s_theory(x_value)
-            a_theory = theory.a_theory(x_value)
-            b_theory = theory.b_theory(x_value)
-            r_theory = theory.r_theory(x_value)
+            s_value = Theory.s_theory(x_value)
+            a_theory = Theory.a_theory(x_value)
+            b_theory = Theory.b_theory(x_value)
+            r_theory = Theory.r_theory(x_value)
             
             for k in range(len(x)):
                 x_value_array[i][j][k] = x_value[k]
@@ -261,13 +254,13 @@ if __name__ == '__main__':
             for k in range(len(s)):
                 s_value_array[i][j][k] = s_value[k]
             
-            for k in range(len(a)):
+            for k in range(6):
                 a_theory_array[i][j][k] = a_theory[k]
                 
-            for k in range(len(b)):
+            for k in range(6):
                 b_theory_array[i][j][k] = b_theory[k]
                 
-            for k in range(len(r)):
+            for k in range(6):
                 r_theory_array[i][j][k] = r_theory[k]
                 
     print('x_values = ')
@@ -294,16 +287,16 @@ if __name__ == '__main__':
                          np.arange(1, 2, 0.01))
     
     ##########################
-    plot = Plot(x, s, x_plot)
+    Plot = Plot(x, s, x_plot)
     ##########################
     os.chdir('./graph')
     
     print('3D Plot of u')
-    plot.u_plot(x_plot)
+    Plot.u_plot(x_plot)
     print('')
     
     print('Principal Coordinate System')
-    plot.principal_coordinate_system_plot(x_plot)
+    Plot.principal_coordinate_system_plot(x_plot)
     print('')    
     
     
