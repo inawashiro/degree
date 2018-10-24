@@ -165,9 +165,9 @@ class BoundaryConditions(Taylor):
         s_target = self.Taylor.s_target(unknown_init)
         s_boundary = np.ndarray((2, len(s_target)))
         
-        s_boundary[0][0] = s_target[0] - 0.1
+        s_boundary[0][0] = s_target[0] - 1.0
         s_boundary[0][1] = s_target[1]
-        s_boundary[1][0] = s_target[0] + 0.1
+        s_boundary[1][0] = s_target[0] + 1.0
         s_boundary[1][1] = s_target[1]
         
         return s_boundary
@@ -203,6 +203,7 @@ class BoundaryConditions(Taylor):
         return u_boundary
     
     def boundary_conditions(self):
+        unknown = self.unknown
         x_boundary = self.x_boundary(unknown_init)
         u_boundary = self.u_boundary(unknown_init)
         
@@ -460,33 +461,33 @@ class Experiment(BoundaryConditions, GoverningEquations):
     
         return b    
     
-    def solution(self, unknown_init):
+    def error_norm(self, unknown_temp):
         unknown = self.unknown
         f = self.f()
+        
+        error = np.ndarray((len(f),), 'object')
+        for i in range(len(f)):
+            error[i] = lambdify(unknown, f[i], 'numpy')
+            error[i] = error[i](unknown_temp[0],
+                                unknown_temp[1],
+                                unknown_temp[2],
+                                unknown_temp[3],
+                                unknown_temp[4],
+                                unknown_temp[5]
+                                )
+        error_norm = norm(error)
+        
+        return error_norm
+    
+    def solution(self, unknown_init):
         unknown_temp = unknown_init
-        
-        def error_norm(unknown_temp):
-            error = np.ndarray((len(f),), 'object')
-            for i in range(len(f)):
-                error[i] = lambdify(unknown, f[i], 'numpy')
-                error[i] = error[i](unknown_temp[0],
-                                    unknown_temp[1],
-                                    unknown_temp[2],
-                                    unknown_temp[3],
-                                    unknown_temp[4],
-                                    unknown_temp[5]
-                                    )
-            error_norm = norm(error)
-            
-            return error_norm
-        
-        error = error_norm(unknown_temp)
+        error = self.error_norm(unknown_temp)
         
         while error > 1.0e-8:
             A = self.A(unknown_temp)
             b = self.b(unknown_temp)
             unknown_temp = solve(A, b)        
-            error = error_norm(unknown_temp)
+            error = self.error_norm(unknown_temp)
         
         solution = unknown_temp
         
@@ -608,6 +609,10 @@ if __name__ == '__main__':
 
         
     
+
+
+
+
 
 
 
