@@ -84,18 +84,10 @@ class Unknown(laplace_theory.Theory):
     def unknown_init(self):
         unknown_theory = self.unknown_theory()
     
-        r = 0.0
+        r = 10.0
         unknown_init = np.ndarray((len(unknown),))
         for i in range(len(unknown)):
             unknown_init[i] = (1 + random.uniform(-r, r)/100)*unknown_theory[i]
-        
-#        unknown_init = ((1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[0],
-#                        (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[1],
-#                        (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[2],
-#                        (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[3],
-#                        (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[4],
-#                        (1 + random.uniform(-0.0, 0.0)/100)*unknown_theory[5]
-#                        )
         
         return unknown_init
 
@@ -131,8 +123,7 @@ class Taylor(Known, Unknown):
         
         return x_taylor_s
         
-    def s_target(self):
-        unknown_init = self.Unknown.unknown_init()
+    def s_target(self, unknown_init):
         x_target = self.x_target
         s_target = self.x_taylor_s(x_target, unknown_init)
         
@@ -141,7 +132,7 @@ class Taylor(Known, Unknown):
     def s_taylor_u(self, s, unknown):
         """ 2nd Order x_Taylor Series of s1 """
         known = self.Known.known()
-        s_target = self.s_target()
+        s_target = self.s_target(unknown_init)
         
         s_taylor_u = known[6] \
                      + known[7]*(s[0] - s_target[0]) \
@@ -170,23 +161,22 @@ class BoundaryConditions(Taylor):
         self.x_target = x_target
         self.unknown = unknown
         
-    def s_boundary(self):
-        s_target = self.Taylor.s_target()
+    def s_boundary(self, unknown_init):
+        s_target = self.Taylor.s_target(unknown_init)
         s_boundary = np.ndarray((2, len(s_target)))
         
-        s_boundary[0][0] = s_target[0] - 2.0
+        s_boundary[0][0] = s_target[0] - 1.0
         s_boundary[0][1] = s_target[1]
-        s_boundary[1][0] = s_target[0] + 2.0
+        s_boundary[1][0] = s_target[0] + 1.0
         s_boundary[1][1] = s_target[1]
         
         return s_boundary
     
-    def x_boundary(self):
+    def x_boundary(self, unknown_init):
         x = self.x
         x_target = self.x_target
-        unknown_init = self.Unknown.unknown_init()
         x_taylor_s = self.Taylor.x_taylor_s(x, unknown_init)
-        s_boundary = self.s_boundary()
+        s_boundary = self.s_boundary(unknown_init)
         
         f = np.ndarray((2, len(x),), 'object')
         for i in range(2):
@@ -203,9 +193,8 @@ class BoundaryConditions(Taylor):
                 
         return x_boundary
     
-    def u_boundary(self):
-        unknown_init = self.Unknown.unknown_init()
-        x_boundary = self.x_boundary()
+    def u_boundary(self, unknown_init):
+        x_boundary = self.x_boundary(unknown_init)
         
         u_boundary = np.ndarray((2),)
         for i in range(2):
@@ -214,8 +203,9 @@ class BoundaryConditions(Taylor):
         return u_boundary
     
     def boundary_conditions(self):
-        x_boundary = self.x_boundary()
-        u_boundary = self.u_boundary()
+        unknown = self.unknown
+        x_boundary = self.x_boundary(unknown_init)
+        u_boundary = self.u_boundary(unknown_init)
         
         u = np.ndarray((2,), 'object')
         bc = np.ndarray((2,), 'object')
@@ -471,47 +461,37 @@ class Experiment(BoundaryConditions, GoverningEquations):
     
         return b    
     
-    def solution(self):
+    def error_norm(self, unknown_temp):
         unknown = self.unknown
         f = self.f()
-        unknown_temp = self.Unknown.unknown_init()
         
-        def error_norm(unknown_temp):
-            error = np.ndarray((len(f),), 'object')
-            for i in range(len(f)):
-                error[i] = lambdify(unknown, f[i], 'numpy')
-                error[i] = error[i](unknown_temp[0],
-                                    unknown_temp[1],
-                                    unknown_temp[2],
-                                    unknown_temp[3],
-                                    unknown_temp[4],
-                                    unknown_temp[5]
-                                    )
-            error_norm = norm(error)
-            
-            return error_norm
+        error = np.ndarray((len(f),), 'object')
+        for i in range(len(f)):
+            error[i] = lambdify(unknown, f[i], 'numpy')
+            error[i] = error[i](unknown_temp[0],
+                                unknown_temp[1],
+                                unknown_temp[2],
+                                unknown_temp[3],
+                                unknown_temp[4],
+                                unknown_temp[5]
+                                )
+        error_norm = norm(error)
         
-        error = error_norm(unknown_temp)
+        return error_norm
+    
+    def solution(self, unknown_init):
+        unknown_temp = unknown_init
+        error = self.error_norm(unknown_temp)
         
         while error > 1.0e-8:
             A = self.A(unknown_temp)
             b = self.b(unknown_temp)
             unknown_temp = solve(A, b)        
-            error = error_norm(unknown_temp)
+            error = self.error_norm(unknown_temp)
         
         solution = unknown_temp
         
         return solution
-
-
-class Error():
-    """ Relative Error Norm of Vector """
-    
-    def error(self, a, b):
-        
-        error = round(norm(b - a)/norm(a), 4)*100
-        
-        return error
 
         
 
@@ -550,36 +530,34 @@ if __name__ == '__main__':
     
     eigvals_A_init_array = np.ndarray((n, n, len(unknown)), 'complex')
     
+    
+    def error(a, b):
+        
+        error = round(norm(b - a)/norm(a), 4)*100
+        
+        return error
+    
+    
     for i in range(n):
         for j in range(n):
             x_target[0] = 1.0 + i/n
             x_target[1] = 1.0 + j/n
             
-            ########################################
-            test = Unknown(x, s, x_target, unknown)
-            ########################################
-            unknown_theory = test.unknown_theory()
-            unknown_init = test.unknown_init()
+            ################################################
+            Unknown_call = Unknown(x, s, x_target, unknown)
+            ################################################
+            unknown_theory = Unknown_call.unknown_theory()
+            unknown_init = Unknown_call.unknown_init()
             
-            #################################################
-            BC = BoundaryConditions(x, s, x_target, unknown)
-            #################################################
-            s_boundary = BC.s_boundary()
-            x_boundary = BC.x_boundary()
-            u_boundary = BC.u_boundary()
-            
-            #################################################
-            Experiment = Experiment(x, s, x_target, unknown)
-            #################################################
-            unknown_experiment = Experiment.solution()
-            A_init = Experiment.A(unknown_init)
+            ######################################################
+            Experiment_call = Experiment(x, s, x_target, unknown)
+            ######################################################
+            unknown_experiment = Experiment_call.solution(unknown_init)
+            A_init = Experiment_call.A(unknown_init)
             eigvals_A_init = eigvals(A_init)
             
-            ################
-            Error = Error()
-            ################
-            error_init = Error.error(unknown_theory, unknown_init)
-            error_experiment = Error.error(unknown_theory, unknown_experiment)
+            error_init = error(unknown_theory, unknown_init)
+            error_experiment = error(unknown_theory, unknown_experiment)
             
             for k in range(len(x)):
                 x_target_array[i][j][k] = x_target[k]
@@ -604,20 +582,7 @@ if __name__ == '__main__':
           
     print('error_init = ')
     print(error_init_array)
-    print()
-    
-    print('s_boundary = ')
-    print(s_boundary)
-    print('')
-    
-    print('x_boundary = ')
-    print(x_boundary)
-    print('')
-    
-    print('u_boundary = ')
-    print(u_boundary)
-    print('')
-    
+    print()    
     print('unknown_experiment = ')
     print(unknown_experiment_array)
     print('')
@@ -629,6 +594,7 @@ if __name__ == '__main__':
     print('eigvals_A_init = ')
     print(eigvals_A_init_array)
     print('')
+    
     
     t1 = time.time()
     
@@ -643,11 +609,6 @@ if __name__ == '__main__':
 
         
     
-
-
-
-
-
 
 
 
