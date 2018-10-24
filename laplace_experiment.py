@@ -492,16 +492,6 @@ class Experiment(BoundaryConditions, GoverningEquations):
         
         return solution
 
-
-class Error():
-    """ Relative Error Norm of Vector """
-    
-    def error(self, a, b):
-        
-        error = round(norm(b - a)/norm(a), 4)*100
-        
-        return error
-
         
 
 if __name__ == '__main__':
@@ -539,36 +529,34 @@ if __name__ == '__main__':
     
     eigvals_A_init_array = np.ndarray((n, n, len(unknown)), 'complex')
     
+    
+    def error(a, b):
+        
+        error = round(norm(b - a)/norm(a), 4)*100
+        
+        return error
+    
+    
     for i in range(n):
         for j in range(n):
             x_target[0] = 1.0 + i/n
             x_target[1] = 1.0 + j/n
             
-            ########################################
-            test = Unknown(x, s, x_target, unknown)
-            ########################################
-            unknown_theory = test.unknown_theory()
-            unknown_init = test.unknown_init()
+            ################################################
+            Unknown_call = Unknown(x, s, x_target, unknown)
+            ################################################
+            unknown_theory = Unknown_call.unknown_theory()
+            unknown_init = Unknown_call.unknown_init()
             
-            #################################################
-            BC = BoundaryConditions(x, s, x_target, unknown)
-            #################################################
-            s_boundary = BC.s_boundary(unknown_init)
-            x_boundary = BC.x_boundary(unknown_init)
-            u_boundary = BC.u_boundary(unknown_init)
-            
-            #################################################
-            Experiment = Experiment(x, s, x_target, unknown)
-            #################################################
-            unknown_experiment = Experiment.solution(unknown_init)
-            A_init = Experiment.A(unknown_init)
+            ######################################################
+            Experiment_call = Experiment(x, s, x_target, unknown)
+            ######################################################
+            unknown_experiment = Experiment_call.solution(unknown_init)
+            A_init = Experiment_call.A(unknown_init)
             eigvals_A_init = eigvals(A_init)
             
-            ################
-            Error = Error()
-            ################
-            error_init = Error.error(unknown_theory, unknown_init)
-            error_experiment = Error.error(unknown_theory, unknown_experiment)
+            error_init = error(unknown_theory, unknown_init)
+            error_experiment = error(unknown_theory, unknown_experiment)
             
             for k in range(len(x)):
                 x_target_array[i][j][k] = x_target[k]
@@ -593,20 +581,7 @@ if __name__ == '__main__':
           
     print('error_init = ')
     print(error_init_array)
-    print()
-    
-    print('s_boundary = ')
-    print(s_boundary)
-    print('')
-    
-    print('x_boundary = ')
-    print(x_boundary)
-    print('')
-    
-    print('u_boundary = ')
-    print(u_boundary)
-    print('')
-    
+    print()    
     print('unknown_experiment = ')
     print(unknown_experiment_array)
     print('')
@@ -618,6 +593,7 @@ if __name__ == '__main__':
     print('eigvals_A_init = ')
     print(eigvals_A_init_array)
     print('')
+    
     
     t1 = time.time()
     
