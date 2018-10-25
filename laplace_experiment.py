@@ -25,9 +25,6 @@ import random
 # For Measuring Computation Time
 import time
 
-# For Symbolic Expression Displaying
-from IPython.display import display
-
 
 
 class Known(laplace_theory.Theory):
@@ -84,7 +81,7 @@ class Unknown(laplace_theory.Theory):
     def unknown_init(self):
         unknown_theory = self.unknown_theory()
     
-        e = 0.0
+        e = 1.0
         unknown_init = np.ndarray((len(unknown),))
         for i in range(len(unknown)):
             unknown_init[i] = (1 + random.uniform(-e, e)/100)*unknown_theory[i]
@@ -207,8 +204,8 @@ class BoundaryConditions(Taylor):
     
     def boundary_conditions(self):
         unknown = self.unknown
-        x_boundary = self.x_boundary(unknown_init)
-        u_boundary = self.u_boundary(unknown_init)
+        x_boundary = self.x_boundary()
+        u_boundary = self.u_boundary()
         
         u = np.ndarray((2,), 'object')
         bc = np.ndarray((2,), 'object')
@@ -222,8 +219,8 @@ class BoundaryConditions(Taylor):
 class Derivative(Taylor):
     """ x_Taylor Series of Derivatives """
     
-    def __init__(self, x, s, x_target, unknown):
-        self.Taylor = Taylor(x, s, x_target, unknown)
+    def __init__(self, x, s, x_target, unknown, unknown_init):
+        self.Taylor = Taylor(x, s, x_target, unknown, unknown_init)
         self.x = x
         self.s = s
         self.unknown = unknown
@@ -295,8 +292,8 @@ class Derivative(Taylor):
 class Metric(Derivative):
     """ x_Taylor Series of Metrics """
     
-    def __init__(self, x, s, x_target, unknown):
-        self.Derivative = Derivative(x, s, x_target, unknown)
+    def __init__(self, x, s, x_target, unknown, unknown_init):
+        self.Derivative = Derivative(x, s, x_target, unknown, unknown_init)
         self.x = x
     
     def submetric(self):
@@ -347,8 +344,8 @@ class Metric(Derivative):
 class GoverningEquations(Metric):
     """ Derive Governing Equations """
     
-    def __init__(self, x, s, x_target, unknown):
-        self.Metric = Metric(x, s, x_target, unknown)
+    def __init__(self, x, s, x_target, unknown, unknown_init):
+        self.Metric = Metric(x, s, x_target, unknown, unknown_init)
         self.Derivative = self.Metric.Derivative
         self.x =  x
         
@@ -397,11 +394,12 @@ class GoverningEquations(Metric):
 class Experiment(BoundaryConditions, GoverningEquations):
     """ Solve G.E. & B.C. """
     
-    def __init__(self, x, s, x_target, unknown):
-        self.BC = BoundaryConditions(x, s, x_target, unknown)
-        self.GE = GoverningEquations(x, s, x_target, unknown)
-        self.Unknown = self.BC.Taylor.Unknown
+    def __init__(self, x, s, x_target, unknown, unknown_init):
+        self.BC = BoundaryConditions(x, s, x_target, unknown, unknown_init)
+        self.GE = GoverningEquations(x, s, x_target, unknown, unknown_init)
+#        self.Unknown = self.BC.Taylor.Unknown
         self.unknown = unknown
+        self.unknown_init = unknown_init
     
     def f(self):
         unknown = self.unknown
@@ -478,7 +476,8 @@ class Experiment(BoundaryConditions, GoverningEquations):
         
         return error
     
-    def solution(self, unknown_init):
+    def solution(self):
+        unknown_init = self.unknown_init
         unknown_temp = unknown_init
         error = self.error(unknown_temp)
         
@@ -548,70 +547,70 @@ if __name__ == '__main__':
             unknown_theory = Unknown_call.unknown_theory()
             unknown_init = Unknown_call.unknown_init()
             
-            ####################################################################
-            BC_call = BoundaryConditions(x, s, x_target, unknown, unknown_init)
-            ####################################################################
-            s_boundary = BC_call.s_boundary()
-            x_boundary = BC_call.x_boundary()
-            u_boundary = BC_call.u_boundary()
+#            ####################################################################
+#            BC_call = BoundaryConditions(x, s, x_target, unknown, unknown_init)
+#            ####################################################################
+#            s_boundary = BC_call.s_boundary()
+#            x_boundary = BC_call.x_boundary()
+#            u_boundary = BC_call.u_boundary()
             
-#            ######################################################
-#            Experiment_call = Experiment(x, s, x_target, unknown)
-#            ######################################################
-#            unknown_experiment = Experiment_call.solution(unknown_init)
-#            A_init = Experiment_call.A(unknown_init)
-#            eigvals_A_init = eigvals(A_init)
-#            
-#            error_init = relative_error(unknown_theory, unknown_init)
-#            error_experiment = relative_error(unknown_theory, unknown_experiment)
-#            
-#            for k in range(len(x)):
-#                x_target_array[i][j][k] = x_target[k]
-#    
-#            for k in range(len(unknown)):
-#                unknown_theory_array[i][j][k] = unknown_theory[k]
-#                unknown_init_array[i][j][k] = unknown_init[k]
-#                unknown_experiment_array[i][j][k] = unknown_experiment[k]
-#                eigvals_A_init_array[i][j][k] = eigvals_A_init[k]
-#                
-#            for k in range(1):
-#                error_init_array[i][j][k] = error_init
-#                error_experiment_array[i][j][k] = error_experiment
+            ####################################################################
+            Experiment_call = Experiment(x, s, x_target, unknown, unknown_init)
+            ####################################################################
+            unknown_experiment = Experiment_call.solution()
+            A_init = Experiment_call.A(unknown_init)
+            eigvals_A_init = eigvals(A_init)
+            
+            error_init = relative_error(unknown_theory, unknown_init)
+            error_experiment = relative_error(unknown_theory, unknown_experiment)
+            
+            for k in range(len(x)):
+                x_target_array[i][j][k] = x_target[k]
+    
+            for k in range(len(unknown)):
+                unknown_theory_array[i][j][k] = unknown_theory[k]
+                unknown_init_array[i][j][k] = unknown_init[k]
+                unknown_experiment_array[i][j][k] = unknown_experiment[k]
+                eigvals_A_init_array[i][j][k] = eigvals_A_init[k]
                 
-    print('x_boundary = ')
-    print(x_boundary)
-    print('')
-    
-    print('s_boundary = ')
-    print(s_boundary)
-    print('')
-    
-    print('u_boundary = ')
-    print(u_boundary)
-    print('')
-    
-#    print('unknown_theory = ')
-#    print(unknown_theory_array)
-#    print('')
-#            
-#    print('unknown_init = ')
-#    print(unknown_init_array)
-#    print('')
-#          
-#    print('error_init = ')
-#    print(error_init_array)
-#    print()    
-#    print('unknown_experiment = ')
-#    print(unknown_experiment_array)
-#    print('')
-#          
-#    print('error_experiment = ')
-#    print(error_experiment_array)
+            for k in range(1):
+                error_init_array[i][j][k] = error_init
+                error_experiment_array[i][j][k] = error_experiment
+                
+#    print('x_boundary = ')
+#    print(x_boundary)
 #    print('')
 #    
-#    print('eigvals_A_init = ')
-#    print(eigvals_A_init_array)
+#    print('s_boundary = ')
+#    print(s_boundary)
 #    print('')
+#    
+#    print('u_boundary = ')
+#    print(u_boundary)
+#    print('')
+    
+    print('unknown_theory = ')
+    print(unknown_theory_array)
+    print('')
+            
+    print('unknown_init = ')
+    print(unknown_init_array)
+    print('')
+          
+    print('error_init = ')
+    print(error_init_array)
+    print()    
+    print('unknown_experiment = ')
+    print(unknown_experiment_array)
+    print('')
+          
+    print('error_experiment = ')
+    print(error_experiment_array)
+    print('')
+    
+    print('eigvals_A_init = ')
+    print(eigvals_A_init_array)
+    print('')
     
     
     t1 = time.time()
