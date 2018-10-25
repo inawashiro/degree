@@ -30,15 +30,17 @@ import time
 class Known(laplace_theory.Theory):
     """ Known Values """
     
-    def __init__(self, x, s, x_target):
+    def __init__(self, x, s, x_target, unknown):
         self.Theory = laplace_theory.Theory(x, s, x_target)
+        self.unknown = unknown
         
     def known(self):
         a_theory = self.Theory.a_theory()
         b_theory = self.Theory.b_theory()
         r_theory = self.Theory.r_theory()
+        unknown = self.unknown
         
-        known = np.ndarray((12,))
+        known = np.ndarray((18 - len(unknown),))
         known[0] = a_theory[0]
         known[1] = a_theory[1]
         known[2] = a_theory[2]
@@ -93,7 +95,7 @@ class Taylor(Known):
     """ Taylor Series Expressions """
     
     def __init__(self, x, s, x_target, unknown, unknown_init):
-        self.Known = Known(x, s, x_target)
+        self.Known = Known(x, s, x_target, unknown)
         self.x_target = x_target
         self.unknown_init = unknown_init
         
@@ -547,13 +549,6 @@ if __name__ == '__main__':
             unknown_theory = Unknown_call.unknown_theory()
             unknown_init = Unknown_call.unknown_init()
             
-#            ####################################################################
-#            BC_call = BoundaryConditions(x, s, x_target, unknown, unknown_init)
-#            ####################################################################
-#            s_boundary = BC_call.s_boundary()
-#            x_boundary = BC_call.x_boundary()
-#            u_boundary = BC_call.u_boundary()
-            
             ####################################################################
             Experiment_call = Experiment(x, s, x_target, unknown, unknown_init)
             ####################################################################
@@ -576,18 +571,6 @@ if __name__ == '__main__':
             for k in range(1):
                 error_init_array[i][j][k] = error_init
                 error_experiment_array[i][j][k] = error_experiment
-                
-#    print('x_boundary = ')
-#    print(x_boundary)
-#    print('')
-#    
-#    print('s_boundary = ')
-#    print(s_boundary)
-#    print('')
-#    
-#    print('u_boundary = ')
-#    print(u_boundary)
-#    print('')
     
     print('unknown_theory = ')
     print(unknown_theory_array)
