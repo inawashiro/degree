@@ -399,7 +399,6 @@ class Experiment(BoundaryConditions, GoverningEquations):
     def __init__(self, x, s, unknown, x_target, unknown_init):
         self.BC = BoundaryConditions(x, s, unknown, x_target, unknown_init)
         self.GE = GoverningEquations(x, s, unknown, x_target, unknown_init)
-#        self.Unknown = self.BC.Taylor.Unknown
         self.unknown = unknown
         self.unknown_init = unknown_init
     
@@ -488,7 +487,7 @@ class Experiment(BoundaryConditions, GoverningEquations):
             b = self.b(unknown_temp)
             unknown_temp = solve(A, b)        
             error = self.error(unknown_temp)
-        
+#        
         solution = unknown_temp
         
         return solution
