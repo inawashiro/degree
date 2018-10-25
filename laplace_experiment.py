@@ -30,7 +30,7 @@ import time
 class Known(laplace_theory.Theory):
     """ Known Values """
     
-    def __init__(self, x, s, x_target, unknown):
+    def __init__(self, x, s, unknown, x_target):
         self.Theory = laplace_theory.Theory(x, s, x_target)
         self.unknown = unknown
         
@@ -60,7 +60,7 @@ class Known(laplace_theory.Theory):
 class Unknown(laplace_theory.Theory):
     """ Unknowns Related """
 
-    def __init__(self, x, s, x_target, unknown):
+    def __init__(self, x, s, unknown, x_target):
         self.Theory = laplace_theory.Theory(x, s, x_target)
         self.unknown = unknown
         
@@ -83,7 +83,7 @@ class Unknown(laplace_theory.Theory):
     def unknown_init(self):
         unknown_theory = self.unknown_theory()
     
-        e = 1.0
+        e = 0.0
         unknown_init = np.ndarray((len(unknown),))
         for i in range(len(unknown)):
             unknown_init[i] = (1 + random.uniform(-e, e)/100)*unknown_theory[i]
@@ -94,8 +94,8 @@ class Unknown(laplace_theory.Theory):
 class Taylor(Known):
     """ Taylor Series Expressions """
     
-    def __init__(self, x, s, x_target, unknown, unknown_init):
-        self.Known = Known(x, s, x_target, unknown)
+    def __init__(self, x, s, unknown, x_target, unknown_init):
+        self.Known = Known(x, s, unknown, x_target)
         self.x_target = x_target
         self.unknown_init = unknown_init
         
@@ -154,8 +154,8 @@ class Taylor(Known):
 class BoundaryConditions(Taylor):
     """ Boundary s_coordinate """
     
-    def __init__(self, x, s, x_target, unknown, unknown_init):
-        self.Taylor = Taylor(x, s, x_target, unknown, unknown_init)
+    def __init__(self, x, s, unknown, x_target, unknown_init):
+        self.Taylor = Taylor(x, s, unknown, x_target, unknown_init)
         self.x = x
         self.unknown = unknown
         self.x_target = x_target
@@ -221,8 +221,8 @@ class BoundaryConditions(Taylor):
 class Derivative(Taylor):
     """ x_Taylor Series of Derivatives """
     
-    def __init__(self, x, s, x_target, unknown, unknown_init):
-        self.Taylor = Taylor(x, s, x_target, unknown, unknown_init)
+    def __init__(self, x, s, unknown, x_target, unknown_init):
+        self.Taylor = Taylor(x, s, unknown, x_target, unknown_init)
         self.x = x
         self.s = s
         self.unknown = unknown
@@ -294,8 +294,8 @@ class Derivative(Taylor):
 class Metric(Derivative):
     """ x_Taylor Series of Metrics """
     
-    def __init__(self, x, s, x_target, unknown, unknown_init):
-        self.Derivative = Derivative(x, s, x_target, unknown, unknown_init)
+    def __init__(self, x, s, unknown, x_target, unknown_init):
+        self.Derivative = Derivative(x, s, unknown, x_target, unknown_init)
         self.x = x
     
     def submetric(self):
@@ -346,8 +346,8 @@ class Metric(Derivative):
 class GoverningEquations(Metric):
     """ Derive Governing Equations """
     
-    def __init__(self, x, s, x_target, unknown, unknown_init):
-        self.Metric = Metric(x, s, x_target, unknown, unknown_init)
+    def __init__(self, x, s, unknown, x_target, unknown_init):
+        self.Metric = Metric(x, s, unknown, x_target, unknown_init)
         self.Derivative = self.Metric.Derivative
         self.x =  x
         
@@ -396,9 +396,9 @@ class GoverningEquations(Metric):
 class Experiment(BoundaryConditions, GoverningEquations):
     """ Solve G.E. & B.C. """
     
-    def __init__(self, x, s, x_target, unknown, unknown_init):
-        self.BC = BoundaryConditions(x, s, x_target, unknown, unknown_init)
-        self.GE = GoverningEquations(x, s, x_target, unknown, unknown_init)
+    def __init__(self, x, s, unknown, x_target, unknown_init):
+        self.BC = BoundaryConditions(x, s, unknown, x_target, unknown_init)
+        self.GE = GoverningEquations(x, s, unknown, x_target, unknown_init)
 #        self.Unknown = self.BC.Taylor.Unknown
         self.unknown = unknown
         self.unknown_init = unknown_init
@@ -544,13 +544,13 @@ if __name__ == '__main__':
             x_target[1] = 1.0 + j/n
             
             ################################################
-            Unknown_call = Unknown(x, s, x_target, unknown)
+            Unknown_call = Unknown(x, s, unknown, x_target)
             ################################################
             unknown_theory = Unknown_call.unknown_theory()
             unknown_init = Unknown_call.unknown_init()
             
             ####################################################################
-            Experiment_call = Experiment(x, s, x_target, unknown, unknown_init)
+            Experiment_call = Experiment(x, s, unknown, x_target, unknown_init)
             ####################################################################
             unknown_experiment = Experiment_call.solution()
             A_init = Experiment_call.A(unknown_init)
