@@ -84,7 +84,7 @@ class Unknown(laplace_theory.Theory):
     def unknown_init(self):
         unknown_theory = self.unknown_theory()
     
-        r = 10.0
+        r = 1.0
         unknown_init = np.ndarray((len(unknown),))
         for i in range(len(unknown)):
             unknown_init[i] = (1 + random.uniform(-r, r)/100)*unknown_theory[i]
@@ -442,13 +442,9 @@ class Experiment(BoundaryConditions, GoverningEquations):
         
         b = np.ndarray((len(f),), 'object')
         for i in range(len(f)):
-            b[i] = - f[i] \
-                   + diff(f[i], unknown[0])*unknown[0] \
-                   + diff(f[i], unknown[1])*unknown[1] \
-                   + diff(f[i], unknown[2])*unknown[2] \
-                   + diff(f[i], unknown[3])*unknown[3] \
-                   + diff(f[i], unknown[4])*unknown[4] \
-                   + diff(f[i], unknown[5])*unknown[5]
+            b[i] = -f[i]
+            for j in range(len(unknown)):
+                b[i] += diff(f[i], unknown[j])*unknown[j]
             b[i] = lambdify(unknown, b[i], 'numpy')
             b[i] = b[i](unknown_temp[0],
                         unknown_temp[1],
