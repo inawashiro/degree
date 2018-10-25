@@ -432,6 +432,7 @@ class Experiment(BoundaryConditions, GoverningEquations):
                                   unknown_temp[4],
                                   unknown_temp[5]
                                   )
+#                A[i][j] = A[i][j](unknown_temp)
         A = A.astype('float')
         
         return A
@@ -457,7 +458,7 @@ class Experiment(BoundaryConditions, GoverningEquations):
     
         return b    
     
-    def error_norm(self, unknown_temp):
+    def error(self, unknown_temp):
         unknown = self.unknown
         f = self.f()
         
@@ -471,19 +472,19 @@ class Experiment(BoundaryConditions, GoverningEquations):
                                 unknown_temp[4],
                                 unknown_temp[5]
                                 )
-        error_norm = norm(error)
+        error = norm(error)
         
-        return error_norm
+        return error
     
     def solution(self, unknown_init):
         unknown_temp = unknown_init
-        error = self.error_norm(unknown_temp)
+        error = self.error(unknown_temp)
         
         while error > 1.0e-8:
             A = self.A(unknown_temp)
             b = self.b(unknown_temp)
             unknown_temp = solve(A, b)        
-            error = self.error_norm(unknown_temp)
+            error = self.error(unknown_temp)
         
         solution = unknown_temp
         
@@ -527,11 +528,11 @@ if __name__ == '__main__':
     eigvals_A_init_array = np.ndarray((n, n, len(unknown)), 'complex')
     
     
-    def error(a, b):
+    def relative_error(a, b):
         
-        error = round(norm(b - a)/norm(a), 4)*100
+        relative_error = round(norm(b - a)/norm(a), 4)*100
         
-        return error
+        return relative_error
     
     
     for i in range(n):
@@ -552,8 +553,8 @@ if __name__ == '__main__':
             A_init = Experiment_call.A(unknown_init)
             eigvals_A_init = eigvals(A_init)
             
-            error_init = error(unknown_theory, unknown_init)
-            error_experiment = error(unknown_theory, unknown_experiment)
+            error_init = relative_error(unknown_theory, unknown_init)
+            error_experiment = relative_error(unknown_theory, unknown_experiment)
             
             for k in range(len(x)):
                 x_target_array[i][j][k] = x_target[k]
