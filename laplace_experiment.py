@@ -487,7 +487,7 @@ class Experiment(BoundaryConditions, GoverningEquations):
             b = self.b(unknown_temp)
             unknown_temp = solve(A, b)        
             error = self.error(unknown_temp)
-#        
+       
         solution = unknown_temp
         
         return solution
@@ -548,6 +548,13 @@ if __name__ == '__main__':
             unknown_theory = Unknown_call.unknown_theory()
             unknown_init = Unknown_call.unknown_init()
             
+#            ####################################################################
+#            BC_call = BoundaryConditions(x, s, unknown, x_target, unknown_init)
+#            ####################################################################
+#            x_boundary = BC_call.x_boundary()
+#            s_boundary = BC_call.s_boundary()
+#            u_boundary = BC_call.u_boundary()
+        
             ####################################################################
             Experiment_call = Experiment(x, s, unknown, x_target, unknown_init)
             ####################################################################
@@ -570,7 +577,7 @@ if __name__ == '__main__':
             for k in range(1):
                 error_init_array[i][j][k] = error_init
                 error_experiment_array[i][j][k] = error_experiment
-    
+ 
     print('unknown_theory = ')
     print(unknown_theory_array)
     print('')
@@ -593,7 +600,18 @@ if __name__ == '__main__':
     print('eigvals_A_init = ')
     print(eigvals_A_init_array)
     print('')
-    
+            
+#    print('x_boundary = ')
+#    print(x_boundary)
+#    print('')
+#    
+#    print('s_boundary = ')
+#    print(s_boundary)
+#    print('')
+#    
+#    print('u_boundary = ')
+#    print(u_boundary)
+#    print('')
     
     t1 = time.time()
     
