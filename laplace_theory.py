@@ -34,8 +34,16 @@ class PrincipalCoordSystem():
     def s(self, x):
         """ Coordintae Transformation """
         s = np.ndarray((2,), 'object')
-        s[0] = x[0]**3 - 3*x[0]*x[1]**2
-        s[1] = -x[1]**3 + 3*x[0]**2*x[1]
+        
+        """ 2nd Order Polynomial """
+        s[0] = x[0]**2 - x[1]**2
+        s[1] = 2*x[0]*x[1]
+        """ 3rd Order Polynomial """
+#        s[0] = x[0]**3 - 3*x[0]*x[1]**2
+#        s[1] = -x[1]**3 + 3*x[0]**2*x[1]
+        """ 4th Order Polynomial """
+#        s[0] = x[0]**4 - 6*x[0]**2*x[1]**2 + x[1]**4
+#        s[1] = 4*x[0]**3*x[1] - 4*x[0]*x[1]**3
         
         return s
 
@@ -152,16 +160,16 @@ class Plot(PrincipalCoordSystem):
             
         plt.gca().set_aspect('equal', adjustable='box')
         
-        interval1 = np.arange(-15.0, 2.5, 2.5)
-        interval2 = np.arange(0.0, 15.0, 2.5)
+        interval1 = np.arange(-100, 100, 1.0)
+        interval2 = np.arange(-100, 100, 1.0)
         
         cr_s1 = plt.contour(x_value[0], x_value[1], s[0], interval1, colors = 'red')
-        levels1 = cr_s1.levels
-        cr_s1.clabel(levels1[::2], fmt = '%3.1f')
+#        levels1 = cr_s1.levels
+#        cr_s1.clabel(levels1[::5], fmt = '%3.1f')
         
         cr_s2 = plt.contour(x_value[0], x_value[1], s[1], interval2, colors = 'blue')
-        levels2 = cr_s2.levels
-        cr_s2.clabel(levels2[::2], fmt = '%3.1f')
+#        levels2 = cr_s2.levels
+#        cr_s2.clabel(levels2[::5], fmt = '%3.1f')
         
         plt.savefig('principal_coordinate_system.pdf')
         plt.savefig('principal_coordinate_system.png')
@@ -242,8 +250,8 @@ if __name__ == '__main__':
     print(r_theory_array)
     print('')
 
-    x_value = np.meshgrid(np.arange(1, 2, 0.01), 
-                          np.arange(1, 2, 0.01))
+    x_value = np.meshgrid(np.arange(0, 2, 0.01), 
+                          np.arange(0, 2, 0.01))
     
     #####################
     Plot = Plot(x_value)

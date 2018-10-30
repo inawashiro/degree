@@ -58,7 +58,7 @@ class Known(laplace_theory.Theory):
 
 
 class Unknown(laplace_theory.Theory):
-    """ Unknowns Related """
+    """ Values Related to Unknowns """
 
     def __init__(self, x, s, unknown, x_value):
         self.Theory = laplace_theory.Theory(x, s, x_value)
@@ -83,7 +83,7 @@ class Unknown(laplace_theory.Theory):
     def unknown_init(self):
         unknown_theory = self.unknown_theory()
     
-        e = 10.0
+        e = 0.0
         unknown_init = np.ndarray((len(unknown),))
         for i in range(len(unknown)):
             unknown_init[i] = (1 + random.uniform(-e, e)/100)*unknown_theory[i]
@@ -163,14 +163,14 @@ class BoundaryConditions(Taylor):
         self.unknown_init = unknown_init
         
     def s_boundary(self):
-        s_value = self.Taylor.s_value()
-#        x_value = self.x_value
-#        s_value = self.PCS.s(x_value)
+#        s_value = self.Taylor.s_value()
+        x_value = self.x_value
+        s_value = self.PCS.s(x_value)
         s_boundary = np.ndarray((2, len(s_value)))
         
-        s_boundary[0][0] = s_value[0] - 1.0
+        s_boundary[0][0] = s_value[0] - 0.1
         s_boundary[0][1] = s_value[1]
-        s_boundary[1][0] = s_value[0] + 1.0
+        s_boundary[1][0] = s_value[0] + 0.1
         s_boundary[1][1] = s_value[1]
         
         return s_boundary
@@ -200,12 +200,10 @@ class BoundaryConditions(Taylor):
         return x_boundary
     
     def u_boundary(self):
-        unknown_init = self.unknown_init
         s_boundary = self.s_boundary()
         
         u_boundary = np.ndarray((2),)
         for i in range(2):
-#            u_boundary[i] = self.Taylor.s_taylor_u(s_boundary[i], unknown_init)
             u_boundary[i] = self.PCS.u(s_boundary[i])
         
         return u_boundary
