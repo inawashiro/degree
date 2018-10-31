@@ -82,7 +82,7 @@ class Unknown(laplace_theory.Theory):
     def unknown_init(self):
         unknown_theory = self.unknown_theory()
     
-        e = 0.0
+        e = 10.0
         unknown_init = np.ndarray((len(unknown),))
         for i in range(len(unknown)):
             unknown_init[i] = (1 + random.uniform(-e, e)/100)*unknown_theory[i]
@@ -178,16 +178,16 @@ class BoundaryConditions(Taylor):
     def x_boundary(self):
         x = self.x
         x_value = self.x_value
-        unknown_init = self.unknown_init
-        x_taylor_s = self.Taylor.x_taylor_s(x, unknown_init)
+#        unknown_init = self.unknown_init
+#        x_taylor_s = self.Taylor.x_taylor_s(x, unknown_init)
         s_boundary = self.s_boundary()
-#        s = self.PCS.s(x)
+        s = self.PCS.s(x)
         
         f = np.ndarray((2, len(x),), 'object')
         for i in range(2):
             for j in range(len(x)):
-                f[i][j] = x_taylor_s[j] - s_boundary[i][j]
-#                f[i][j] = s[j] - s_boundary[i][j]
+#                f[i][j] = x_taylor_s[j] - s_boundary[i][j]
+                f[i][j] = s[j] - s_boundary[i][j]
 
         x_boundary = np.ndarray((2, len(x),))
         for i in range(2):
@@ -494,7 +494,7 @@ class Experiment(BoundaryConditions, GoverningEquations):
             b = self.b(unknown_temp)
             unknown_temp = solve(A, b)        
             error = self.error(unknown_temp)
-       
+        
         solution = unknown_temp
         
         return solution
