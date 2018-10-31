@@ -68,7 +68,6 @@ class Unknown(laplace_theory.Theory):
         unknown = self.unknown
         a_theory = self.Theory.a_theory()
         b_theory = self.Theory.b_theory()
-#        r_theory = self.Theory.r_theory()
         
         unknown_theory = np.ndarray((len(unknown),))
         unknown_theory[0] = a_theory[3]
@@ -127,6 +126,7 @@ class Taylor(Known):
         unknown_init = self.unknown_init
         s_value = self.x_taylor_s(x_value, unknown_init)
         
+        
         return s_value
         
     def s_taylor_u(self, s, unknown):
@@ -168,10 +168,10 @@ class BoundaryConditions(Taylor):
         s_value = self.PCS.s(x_value)
         s_boundary = np.ndarray((2, len(s_value)))
         
-        s_boundary[0][0] = s_value[0] - 0.1
-        s_boundary[0][1] = s_value[1]
-        s_boundary[1][0] = s_value[0] + 0.1
-        s_boundary[1][1] = s_value[1]
+        s_boundary[0][0] = s_value[0] - 1.0
+        s_boundary[0][1] = s_value[1] 
+        s_boundary[1][0] = s_value[0] + 1.0
+        s_boundary[1][1] = s_value[1] 
         
         return s_boundary
     
@@ -218,7 +218,7 @@ class BoundaryConditions(Taylor):
         for i in range(2):
             x_taylor_u[i] = self.Taylor.x_taylor_u(x_boundary[i], unknown)
             bc[i] = x_taylor_u[i] - u_boundary[i]
-        
+            
         return bc
         
 
@@ -354,20 +354,22 @@ class GoverningEquations(Metric):
         self.Metric = Metric(x, s, unknown, x_value, unknown_init)
         self.Derivative = self.Metric.Derivative
         self.x =  x
+        self.x_value = x_value
         
     def governing_equation_1(self):
         """ 1st Order x_Taylor Series of g_12 """
         g12 = self.Metric.submetric()[0][1]
         x = self.x
+        x_value = self.x_value
         
-        coeff_g12 = np.ndarray((len(x) + 1,), 'object')
+        coeff_g12 = np.ndarray((4), 'object')
         coeff_g12[0] = diff(g12, x[0])
         coeff_g12[1] = diff(g12, x[1])
         coeff_g12[2] = g12
         
-        for i in range(len(x) + 1):
+        for i in range(len(coeff_g12)):
             coeff_g12[i] = lambdify(x, coeff_g12[i], 'numpy')
-            coeff_g12[i] = coeff_g12[i](0, 0)
+            coeff_g12[i] = coeff_g12[i](x_value[0], x_value[1])
          
         return coeff_g12
     
@@ -381,18 +383,19 @@ class GoverningEquations(Metric):
         dg11_ds1 = self.Metric.dg_ds1()[0][0]
         dg22_ds1 = self.Metric.dg_ds1()[1][1]
         x = self.x
+        x_value = self.x_value
         
         laplacian_u = 2*g11*g22*ddu_dds1 \
                       + (g11*dg22_ds1 - g22*dg11_ds1)*du_ds1
         
-        coeff_laplacian_u = np.ndarray((len(x) + 1,), 'object')
+        coeff_laplacian_u = np.ndarray((3), 'object')
         coeff_laplacian_u[0] = diff(laplacian_u, x[0])
         coeff_laplacian_u[1] = diff(laplacian_u, x[1])
         coeff_laplacian_u[2] = laplacian_u 
         
-        for i in range(len(x) + 1):
+        for i in range(len(coeff_laplacian_u)):
             coeff_laplacian_u[i] = lambdify(x, coeff_laplacian_u[i], 'numpy')
-            coeff_laplacian_u[i] = coeff_laplacian_u[i](0, 0)
+            coeff_laplacian_u[i] = coeff_laplacian_u[i](x_value[0], x_value[1])
          
         return coeff_laplacian_u
 
@@ -438,7 +441,7 @@ class Experiment(BoundaryConditions, GoverningEquations):
                                   unknown_temp[4],
                                   unknown_temp[5]
                                   )
-        A = A.astype('float')
+        A = A.astype('double')
         
         return A
     
@@ -459,7 +462,7 @@ class Experiment(BoundaryConditions, GoverningEquations):
                         unknown_temp[4],
                         unknown_temp[5]
                         )
-        b = b.astype('float')
+        b = b.astype('double')
     
         return b    
     
@@ -602,14 +605,14 @@ if __name__ == '__main__':
     print(unknown_init_array)
     print('')
           
-    print('error_init = ')
+    print('error_init(%) = ')
     print(error_init_array)
     print()    
     print('unknown_experiment = ')
     print(unknown_experiment_array)
     print('')
           
-    print('error_experiment = ')
+    print('error_experiment(%) = ')
     print(error_experiment_array)
     print('')
     
