@@ -42,9 +42,6 @@ class PrincipalCoordSystem():
         """ 3rd Order Polynomial """
 #        s[0] = x[0]**3 - 3*x[0]*x[1]**2
 #        s[1] = -x[1]**3 + 3*x[0]**2*x[1]
-        """ 4th Order Polynomial """
-#        s[0] = x[0]**4 - 6*x[0]**2*x[1]**2 + x[1]**4
-#        s[1] = 4*x[0]**3*x[1] - 4*x[0]*x[1]**3
         """ Non Polynomial """
 #        s[0] = exp(x[0])*sin(x[1])
 #        s[1] = exp(x[0])*cos(x[1])
