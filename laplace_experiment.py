@@ -30,8 +30,8 @@ import time
 class Known(laplace_theory.Theory):
     """ Known Values """
     
-    def __init__(self, x, s, unknown, x_target):
-        self.Theory = laplace_theory.Theory(x, s, x_target)
+    def __init__(self, x, s, unknown, x_value):
+        self.Theory = laplace_theory.Theory(x, s, x_value)
         self.unknown = unknown
         
     def known(self):
@@ -58,17 +58,16 @@ class Known(laplace_theory.Theory):
 
 
 class Unknown(laplace_theory.Theory):
-    """ Unknowns Related """
+    """ Values Related to Unknowns """
 
-    def __init__(self, x, s, unknown, x_target):
-        self.Theory = laplace_theory.Theory(x, s, x_target)
+    def __init__(self, x, s, unknown, x_value):
+        self.Theory = laplace_theory.Theory(x, s, x_value)
         self.unknown = unknown
         
     def unknown_theory(self):
         unknown = self.unknown
         a_theory = self.Theory.a_theory()
         b_theory = self.Theory.b_theory()
-#        r_theory = self.Theory.r_theory()
         
         unknown_theory = np.ndarray((len(unknown),))
         unknown_theory[0] = a_theory[3]
@@ -94,52 +93,53 @@ class Unknown(laplace_theory.Theory):
 class Taylor(Known):
     """ Taylor Series Expressions """
     
-    def __init__(self, x, s, unknown, x_target, unknown_init):
-        self.Known = Known(x, s, unknown, x_target)
-        self.x_target = x_target
+    def __init__(self, x, s, unknown, x_value, unknown_init):
+        self.Known = Known(x, s, unknown, x_value)
+        self.x_value = x_value
         self.unknown_init = unknown_init
         
     def x_taylor_s(self, x, unknown):
         """ 2nd Order x_Taylor Series of s1 """
-        x_target = self.x_target
+        x_value = self.x_value
         known = self.Known.known()
         
         x_taylor_s = np.ndarray((2,), 'object')
         
         x_taylor_s[0] = known[0] \
-                        + known[1]*(x[0] - x_target[0]) \
-                        + known[2]*(x[1] - x_target[1]) \
-                        + unknown[0]*(x[0] - x_target[0])**2/2 \
-                        + unknown[1]*(x[0] - x_target[0])*(x[1] - x_target[1]) \
-                        + unknown[2]*(x[1] - x_target[1])**2/2
+                        + known[1]*(x[0] - x_value[0]) \
+                        + known[2]*(x[1] - x_value[1]) \
+                        + unknown[0]*(x[0] - x_value[0])**2/2 \
+                        + unknown[1]*(x[0] - x_value[0])*(x[1] - x_value[1]) \
+                        + unknown[2]*(x[1] - x_value[1])**2/2
                
         x_taylor_s[1] = known[3] \
-                        + known[4]*(x[0] - x_target[0]) \
-                        + known[5]*(x[1] - x_target[1]) \
-                        + unknown[3]*(x[0] - x_target[0])**2/2 \
-                        + unknown[4]*(x[0] - x_target[0])*(x[1] - x_target[1]) \
-                        + unknown[5]*(x[1] - x_target[1])**2/2
+                        + known[4]*(x[0] - x_value[0]) \
+                        + known[5]*(x[1] - x_value[1]) \
+                        + unknown[3]*(x[0] - x_value[0])**2/2 \
+                        + unknown[4]*(x[0] - x_value[0])*(x[1] - x_value[1]) \
+                        + unknown[5]*(x[1] - x_value[1])**2/2
         
         return x_taylor_s
         
-    def s_target(self):
-        x_target = self.x_target
+    def s_value(self):
+        x_value = self.x_value
         unknown_init = self.unknown_init
-        s_target = self.x_taylor_s(x_target, unknown_init)
+        s_value = self.x_taylor_s(x_value, unknown_init)
         
-        return s_target
+        
+        return s_value
         
     def s_taylor_u(self, s, unknown):
         """ 2nd Order x_Taylor Series of s1 """
         known = self.Known.known()
-        s_target = self.s_target()
+        s_value = self.s_value()
         
         s_taylor_u = known[6] \
-                     + known[7]*(s[0] - s_target[0]) \
-                     + known[8]*(s[1] - s_target[1]) \
-                     + known[9]*(s[0] - s_target[0])**2/2 \
-                     + known[10]*(s[0] - s_target[0])*(s[1] - s_target[1]) \
-                     + known[11]*(s[1] - s_target[1])**2/2
+                     + known[7]*(s[0] - s_value[0]) \
+                     + known[8]*(s[1] - s_value[1]) \
+                     + known[9]*(s[0] - s_value[0])**2/2 \
+                     + known[10]*(s[0] - s_value[0])*(s[1] - s_value[1]) \
+                     + known[11]*(s[1] - s_value[1])**2/2
                      
         return s_taylor_u
     
@@ -154,53 +154,53 @@ class Taylor(Known):
 class BoundaryConditions(Taylor):
     """ Boundary s_coordinate """
     
-    def __init__(self, x, s, unknown, x_target, unknown_init):
-        self.Taylor = Taylor(x, s, unknown, x_target, unknown_init)
+    def __init__(self, x, s, unknown, x_value, unknown_init):
+        self.Taylor = Taylor(x, s, unknown, x_value, unknown_init)
+        self.PCS = self.Taylor.Known.Theory.PCS
         self.x = x
         self.unknown = unknown
-        self.x_target = x_target
+        self.x_value = x_value
         self.unknown_init = unknown_init
         
     def s_boundary(self):
-        s_target = self.Taylor.s_target()
-        s_boundary = np.ndarray((2, len(s_target)))
+        x_value = self.x_value
+        s_value = self.PCS.s(x_value)
+        s_boundary = np.ndarray((2, len(s_value)))
         
-        s_boundary[0][0] = s_target[0] - 1.0
-        s_boundary[0][1] = s_target[1]
-        s_boundary[1][0] = s_target[0] + 1.0
-        s_boundary[1][1] = s_target[1]
+        s_boundary[0][0] = s_value[0] - 0.5
+        s_boundary[0][1] = s_value[1] 
+        s_boundary[1][0] = s_value[0] + 0.5
+        s_boundary[1][1] = s_value[1] 
         
         return s_boundary
     
     def x_boundary(self):
         x = self.x
-        x_target = self.x_target
-        unknown_init = self.unknown_init
-        x_taylor_s = self.Taylor.x_taylor_s(x, unknown_init)
+        x_value = self.x_value
         s_boundary = self.s_boundary()
+        s = self.PCS.s(x)
         
         f = np.ndarray((2, len(x),), 'object')
         for i in range(2):
             for j in range(len(x)):
-                f[i][j] = x_taylor_s[j] - s_boundary[i][j]
+                f[i][j] = s[j] - s_boundary[i][j]
 
         x_boundary = np.ndarray((2, len(x),))
         for i in range(2):
             for j in range(len(x)):
                 x_boundary[i][j] = nsolve((f[i][0], f[i][1]), \
                                           (x[0], x[1]), \
-                                          (x_target[0], x_target[1]) \
+                                          (x_value[0], x_value[1]) \
                                           )[j]
                 
         return x_boundary
     
     def u_boundary(self):
-        unknown_init = self.unknown_init
-        x_boundary = self.x_boundary()
+        s_boundary = self.s_boundary()
         
         u_boundary = np.ndarray((2),)
         for i in range(2):
-            u_boundary[i] = self.Taylor.x_taylor_u(x_boundary[i], unknown_init)
+            u_boundary[i] = self.PCS.u(s_boundary[i])
         
         return u_boundary
     
@@ -209,20 +209,20 @@ class BoundaryConditions(Taylor):
         x_boundary = self.x_boundary()
         u_boundary = self.u_boundary()
         
-        u = np.ndarray((2,), 'object')
+        x_taylor_u = np.ndarray((2,), 'object')
         bc = np.ndarray((2,), 'object')
         for i in range(2):
-            u[i] = self.Taylor.x_taylor_u(x_boundary[i], unknown)
-            bc[i] = u[i] - u_boundary[i]
-        
+            x_taylor_u[i] = self.Taylor.x_taylor_u(x_boundary[i], unknown)
+            bc[i] = x_taylor_u[i] - u_boundary[i]
+            
         return bc
         
 
 class Derivative(Taylor):
     """ x_Taylor Series of Derivatives """
     
-    def __init__(self, x, s, unknown, x_target, unknown_init):
-        self.Taylor = Taylor(x, s, unknown, x_target, unknown_init)
+    def __init__(self, x, s, unknown, x_value, unknown_init):
+        self.Taylor = Taylor(x, s, unknown, x_value, unknown_init)
         self.x = x
         self.s = s
         self.unknown = unknown
@@ -294,8 +294,8 @@ class Derivative(Taylor):
 class Metric(Derivative):
     """ x_Taylor Series of Metrics """
     
-    def __init__(self, x, s, unknown, x_target, unknown_init):
-        self.Derivative = Derivative(x, s, unknown, x_target, unknown_init)
+    def __init__(self, x, s, unknown, x_value, unknown_init):
+        self.Derivative = Derivative(x, s, unknown, x_value, unknown_init)
         self.x = x
     
     def submetric(self):
@@ -346,25 +346,27 @@ class Metric(Derivative):
 class GoverningEquations(Metric):
     """ Derive Governing Equations """
     
-    def __init__(self, x, s, unknown, x_target, unknown_init):
-        self.Metric = Metric(x, s, unknown, x_target, unknown_init)
+    def __init__(self, x, s, unknown, x_value, unknown_init):
+        self.Metric = Metric(x, s, unknown, x_value, unknown_init)
         self.Derivative = self.Metric.Derivative
         self.x =  x
+        self.x_value = x_value
         
     def governing_equation_1(self):
         """ 1st Order x_Taylor Series of g_12 """
         g12 = self.Metric.submetric()[0][1]
         x = self.x
+        x_value = self.x_value
         
-        coeff_g12 = np.ndarray((len(x) + 1,), 'object')
+        coeff_g12 = np.ndarray((4), 'object')
         coeff_g12[0] = diff(g12, x[0])
         coeff_g12[1] = diff(g12, x[1])
         coeff_g12[2] = g12
         
-        for i in range(len(x) + 1):
+        for i in range(len(coeff_g12)):
             coeff_g12[i] = lambdify(x, coeff_g12[i], 'numpy')
-            coeff_g12[i] = coeff_g12[i](0, 0)
-         
+            coeff_g12[i] = coeff_g12[i](x_value[0], x_value[1])
+            
         return coeff_g12
     
     def governing_equation_2(self):
@@ -377,28 +379,29 @@ class GoverningEquations(Metric):
         dg11_ds1 = self.Metric.dg_ds1()[0][0]
         dg22_ds1 = self.Metric.dg_ds1()[1][1]
         x = self.x
+        x_value = self.x_value
         
         laplacian_u = 2*g11*g22*ddu_dds1 \
                       + (g11*dg22_ds1 - g22*dg11_ds1)*du_ds1
         
-        coeff_laplacian_u = np.ndarray((len(x) + 1,), 'object')
+        coeff_laplacian_u = np.ndarray((3), 'object')
         coeff_laplacian_u[0] = diff(laplacian_u, x[0])
         coeff_laplacian_u[1] = diff(laplacian_u, x[1])
         coeff_laplacian_u[2] = laplacian_u 
         
-        for i in range(len(x) + 1):
+        for i in range(len(coeff_laplacian_u)):
             coeff_laplacian_u[i] = lambdify(x, coeff_laplacian_u[i], 'numpy')
-            coeff_laplacian_u[i] = coeff_laplacian_u[i](0, 0)
-         
+            coeff_laplacian_u[i] = coeff_laplacian_u[i](x_value[0], x_value[1])
+            
         return coeff_laplacian_u
 
 
 class Experiment(BoundaryConditions, GoverningEquations):
     """ Solve G.E. & B.C. """
     
-    def __init__(self, x, s, unknown, x_target, unknown_init):
-        self.BC = BoundaryConditions(x, s, unknown, x_target, unknown_init)
-        self.GE = GoverningEquations(x, s, unknown, x_target, unknown_init)
+    def __init__(self, x, s, unknown, x_value, unknown_init):
+        self.BC = BoundaryConditions(x, s, unknown, x_value, unknown_init)
+        self.GE = GoverningEquations(x, s, unknown, x_value, unknown_init)
         self.unknown = unknown
         self.unknown_init = unknown_init
     
@@ -434,7 +437,7 @@ class Experiment(BoundaryConditions, GoverningEquations):
                                   unknown_temp[4],
                                   unknown_temp[5]
                                   )
-        A = A.astype('float')
+        A = A.astype('double')
         
         return A
     
@@ -455,7 +458,7 @@ class Experiment(BoundaryConditions, GoverningEquations):
                         unknown_temp[4],
                         unknown_temp[5]
                         )
-        b = b.astype('float')
+        b = b.astype('double')
     
         return b    
     
@@ -487,7 +490,7 @@ class Experiment(BoundaryConditions, GoverningEquations):
             b = self.b(unknown_temp)
             unknown_temp = solve(A, b)        
             error = self.error(unknown_temp)
-#        
+        
         solution = unknown_temp
         
         return solution
@@ -547,7 +550,7 @@ if __name__ == '__main__':
             ################################################
             unknown_theory = Unknown_call.unknown_theory()
             unknown_init = Unknown_call.unknown_init()
-            
+        
             ####################################################################
             Experiment_call = Experiment(x, s, unknown, x_target, unknown_init)
             ####################################################################
@@ -570,7 +573,26 @@ if __name__ == '__main__':
             for k in range(1):
                 error_init_array[i][j][k] = error_init
                 error_experiment_array[i][j][k] = error_experiment
-    
+ 
+#            ####################################################################
+#            BC_call = BoundaryConditions(x, s, unknown, x_target, unknown_init)
+#            ####################################################################
+#            x_boundary = BC_call.x_boundary()
+#            s_boundary = BC_call.s_boundary()
+#            u_boundary = BC_call.u_boundary() 
+#
+#    print('x_boundary = ')
+#    print(x_boundary)
+#    print('')
+#    
+#    print('s_boundary = ')
+#    print(s_boundary)
+#    print('')
+#    
+#    print('u_boundary = ')
+#    print(u_boundary)
+#    print('')
+
     print('unknown_theory = ')
     print(unknown_theory_array)
     print('')
@@ -579,22 +601,26 @@ if __name__ == '__main__':
     print(unknown_init_array)
     print('')
           
-    print('error_init = ')
+    print('error_init(%) = ')
     print(error_init_array)
     print()    
     print('unknown_experiment = ')
     print(unknown_experiment_array)
     print('')
           
-    print('error_experiment = ')
+    print('error_experiment(%) = ')
     print(error_experiment_array)
+    print('')
+    
+    print('A_init = ')
+    print(A_init)
     print('')
     
     print('eigvals_A_init = ')
     print(eigvals_A_init_array)
     print('')
-    
-    
+            
+            
     t1 = time.time()
     
     print('Elapsed Time = ')
