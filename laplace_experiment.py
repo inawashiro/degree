@@ -167,9 +167,9 @@ class BoundaryConditions(Taylor):
         s_value = self.PCS.s(x_value)
         s_boundary = np.ndarray((2, len(s_value)))
         
-        s_boundary[0][0] = s_value[0] - 0.5
+        s_boundary[0][0] = s_value[0] - 0.01
         s_boundary[0][1] = s_value[1] 
-        s_boundary[1][0] = s_value[0] + 0.5
+        s_boundary[1][0] = s_value[0] + 0.01
         s_boundary[1][1] = s_value[1] 
         
         return s_boundary
@@ -577,25 +577,6 @@ if __name__ == '__main__':
             for k in range(1):
                 error_init_array[i][j][k] = error_init
                 error_experiment_array[i][j][k] = error_experiment
- 
-#            ####################################################################
-#            BC_call = BoundaryConditions(x, s, unknown, x_target, unknown_init)
-#            ####################################################################
-#            x_boundary = BC_call.x_boundary()
-#            s_boundary = BC_call.s_boundary()
-#            u_boundary = BC_call.u_boundary() 
-#
-#    print('x_boundary = ')
-#    print(x_boundary)
-#    print('')
-#    
-#    print('s_boundary = ')
-#    print(s_boundary)
-#    print('')
-#    
-#    print('u_boundary = ')
-#    print(u_boundary)
-#    print('')
 
     print('unknown_theory = ')
     print(unknown_theory_array)
@@ -614,10 +595,6 @@ if __name__ == '__main__':
           
     print('error_experiment(%) = ')
     print(error_experiment_array)
-    print('')
-    
-    print('A_init = ')
-    print(A_init)
     print('')
     
     print('eigvals_A_init = ')
