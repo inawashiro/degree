@@ -358,10 +358,12 @@ class GoverningEquations(Metric):
         x = self.x
         x_value = self.x_value
         
-        coeff_g12 = np.ndarray((4), 'object')
+        coeff_g12 = np.ndarray((5), 'object')
         coeff_g12[0] = diff(g12, x[0])
         coeff_g12[1] = diff(g12, x[1])
-        coeff_g12[2] = g12
+#        coeff_g12[2] = diff(g12, x[0], 2)
+#        coeff_g12[3] = diff(g12, x[0], x[1])
+#        coeff_g12[4] = diff(g12, x[1], 2)
         
         for i in range(len(coeff_g12)):
             coeff_g12[i] = lambdify(x, coeff_g12[i], 'numpy')
@@ -384,10 +386,12 @@ class GoverningEquations(Metric):
         laplacian_u = 2*g11*g22*ddu_dds1 \
                       + (g11*dg22_ds1 - g22*dg11_ds1)*du_ds1
         
-        coeff_laplacian_u = np.ndarray((3), 'object')
+        coeff_laplacian_u = np.ndarray((5), 'object')
         coeff_laplacian_u[0] = diff(laplacian_u, x[0])
         coeff_laplacian_u[1] = diff(laplacian_u, x[1])
-        coeff_laplacian_u[2] = laplacian_u 
+#        coeff_laplacian_u[2] = diff(laplacian_u, x[0], x[1])
+#        coeff_laplacian_u[3] = diff(laplacian_u, x[0], 2)
+#        coeff_laplacian_u[4] = diff(laplacian_u, x[1], 2)
         
         for i in range(len(coeff_laplacian_u)):
             coeff_laplacian_u[i] = lambdify(x, coeff_laplacian_u[i], 'numpy')
