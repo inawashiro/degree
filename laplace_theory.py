@@ -14,10 +14,11 @@ from mpl_toolkits.mplot3d import Axes3D
 
 # For Numerical Computation 
 import numpy as np
+#from numpy import exp, sin, cos
 
 # For Symbolic Notation
 import sympy as sym
-from sympy import Symbol, diff, lambdify
+from sympy import Symbol, diff, lambdify, exp, sin, cos
 sym.init_printing()
 
 # For Getting Access to Another Directory
@@ -44,6 +45,9 @@ class PrincipalCoordSystem():
         """ 4th Order Polynomial """
 #        s[0] = x[0]**4 - 6*x[0]**2*x[1]**2 + x[1]**4
 #        s[1] = 4*x[0]**3*x[1] - 4*x[0]*x[1]**3
+        """ Non Polynomial """
+#        s[0] = exp(x[0])*sin(x[1])
+#        s[1] = exp(x[0])*cos(x[1])
         
         return s
 

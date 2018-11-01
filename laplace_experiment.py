@@ -82,7 +82,7 @@ class Unknown(laplace_theory.Theory):
     def unknown_init(self):
         unknown_theory = self.unknown_theory()
     
-        e = 10.0
+        e = 0.0
         unknown_init = np.ndarray((len(unknown),))
         for i in range(len(unknown)):
             unknown_init[i] = (1 + random.uniform(-e, e)/100)*unknown_theory[i]
@@ -163,14 +163,13 @@ class BoundaryConditions(Taylor):
         self.unknown_init = unknown_init
         
     def s_boundary(self):
-#        s_value = self.Taylor.s_value()
         x_value = self.x_value
         s_value = self.PCS.s(x_value)
         s_boundary = np.ndarray((2, len(s_value)))
         
-        s_boundary[0][0] = s_value[0] - 1.0
+        s_boundary[0][0] = s_value[0] - 0.5
         s_boundary[0][1] = s_value[1] 
-        s_boundary[1][0] = s_value[0] + 1.0
+        s_boundary[1][0] = s_value[0] + 0.5
         s_boundary[1][1] = s_value[1] 
         
         return s_boundary
@@ -178,15 +177,12 @@ class BoundaryConditions(Taylor):
     def x_boundary(self):
         x = self.x
         x_value = self.x_value
-#        unknown_init = self.unknown_init
-#        x_taylor_s = self.Taylor.x_taylor_s(x, unknown_init)
         s_boundary = self.s_boundary()
         s = self.PCS.s(x)
         
         f = np.ndarray((2, len(x),), 'object')
         for i in range(2):
             for j in range(len(x)):
-#                f[i][j] = x_taylor_s[j] - s_boundary[i][j]
                 f[i][j] = s[j] - s_boundary[i][j]
 
         x_boundary = np.ndarray((2, len(x),))
@@ -370,7 +366,7 @@ class GoverningEquations(Metric):
         for i in range(len(coeff_g12)):
             coeff_g12[i] = lambdify(x, coeff_g12[i], 'numpy')
             coeff_g12[i] = coeff_g12[i](x_value[0], x_value[1])
-         
+            
         return coeff_g12
     
     def governing_equation_2(self):
@@ -396,7 +392,7 @@ class GoverningEquations(Metric):
         for i in range(len(coeff_laplacian_u)):
             coeff_laplacian_u[i] = lambdify(x, coeff_laplacian_u[i], 'numpy')
             coeff_laplacian_u[i] = coeff_laplacian_u[i](x_value[0], x_value[1])
-         
+            
         return coeff_laplacian_u
 
 
@@ -614,6 +610,10 @@ if __name__ == '__main__':
           
     print('error_experiment(%) = ')
     print(error_experiment_array)
+    print('')
+    
+    print('A_init = ')
+    print(A_init)
     print('')
     
     print('eigvals_A_init = ')
