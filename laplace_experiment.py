@@ -82,7 +82,7 @@ class Unknown(laplace_theory.Theory):
     def unknown_init(self):
         unknown_theory = self.unknown_theory()
     
-        e = 0.0
+        e = 100.0
         unknown_init = np.ndarray((len(unknown),))
         for i in range(len(unknown)):
             unknown_init[i] = (1 + random.uniform(-e, e)/100)*unknown_theory[i]
@@ -167,9 +167,9 @@ class BoundaryConditions(Taylor):
         s_value = self.PCS.s(x_value)
         s_boundary = np.ndarray((2, len(s_value)))
         
-        s_boundary[0][0] = s_value[0] - 0.01
+        s_boundary[0][0] = s_value[0] - 0.1
         s_boundary[0][1] = s_value[1] 
-        s_boundary[1][0] = s_value[0] + 0.01
+        s_boundary[1][0] = s_value[0] + 0.1
         s_boundary[1][1] = s_value[1] 
         
         return s_boundary
@@ -358,7 +358,7 @@ class GoverningEquations(Metric):
         x = self.x
         x_value = self.x_value
         
-        coeff_g12 = np.ndarray((5), 'object')
+        coeff_g12 = np.ndarray((6), 'object')
 #        coeff_g12[0] = g12
 #        coeff_g12[1] = diff(g12, x[0])
 #        coeff_g12[2] = diff(g12, x[1])
