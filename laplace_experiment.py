@@ -36,17 +36,16 @@ class Known(laplace_theory.Theory):
         
     def known(self):
         a_theory = self.Theory.a_theory()
-        b_theory = self.Theory.b_theory()
         r_theory = self.Theory.r_theory()
         unknown = self.unknown
         
         known = np.ndarray((18 - len(unknown),))
-        known[0] = a_theory[0]
-        known[1] = a_theory[1]
-        known[2] = a_theory[2]
-        known[3] = b_theory[0]
-        known[4] = b_theory[1]
-        known[5] = b_theory[2]
+        known[0] = a_theory[0][0]
+        known[1] = a_theory[0][1]
+        known[2] = a_theory[0][2]
+        known[3] = a_theory[1][0]
+        known[4] = a_theory[1][1]
+        known[5] = a_theory[1][2]
         known[6] = r_theory[0]
         known[7] = r_theory[1]
         known[8] = r_theory[2]
@@ -67,15 +66,14 @@ class Unknown(laplace_theory.Theory):
     def unknown_theory(self):
         unknown = self.unknown
         a_theory = self.Theory.a_theory()
-        b_theory = self.Theory.b_theory()
         
         unknown_theory = np.ndarray((len(unknown),))
-        unknown_theory[0] = a_theory[3]
-        unknown_theory[1] = a_theory[4]
-        unknown_theory[2] = a_theory[5]
-        unknown_theory[3] = b_theory[3]
-        unknown_theory[4] = b_theory[4]
-        unknown_theory[5] = b_theory[5]
+        unknown_theory[0] = a_theory[0][3]
+        unknown_theory[1] = a_theory[0][4]
+        unknown_theory[2] = a_theory[0][5]
+        unknown_theory[3] = a_theory[1][3]
+        unknown_theory[4] = a_theory[1][4]
+        unknown_theory[5] = a_theory[1][5]
         
         return unknown_theory
         
@@ -167,9 +165,9 @@ class BoundaryConditions(Taylor):
         s_value = self.PCS.s(x_value)
         s_boundary = np.ndarray((2, len(s_value)))
         
-        s_boundary[0][0] = s_value[0] - 0.01
+        s_boundary[0][0] = s_value[0] - 1.0e-1
         s_boundary[0][1] = s_value[1] 
-        s_boundary[1][0] = s_value[0] + 0.01
+        s_boundary[1][0] = s_value[0] + 1.0e-1
         s_boundary[1][1] = s_value[1] 
         
         return s_boundary
@@ -358,12 +356,13 @@ class GoverningEquations(Metric):
         x = self.x
         x_value = self.x_value
         
-        coeff_g12 = np.ndarray((5), 'object')
-        coeff_g12[0] = diff(g12, x[0])
-        coeff_g12[1] = diff(g12, x[1])
-#        coeff_g12[2] = diff(g12, x[0], 2)
-#        coeff_g12[3] = diff(g12, x[0], x[1])
-#        coeff_g12[4] = diff(g12, x[1], 2)
+        coeff_g12 = np.ndarray((6), 'object')
+#        coeff_g12[0] = g12
+#        coeff_g12[1] = diff(g12, x[0])
+#        coeff_g12[2] = diff(g12, x[1])
+#        coeff_g12[3] = diff(g12, x[0], 2)
+#        coeff_g12[4] = diff(g12, x[0], x[1])
+#        coeff_g12[5] = diff(g12, x[1], 2)
         
         for i in range(len(coeff_g12)):
             coeff_g12[i] = lambdify(x, coeff_g12[i], 'numpy')
@@ -386,12 +385,13 @@ class GoverningEquations(Metric):
         laplacian_u = 2*g11*g22*ddu_dds1 \
                       + (g11*dg22_ds1 - g22*dg11_ds1)*du_ds1
         
-        coeff_laplacian_u = np.ndarray((5), 'object')
-        coeff_laplacian_u[0] = diff(laplacian_u, x[0])
-        coeff_laplacian_u[1] = diff(laplacian_u, x[1])
-#        coeff_laplacian_u[2] = diff(laplacian_u, x[0], x[1])
-#        coeff_laplacian_u[3] = diff(laplacian_u, x[0], 2)
-#        coeff_laplacian_u[4] = diff(laplacian_u, x[1], 2)
+        coeff_laplacian_u = np.ndarray((6), 'object')
+        coeff_laplacian_u[0] = laplacian_u
+        coeff_laplacian_u[1] = diff(laplacian_u, x[0])
+        coeff_laplacian_u[2] = diff(laplacian_u, x[1])
+        coeff_laplacian_u[3] = diff(laplacian_u, x[0], 2)
+#        coeff_laplacian_u[3] = diff(laplacian_u, x[0], x[1])
+#        coeff_laplacian_u[3] = diff(laplacian_u, x[1], 2)
         
         for i in range(len(coeff_laplacian_u)):
             coeff_laplacian_u[i] = lambdify(x, coeff_laplacian_u[i], 'numpy')
@@ -418,10 +418,10 @@ class Experiment(BoundaryConditions, GoverningEquations):
         f = np.ndarray((len(unknown),), 'object')
         f[0] = bc[0]
         f[1] = bc[1]
-        f[2] = ge1[0]
-        f[3] = ge1[1]
-        f[4] = ge2[0]
-        f[5] = ge2[1]
+        f[2] = ge2[0]
+        f[3] = ge2[1]
+        f[4] = ge2[2]
+        f[5] = ge2[3]
         
         return f
     
@@ -439,7 +439,9 @@ class Experiment(BoundaryConditions, GoverningEquations):
                                   unknown_temp[2],
                                   unknown_temp[3],
                                   unknown_temp[4],
-                                  unknown_temp[5]
+                                  unknown_temp[5],
+#                                  unknown_temp[6],
+#                                  unknown_temp[7]
                                   )
         A = A.astype('double')
         
@@ -460,7 +462,9 @@ class Experiment(BoundaryConditions, GoverningEquations):
                         unknown_temp[2],
                         unknown_temp[3],
                         unknown_temp[4],
-                        unknown_temp[5]
+                        unknown_temp[5],
+#                        unknown_temp[6],
+#                        unknown_temp[7]
                         )
         b = b.astype('double')
     
@@ -478,7 +482,9 @@ class Experiment(BoundaryConditions, GoverningEquations):
                                 unknown_temp[2],
                                 unknown_temp[3],
                                 unknown_temp[4],
-                                unknown_temp[5]
+                                unknown_temp[5],
+#                                unknown_temp[6],
+#                                unknown_temp[7]
                                 )
         error = norm(error)
         
