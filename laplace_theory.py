@@ -65,7 +65,7 @@ class Theory(PrincipalCoordSystem):
         self.x_value = x_value
     
     def s_theory(self):
-        """  x_Taylor Series Coefficients of s1 """
+        """  Theoretical s_coordinate """
         x_value = self.x_value
         s_theory = self.PCS.s(x_value)
         
@@ -74,44 +74,24 @@ class Theory(PrincipalCoordSystem):
     def a_theory(self):
         """  x_Taylor Series Coefficients of s1 """
         x = self.x
-        s1 = self.PCS.s(x)[0]
+        s = self.PCS.s(x)
         x_value = self.x_value
         
-        a = np.ndarray((6,), 'object')
-        a[0] = s1
-        a[1] = diff(s1, x[0])
-        a[2] = diff(s1, x[1])
-        a[3] = diff(s1, x[0], 2)
-        a[4] = diff(s1, x[0], x[1])
-        a[5] = diff(s1, x[1], 2)
+        a_theory = np.ndarray((len(s), 6,), 'object')
+        for i in range(len(s)):
+            a_theory[i][0] = s[i]
+            a_theory[i][1] = diff(s[i], x[0])
+            a_theory[i][2] = diff(s[i], x[1])
+            a_theory[i][3] = diff(s[i], x[0], 2)
+            a_theory[i][4] = diff(s[i], x[0], x[1])
+            a_theory[i][5] = diff(s[i], x[1], 2)
         
-        a_theory = np.ndarray((len(a),), 'object')
-        for i in range(len(a)):
-            a_theory[i] = lambdify(x, a[i], 'numpy')
-            a_theory[i] = a_theory[i](x_value[0], x_value[1])
-        
+        for i in range(len(s)):
+            for j in range(6):
+                a_theory[i][j] = lambdify(x, a_theory[i][j], 'numpy')
+                a_theory[i][j] = a_theory[i][j](x_value[0], x_value[1])
+                
         return a_theory
-    
-    def b_theory(self):
-        """  x_Taylor Series Coefficients of s2 """
-        x = self.x
-        s2 = self.PCS.s(x)[1]
-        x_value = self.x_value
-        
-        b = np.ndarray((6,), 'object')
-        b[0] = s2
-        b[1] = diff(s2, x[0])
-        b[2] = diff(s2, x[1])
-        b[3] = diff(s2, x[0], 2)
-        b[4] = diff(s2, x[0], x[1])
-        b[5] = diff(s2, x[1], 2)
-        
-        b_theory = np.ndarray((len(b),), 'object')
-        for i in range(len(b)):
-            b_theory[i] = lambdify(x, b[i], 'numpy')
-            b_theory[i] = b_theory[i](x_value[0], x_value[1])
-            
-        return b_theory
 
     def r_theory(self):
         """ s_Taylor Series Coefficients of u """
@@ -198,8 +178,7 @@ if __name__ == '__main__':
     
     x_value_array = np.ndarray((n + 1, n + 1, len(x),))
     s_theory_array = np.ndarray((n + 1, n + 1, len(s),))
-    a_theory_array = np.ndarray((n + 1, n + 1, 6,))
-    b_theory_array = np.ndarray((n + 1, n + 1, 6,))
+    a_theory_array = np.ndarray((n + 1, n + 1, len(s), 6))
     r_theory_array = np.ndarray((n + 1, n + 1, 6,))
     
     ###############################
@@ -213,7 +192,6 @@ if __name__ == '__main__':
         
             s_theory = Theory.s_theory()
             a_theory = Theory.a_theory()
-            b_theory = Theory.b_theory()
             r_theory = Theory.r_theory()
             
             for k in range(len(x)):
@@ -221,12 +199,9 @@ if __name__ == '__main__':
                 
             for k in range(len(s)):
                 s_theory_array[i][j][k] = s_theory[k]
-            
-            for k in range(6):
-                a_theory_array[i][j][k] = a_theory[k]
                 
-            for k in range(6):
-                b_theory_array[i][j][k] = b_theory[k]
+                for l in range(6):
+                    a_theory_array[i][j][k][l] = a_theory[k][l]
                 
             for k in range(6):
                 r_theory_array[i][j][k] = r_theory[k]
@@ -241,10 +216,6 @@ if __name__ == '__main__':
     
     print('a_theory = ')
     print(a_theory_array)
-    print('')
-    
-    print('b_theory = ')
-    print(b_theory_array)
     print('')
     
     print('r_theory = ')
