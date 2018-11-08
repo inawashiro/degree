@@ -45,8 +45,6 @@ class PrincipalCoordSystem():
         """ Non Polynomial """
         s[0] = exp(x[0])*sin(x[1])
         s[1] = exp(x[0])*cos(x[1])
-#        s[0] = (1 + x[0] + x[0]**2/2 + x[0]**3/6)*(x[1] - x[1]**3/6)
-#        s[1] = (1 + x[0] + x[0]**2/2 + x[0]**3/6)*(1 - x[1]**2/2 + x[1]**4/24)
         
         return s
 
@@ -120,37 +118,52 @@ class Theory(PrincipalCoordSystem):
 class Plot(PrincipalCoordSystem):
     """ Display Plot """
     
-    def __init__(self, x_value):
+    def __init__(self, x, s, x_value):
         self.PCS = PrincipalCoordSystem()
+        self.x = x
+        self.s = s
         self.x_value = x_value
+    
+    def s_value(self):
+        x = self.x
+        s = self.PCS.s(x)
+        x_value = self.x_value
         
+        s_value = np.ndarray((len(s),), 'object')
+        s_value = lambdify(x, s, 'numpy')
+        s_value = s_value(x_value[0], x_value[1])
+        
+        return s_value
+    
     def u_plot(self):
         x_value = self.x_value
-        s = self.PCS.s(x_value)
-        u = self.PCS.u(s)
+        s_value = self.s_value()
+        u_value = self.PCS.u(s_value)
         
         fig = plt.figure()
         ax = fig.gca(projection = '3d')
-        ax.plot_wireframe(x_value[0], x_value[1], u, linewidth = 0.2)
+        ax.plot_wireframe(x_value[0], x_value[1], u_value, linewidth = 0.2)
 
         plt.savefig('target_function_3d.pdf')
         plt.savefig('target_function_3d.png')
         plt.pause(.01)
        
+        return s_value
+        
     def principal_coordinate_system_plot(self):
         x_value = self.x_value
-        s = self.PCS.s(x_value)
+        s_value = self.s_value()
             
         plt.gca().set_aspect('equal', adjustable='box')
         
         interval1 = np.arange(-100, 100, 1.0)
         interval2 = np.arange(-100, 100, 1.0)
         
-        cr_s1 = plt.contour(x_value[0], x_value[1], s[0], interval1, colors = 'red')
+        cr_s1 = plt.contour(x_value[0], x_value[1], s_value[0], interval1, colors = 'red')
 #        levels1 = cr_s1.levels
 #        cr_s1.clabel(levels1[::5], fmt = '%3.1f')
         
-        cr_s2 = plt.contour(x_value[0], x_value[1], s[1], interval2, colors = 'blue')
+        cr_s2 = plt.contour(x_value[0], x_value[1], s_value[1], interval2, colors = 'blue')
 #        levels2 = cr_s2.levels
 #        cr_s2.clabel(levels2[::5], fmt = '%3.1f')
         
@@ -228,7 +241,7 @@ if __name__ == '__main__':
                           np.arange(0, 2, 0.01))
     
     #####################
-    Plot = Plot(x_value)
+    Plot = Plot(x, s, x_value)
     #####################
     os.chdir('./graph')
     

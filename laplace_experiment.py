@@ -126,7 +126,6 @@ class Taylor(Known):
         unknown_init = self.unknown_init
         s_value = self.x_taylor_s(x_value, unknown_init)
         
-        
         return s_value
         
     def s_taylor_u(self, s, unknown):
