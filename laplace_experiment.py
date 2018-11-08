@@ -100,22 +100,24 @@ class Taylor(Known):
         """ 2nd Order x_Taylor Series of s1 """
         x_value = self.x_value
         known = self.Known.known()
+
+        dx = x - x_value
         
         x_taylor_s = np.ndarray((2,), 'object')
-        
+    
         x_taylor_s[0] = known[0] \
-                        + known[1]*(x[0] - x_value[0]) \
-                        + known[2]*(x[1] - x_value[1]) \
-                        + unknown[0]*(x[0] - x_value[0])**2/2 \
-                        + unknown[1]*(x[0] - x_value[0])*(x[1] - x_value[1]) \
-                        + unknown[2]*(x[1] - x_value[1])**2/2
+                        + known[1]*dx[0] \
+                        + known[2]*dx[1] \
+                        + unknown[0]*dx[0]**2/2 \
+                        + unknown[1]*dx[0]*dx[1] \
+                        + unknown[2]*dx[1]**2/2
                
         x_taylor_s[1] = known[3] \
-                        + known[4]*(x[0] - x_value[0]) \
-                        + known[5]*(x[1] - x_value[1]) \
-                        + unknown[3]*(x[0] - x_value[0])**2/2 \
-                        + unknown[4]*(x[0] - x_value[0])*(x[1] - x_value[1]) \
-                        + unknown[5]*(x[1] - x_value[1])**2/2
+                        + known[4]*dx[0] \
+                        + known[5]*dx[1] \
+                        + unknown[3]*dx[0]**2/2 \
+                        + unknown[4]*dx[0]*dx[1] \
+                        + unknown[5]*dx[1]**2/2
         
         return x_taylor_s
         
@@ -132,12 +134,14 @@ class Taylor(Known):
         known = self.Known.known()
         s_value = self.s_value()
         
+        ds = s - s_value
+        
         s_taylor_u = known[6] \
-                     + known[7]*(s[0] - s_value[0]) \
-                     + known[8]*(s[1] - s_value[1]) \
-                     + known[9]*(s[0] - s_value[0])**2/2 \
-                     + known[10]*(s[0] - s_value[0])*(s[1] - s_value[1]) \
-                     + known[11]*(s[1] - s_value[1])**2/2
+                     + known[7]*ds[0] \
+                     + known[8]*ds[1] \
+                     + known[9]*ds[0]**2/2 \
+                     + known[10]*ds[0]*ds[1] \
+                     + known[11]*ds[1]**2/2
                      
         return s_taylor_u
     
@@ -165,9 +169,9 @@ class BoundaryConditions(Taylor):
         s_value = self.PCS.s(x_value)
         s_boundary = np.ndarray((2, len(s_value)))
         
-        s_boundary[0][0] = s_value[0] - 1.0e-1
+        s_boundary[0][0] = s_value[0] - 1.0e-4
         s_boundary[0][1] = s_value[1] 
-        s_boundary[1][0] = s_value[0] + 1.0e-1
+        s_boundary[1][0] = s_value[0] + 1.0e-4
         s_boundary[1][1] = s_value[1] 
         
         return s_boundary
@@ -350,25 +354,25 @@ class GoverningEquations(Metric):
         self.x =  x
         self.x_value = x_value
         
-    def governing_equation_1(self):
-        """ 1st Order x_Taylor Series of g_12 """
-        g12 = self.Metric.submetric()[0][1]
-        x = self.x
-        x_value = self.x_value
-        
-        coeff_g12 = np.ndarray((6), 'object')
+#    def governing_equation_1(self):
+#        """ 1st Order x_Taylor Series of g_12 """
+#        g12 = self.Metric.submetric()[0][1]
+#        x = self.x
+#        x_value = self.x_value
+#        
+#        coeff_g12 = np.ndarray((6), 'object')
 #        coeff_g12[0] = g12
 #        coeff_g12[1] = diff(g12, x[0])
 #        coeff_g12[2] = diff(g12, x[1])
 #        coeff_g12[3] = diff(g12, x[0], 2)
 #        coeff_g12[4] = diff(g12, x[0], x[1])
 #        coeff_g12[5] = diff(g12, x[1], 2)
-        
-        for i in range(len(coeff_g12)):
-            coeff_g12[i] = lambdify(x, coeff_g12[i], 'numpy')
-            coeff_g12[i] = coeff_g12[i](x_value[0], x_value[1])
-            
-        return coeff_g12
+#        
+#        for i in range(len(coeff_g12)):
+#            coeff_g12[i] = lambdify(x, coeff_g12[i], 'numpy')
+#            coeff_g12[i] = coeff_g12[i](x_value[0], x_value[1])
+#            
+#        return coeff_g12
     
     def governing_equation_2(self):
         """ 1st Order x_Taylor Series of Laplacian of u """
@@ -412,7 +416,7 @@ class Experiment(BoundaryConditions, GoverningEquations):
     def f(self):
         unknown = self.unknown
         bc = self.BC.boundary_conditions()
-        ge1 = self.GE.governing_equation_1()
+#        ge1 = self.GE.governing_equation_1()
         ge2 = self.GE.governing_equation_2()
         
         f = np.ndarray((len(unknown),), 'object')
