@@ -168,9 +168,9 @@ class BoundaryConditions(Taylor):
         s_value = self.PCS.s(x_value)
         s_boundary = np.ndarray((2, len(s_value)))
         
-        s_boundary[0][0] = s_value[0] - 1.0e-4
+        s_boundary[0][0] = s_value[0] - 1.0e-2
         s_boundary[0][1] = s_value[1] 
-        s_boundary[1][0] = s_value[0] + 1.0e-4
+        s_boundary[1][0] = s_value[0] + 1.0e-2
         s_boundary[1][1] = s_value[1] 
         
         return s_boundary

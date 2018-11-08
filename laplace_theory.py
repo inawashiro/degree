@@ -18,14 +18,22 @@ import numpy as np
 
 # For Symbolic Notation
 import sympy as sym
-from sympy import Symbol, diff, lambdify, exp, sin, cos
+from sympy import Symbol, diff, lambdify, simplify, exp, sin, cos
 sym.init_printing()
+
+# For Constants
+import math
+from math import pi
 
 # For Getting Access to Another Directory
 import os
 
-# For measuring computation time
+# For Measuring Computation Time
 import time
+
+# For Displaying Symbolic Notation
+from IPython.display import display
+
 
 
 
@@ -40,11 +48,14 @@ class PrincipalCoordSystem():
 #        s[0] = x[0]**2 - x[1]**2
 #        s[1] = 2*x[0]*x[1]
         """ 3rd Order Polynomial """
-#        s[0] = x[0]**3 - 3*x[0]*x[1]**2
-#        s[1] = -x[1]**3 + 3*x[0]**2*x[1]
+        s[0] = x[0]**3 - 3*x[0]*x[1]**2
+        s[1] = -x[1]**3 + 3*x[0]**2*x[1]
+        """ 4th Order Polynomial """
+#        s[0] = x[0]**4 - 6*x[0]**2*x[1]**2 + x[1]**4
+#        s[1] = 2*x[0]**3*x[1] - 2*x[0]*x[1]**3
         """ Non Polynomial """
-        s[0] = exp(x[0])*sin(x[1])
-        s[1] = exp(x[0])*cos(x[1])
+#        s[0] = exp(pi/2*x[0])*sin(pi/2*x[1])
+#        s[1] = exp(pi/2*x[0])*cos(pi/2*x[1])
         
         return s
 
@@ -54,6 +65,15 @@ class PrincipalCoordSystem():
         
         return u
     
+    def laplacian_u(self, x):
+        """ Verify Δu = 0 """
+        s = self.s(x)
+        u = self.u(s)
+        
+        laplacian_u = diff(u, x[0], 2) + diff(u, x[1], 2)
+        laplacian_u = simplify(laplacian_u)
+    
+        return laplacian_u
     
 class Theory(PrincipalCoordSystem):
     """  Theoretical Values of Taylor Series Coefficients """
@@ -186,6 +206,15 @@ if __name__ == '__main__':
     s[0] = Symbol('s1', real = True)
     s[1] = Symbol('s2', real = True)
     
+    #############################
+    PCS = PrincipalCoordSystem()
+    #############################
+    laplacian_u = PCS.laplacian_u(x)
+    
+    print('Δu = ')
+    display(laplacian_u)
+    print('')
+    
     n = 5
     
     x_value = np.ndarray((len(x),))
@@ -221,28 +250,30 @@ if __name__ == '__main__':
             for k in range(6):
                 r_theory_array[i][j][k] = r_theory[k]
                 
-    print('x_values = ')
-    print(x_value_array)
-    print('')
     
-    print('s_theory = ')
-    print(s_theory_array)
-    print('')
-    
-    print('a_theory = ')
-    print(a_theory_array)
-    print('')
-    
-    print('r_theory = ')
-    print(r_theory_array)
-    print('')
+                
+#    print('x_values = ')
+#    print(x_value_array)
+#    print('')
+#    
+#    print('s_theory = ')
+#    print(s_theory_array)
+#    print('')
+#    
+#    print('a_theory = ')
+#    print(a_theory_array)
+#    print('')
+#    
+#    print('r_theory = ')
+#    print(r_theory_array)
+#    print('')
 
     x_value = np.meshgrid(np.arange(0, 2, 0.01), 
                           np.arange(0, 2, 0.01))
     
-    #####################
+    ###########################
     Plot = Plot(x, s, x_value)
-    #####################
+    ###########################
     os.chdir('./graph')
     
     print('3D Plot of u')
