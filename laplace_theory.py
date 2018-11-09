@@ -14,7 +14,7 @@ from mpl_toolkits.mplot3d import Axes3D
 
 # For Numerical Computation 
 import numpy as np
-#from numpy import exp, sin, cos
+from numpy import dot
 
 # For Symbolic Notation
 import sympy as sym
@@ -48,14 +48,14 @@ class PrincipalCoordSystem():
 #        s[0] = x[0]**2 - x[1]**2
 #        s[1] = 2*x[0]*x[1]
         """ 3rd Order Polynomial """
-        s[0] = x[0]**3 - 3*x[0]*x[1]**2
-        s[1] = -x[1]**3 + 3*x[0]**2*x[1]
+#        s[0] = x[0]**3 - 3*x[0]*x[1]**2
+#        s[1] = -x[1]**3 + 3*x[0]**2*x[1]
         """ 4th Order Polynomial """
 #        s[0] = x[0]**4 - 6*x[0]**2*x[1]**2 + x[1]**4
 #        s[1] = 2*x[0]**3*x[1] - 2*x[0]*x[1]**3
         """ Non Polynomial """
-#        s[0] = exp(pi/2*x[0])*sin(pi/2*x[1])
-#        s[1] = exp(pi/2*x[0])*cos(pi/2*x[1])
+        s[0] = exp(pi/2*x[0])*sin(pi/2*x[1])
+        s[1] = exp(pi/2*x[0])*cos(pi/2*x[1])
         
         return s
 
@@ -74,6 +74,29 @@ class PrincipalCoordSystem():
         laplacian_u = simplify(laplacian_u)
     
         return laplacian_u
+    
+    def du_ds2(self, s):
+        """ Verify Δu = 0 """
+        u = self.u(s)
+        
+        du_ds2 = diff(u, s[1])
+    
+        return du_ds2
+    
+    def g12(self, x):
+        """ Verify g_12 = 0 """
+        s = self.s(x)
+        
+        ds_dx1 = np.ndarray((2,), 'object')
+        ds_dx1[0] = diff(s[0], x[0])
+        ds_dx1[1] = diff(s[1], x[0])
+        ds_dx2 = np.ndarray((2,), 'object')
+        ds_dx2[0] = diff(s[0], x[1])
+        ds_dx2[1] = diff(s[1], x[1])
+        
+        g12 = dot(ds_dx1, ds_dx2)
+    
+        return g12
     
 class Theory(PrincipalCoordSystem):
     """  Theoretical Values of Taylor Series Coefficients """
@@ -210,9 +233,19 @@ if __name__ == '__main__':
     PCS = PrincipalCoordSystem()
     #############################
     laplacian_u = PCS.laplacian_u(x)
+    du_ds2 = PCS.du_ds2(s)
+    g12 = PCS.g12(x)
     
     print('Δu = ')
     display(laplacian_u)
+    print('')
+    
+    print('du_ds2 = ')
+    display(du_ds2)
+    print('')
+    
+    print('g12 = ')
+    display(g12)
     print('')
     
     n = 5
