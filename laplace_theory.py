@@ -42,20 +42,22 @@ class PrincipalCoordSystem():
     
     def s(self, x):
         """ Coordintae Transformation """
+        """ s1 = Re{f(z)} & s2 = Im{f(z)} """
+        
         s = np.ndarray((2,), 'object')
         
-        """ 2nd Order Polynomial """
+        """ f(z) = z**2 """
 #        s[0] = x[0]**2 - x[1]**2
 #        s[1] = 2*x[0]*x[1]
-        """ 3rd Order Polynomial """
+        """ f(z) = z**3 """
 #        s[0] = x[0]**3 - 3*x[0]*x[1]**2
 #        s[1] = -x[1]**3 + 3*x[0]**2*x[1]
-        """ 4th Order Polynomial """
-#        s[0] = x[0]**4 - 6*x[0]**2*x[1]**2 + x[1]**4
-#        s[1] = 2*x[0]**3*x[1] - 2*x[0]*x[1]**3
-        """ Non Polynomial """
-        s[0] = exp(pi/2*x[0])*sin(pi/2*x[1])
-        s[1] = exp(pi/2*x[0])*cos(pi/2*x[1])
+        """ f(z) = z**4 """
+        s[0] = x[0]**4 - 6*x[0]**2*x[1]**2 + x[1]**4
+        s[1] = 4*x[0]**3*x[1] - 4*x[0]*x[1]**3
+        """ f(z) = exp(z) """
+#        s[0] = exp(pi/2*x[0])*sin(pi/2*x[1])
+#        s[1] = exp(pi/2*x[0])*cos(pi/2*x[1])
         
         return s
 
@@ -95,6 +97,7 @@ class PrincipalCoordSystem():
         ds_dx2[1] = diff(s[1], x[1])
         
         g12 = dot(ds_dx1, ds_dx2)
+        g12 = simplify(g12)
     
         return g12
     
