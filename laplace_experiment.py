@@ -27,11 +27,11 @@ import time
 
 
 
-class Known(laplace_theory.Theory):
+class Known(laplace_theory.TheoreticalValue):
     """ Known Values """
     
     def __init__(self, x, s, unknown, x_value):
-        self.Theory = laplace_theory.Theory(x, s, x_value)
+        self.Theory = laplace_theory.TheoreticalValue(x, s, x_value)
         self.unknown = unknown
         
     def known(self):
@@ -56,11 +56,11 @@ class Known(laplace_theory.Theory):
         return known
 
 
-class Unknown(laplace_theory.Theory):
+class Unknown(laplace_theory.TheoreticalValue):
     """ Values Related to Unknowns """
 
     def __init__(self, x, s, unknown, x_value):
-        self.Theory = laplace_theory.Theory(x, s, x_value)
+        self.Theory = laplace_theory.TheoreticalValue(x, s, x_value)
         self.unknown = unknown
         
     def unknown_theory(self):
@@ -157,7 +157,7 @@ class BoundaryConditions(Taylor):
     
     def __init__(self, x, s, unknown, x_value, unknown_init):
         self.Taylor = Taylor(x, s, unknown, x_value, unknown_init)
-        self.PCS = self.Taylor.Known.Theory.PCS
+        self.PCS = self.Taylor.Known.Theory.ProblemSettings
         self.x = x
         self.unknown = unknown
         self.x_value = x_value
