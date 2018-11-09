@@ -37,15 +37,14 @@ from IPython.display import display
 
 
 
-class PrincipalCoordSystem():
+class ProblemSettings():
     """ Define Principal Coordinate System """
     
     def s(self, x):
-        """ Coordintae Transformation """
+        """ Principal Coordinate System """
         """ s1 = Re{f(z)} & s2 = Im{f(z)} """
         
         s = np.ndarray((2,), 'object')
-        
         """ f(z) = z**2 """
 #        s[0] = x[0]**2 - x[1]**2
 #        s[1] = 2*x[0]*x[1]
@@ -62,14 +61,24 @@ class PrincipalCoordSystem():
         return s
 
     def u(self, s):
-        """ Target Function under New Coordinate System """
+        """ Target Function under Principal Coordinate System """
         u = s[0]
         
         return u
     
-    def laplacian_u(self, x):
+
+class Verification(ProblemSettings):
+    """ Verify Problem Settings """
+    
+    def __init__(self, x, s):
+        self.ProblemSettings = ProblemSettings()
+        self.x = x
+        self.s = s
+        
+    def laplacian_u(self):
         """ Verify Δu = 0 """
-        s = self.s(x)
+        x = self.x
+        s = self.ProblemSettings.s(x)
         u = self.u(s)
         
         laplacian_u = diff(u, x[0], 2) + diff(u, x[1], 2)
@@ -77,17 +86,19 @@ class PrincipalCoordSystem():
     
         return laplacian_u
     
-    def du_ds2(self, s):
+    def du_ds2(self):
         """ Verify Δu = 0 """
-        u = self.u(s)
+        s = self.s
+        u = self.ProblemSettings.u(s)
         
         du_ds2 = diff(u, s[1])
     
         return du_ds2
     
-    def g12(self, x):
+    def g12(self):
         """ Verify g_12 = 0 """
-        s = self.s(x)
+        x = self.x
+        s = self.ProblemSettings.s(x)
         
         ds_dx1 = np.ndarray((2,), 'object')
         ds_dx1[0] = diff(s[0], x[0])
@@ -100,12 +111,13 @@ class PrincipalCoordSystem():
         g12 = simplify(g12)
     
         return g12
+
     
-class Theory(PrincipalCoordSystem):
+class Theory(ProblemSettings):
     """  Theoretical Values of Taylor Series Coefficients """
     
     def __init__(self, x, s, x_value):
-        self.PCS = PrincipalCoordSystem()
+        self.ProblemSettings = ProblemSettings()
         self.x = x
         self.s = s
         self.x_value = x_value
@@ -113,14 +125,14 @@ class Theory(PrincipalCoordSystem):
     def s_theory(self):
         """  Theoretical s_coordinate """
         x_value = self.x_value
-        s_theory = self.PCS.s(x_value)
+        s_theory = self.ProblemSettings.s(x_value)
         
         return s_theory
     
     def a_theory(self):
         """  x_Taylor Series Coefficients of s1 """
         x = self.x
-        s = self.PCS.s(x)
+        s = self.ProblemSettings.s(x)
         x_value = self.x_value
         
         a_theory = np.ndarray((len(s), 6,), 'object')
@@ -142,7 +154,7 @@ class Theory(PrincipalCoordSystem):
     def r_theory(self):
         """ s_Taylor Series Coefficients of u """
         s = self.s
-        u = self.PCS.u(s)
+        u = self.ProblemSettings.u(s)
         s_theory = self.s_theory()
         
         r = np.ndarray((6,), 'object')
@@ -161,18 +173,18 @@ class Theory(PrincipalCoordSystem):
         return r_theory   
         
     
-class Plot(PrincipalCoordSystem):
+class Plot(ProblemSettings):
     """ Display Plot """
     
     def __init__(self, x, s, x_value):
-        self.PCS = PrincipalCoordSystem()
+        self.ProblemSettings = ProblemSettings()
         self.x = x
         self.s = s
         self.x_value = x_value
     
     def s_value(self):
         x = self.x
-        s = self.PCS.s(x)
+        s = self.ProblemSettings.s(x)
         x_value = self.x_value
         
         s_value = np.ndarray((len(s),), 'object')
@@ -184,7 +196,7 @@ class Plot(PrincipalCoordSystem):
     def u_plot(self):
         x_value = self.x_value
         s_value = self.s_value()
-        u_value = self.PCS.u(s_value)
+        u_value = self.ProblemSettings.u(s_value)
         
         fig = plt.figure()
         ax = fig.gca(projection = '3d')
@@ -232,12 +244,12 @@ if __name__ == '__main__':
     s[0] = Symbol('s1', real = True)
     s[1] = Symbol('s2', real = True)
     
-    #############################
-    PCS = PrincipalCoordSystem()
-    #############################
-    laplacian_u = PCS.laplacian_u(x)
-    du_ds2 = PCS.du_ds2(s)
-    g12 = PCS.g12(x)
+    ##################################
+    Verification = Verification(x, s)
+    ##################################
+    laplacian_u = Verification.laplacian_u()
+    du_ds2 = Verification.du_ds2()
+    g12 = Verification.g12()
     
     print('Δu = ')
     display(laplacian_u)
