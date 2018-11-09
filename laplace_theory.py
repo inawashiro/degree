@@ -112,8 +112,65 @@ class Verification(ProblemSettings):
     
         return g12
 
+
+class Plot(ProblemSettings):
+    """ Display Plot """
     
-class Theory(ProblemSettings):
+    def __init__(self, x, s, x_value):
+        self.ProblemSettings = ProblemSettings()
+        self.x = x
+        self.s = s
+        self.x_value = x_value
+    
+    def s_value(self):
+        x = self.x
+        s = self.ProblemSettings.s(x)
+        x_value = self.x_value
+        
+        s_value = np.ndarray((len(s),), 'object')
+        s_value = lambdify(x, s, 'numpy')
+        s_value = s_value(x_value[0], x_value[1])
+        
+        return s_value
+    
+    def u_plot(self):
+        x_value = self.x_value
+        s_value = self.s_value()
+        u_value = self.ProblemSettings.u(s_value)
+        
+        fig = plt.figure()
+        ax = fig.gca(projection = '3d')
+        ax.plot_wireframe(x_value[0], x_value[1], u_value, linewidth = 0.2)
+
+        plt.savefig('target_function_3d.pdf')
+        plt.savefig('target_function_3d.png')
+        plt.pause(.01)
+       
+        return s_value
+        
+    def principal_coordinate_system_plot(self):
+        x_value = self.x_value
+        s_value = self.s_value()
+            
+        plt.gca().set_aspect('equal', adjustable='box')
+        
+        interval1 = np.arange(-100, 100, 1.0)
+        interval2 = np.arange(-100, 100, 1.0)
+        
+        cr_s1 = plt.contour(x_value[0], x_value[1], s_value[0], interval1, colors = 'red')
+#        levels1 = cr_s1.levels
+#        cr_s1.clabel(levels1[::5], fmt = '%3.1f')
+        
+        cr_s2 = plt.contour(x_value[0], x_value[1], s_value[1], interval2, colors = 'blue')
+#        levels2 = cr_s2.levels
+#        cr_s2.clabel(levels2[::5], fmt = '%3.1f')
+        
+        plt.savefig('principal_coordinate_system.pdf')
+        plt.savefig('principal_coordinate_system.png')
+        plt.pause(.01)
+        
+    
+class TheoreticalValue(ProblemSettings):
     """  Theoretical Values of Taylor Series Coefficients """
     
     def __init__(self, x, s, x_value):
@@ -173,61 +230,7 @@ class Theory(ProblemSettings):
         return r_theory   
         
     
-class Plot(ProblemSettings):
-    """ Display Plot """
-    
-    def __init__(self, x, s, x_value):
-        self.ProblemSettings = ProblemSettings()
-        self.x = x
-        self.s = s
-        self.x_value = x_value
-    
-    def s_value(self):
-        x = self.x
-        s = self.ProblemSettings.s(x)
-        x_value = self.x_value
-        
-        s_value = np.ndarray((len(s),), 'object')
-        s_value = lambdify(x, s, 'numpy')
-        s_value = s_value(x_value[0], x_value[1])
-        
-        return s_value
-    
-    def u_plot(self):
-        x_value = self.x_value
-        s_value = self.s_value()
-        u_value = self.ProblemSettings.u(s_value)
-        
-        fig = plt.figure()
-        ax = fig.gca(projection = '3d')
-        ax.plot_wireframe(x_value[0], x_value[1], u_value, linewidth = 0.2)
 
-        plt.savefig('target_function_3d.pdf')
-        plt.savefig('target_function_3d.png')
-        plt.pause(.01)
-       
-        return s_value
-        
-    def principal_coordinate_system_plot(self):
-        x_value = self.x_value
-        s_value = self.s_value()
-            
-        plt.gca().set_aspect('equal', adjustable='box')
-        
-        interval1 = np.arange(-100, 100, 1.0)
-        interval2 = np.arange(-100, 100, 1.0)
-        
-        cr_s1 = plt.contour(x_value[0], x_value[1], s_value[0], interval1, colors = 'red')
-#        levels1 = cr_s1.levels
-#        cr_s1.clabel(levels1[::5], fmt = '%3.1f')
-        
-        cr_s2 = plt.contour(x_value[0], x_value[1], s_value[1], interval2, colors = 'blue')
-#        levels2 = cr_s2.levels
-#        cr_s2.clabel(levels2[::5], fmt = '%3.1f')
-        
-        plt.savefig('principal_coordinate_system.pdf')
-        plt.savefig('principal_coordinate_system.png')
-        plt.pause(.01)
         
 
 
@@ -263,59 +266,7 @@ if __name__ == '__main__':
     display(g12)
     print('')
     
-    n = 5
     
-    x_value = np.ndarray((len(x),))
-    s_value = np.ndarray((len(s),))
-    
-    x_value_array = np.ndarray((n + 1, n + 1, len(x),))
-    s_theory_array = np.ndarray((n + 1, n + 1, len(s),))
-    a_theory_array = np.ndarray((n + 1, n + 1, len(s), 6))
-    r_theory_array = np.ndarray((n + 1, n + 1, 6,))
-    
-    ###############################
-    Theory = Theory(x, s, x_value)
-    ###############################  
-    
-    for i in range(n + 1):
-        for j in range(n + 1):
-            x_value[0] = 1.0 + i/n
-            x_value[1] = 1.0 + j/n
-        
-            s_theory = Theory.s_theory()
-            a_theory = Theory.a_theory()
-            r_theory = Theory.r_theory()
-            
-            for k in range(len(x)):
-                x_value_array[i][j][k] = x_value[k]
-                
-            for k in range(len(s)):
-                s_theory_array[i][j][k] = s_theory[k]
-                
-                for l in range(6):
-                    a_theory_array[i][j][k][l] = a_theory[k][l]
-                
-            for k in range(6):
-                r_theory_array[i][j][k] = r_theory[k]
-                
-    
-                
-#    print('x_values = ')
-#    print(x_value_array)
-#    print('')
-#    
-#    print('s_theory = ')
-#    print(s_theory_array)
-#    print('')
-#    
-#    print('a_theory = ')
-#    print(a_theory_array)
-#    print('')
-#    
-#    print('r_theory = ')
-#    print(r_theory_array)
-#    print('')
-
     x_value = np.meshgrid(np.arange(0, 2, 0.01), 
                           np.arange(0, 2, 0.01))
     
@@ -331,6 +282,60 @@ if __name__ == '__main__':
     print('Principal Coordinate System')
     Plot.principal_coordinate_system_plot()
     print('')    
+    
+    
+#    n = 5
+#    
+#    x_value = np.ndarray((len(x),))
+#    s_value = np.ndarray((len(s),))
+#    
+#    x_value_array = np.ndarray((n + 1, n + 1, len(x),))
+#    s_theory_array = np.ndarray((n + 1, n + 1, len(s),))
+#    a_theory_array = np.ndarray((n + 1, n + 1, len(s), 6))
+#    r_theory_array = np.ndarray((n + 1, n + 1, 6,))
+#    
+#    ###################################################
+#    TheoreticalValue = TheoreticalValue(x, s, x_value)
+#    ###################################################  
+#    
+#    for i in range(n + 1):
+#        for j in range(n + 1):
+#            x_value[0] = 1.0 + i/n
+#            x_value[1] = 1.0 + j/n
+#        
+#            s_theory = TheoreticalValue.s_theory()
+#            a_theory = TheoreticalValue.a_theory()
+#            r_theory = TheoreticalValue.r_theory()
+#            
+#            for k in range(len(x)):
+#                x_value_array[i][j][k] = x_value[k]
+#                
+#            for k in range(len(s)):
+#                s_theory_array[i][j][k] = s_theory[k]
+#                
+#                for l in range(6):
+#                    a_theory_array[i][j][k][l] = a_theory[k][l]
+#                
+#            for k in range(6):
+#                r_theory_array[i][j][k] = r_theory[k]
+#                
+#    
+#                
+#    print('x_values = ')
+#    print(x_value_array)
+#    print('')
+#    
+#    print('s_theory = ')
+#    print(s_theory_array)
+#    print('')
+#    
+#    print('a_theory = ')
+#    print(a_theory_array)
+#    print('')
+#    
+#    print('r_theory = ')
+#    print(r_theory_array)
+#    print('')
     
     
     t1 = time.time()
