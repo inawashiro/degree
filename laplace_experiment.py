@@ -168,9 +168,9 @@ class BoundaryConditions(Taylor):
         s_value = self.PCS.s(x_value)
         s_boundary = np.ndarray((2, len(s_value)))
         
-        s_boundary[0][0] = s_value[0] - 1.0e-3
+        s_boundary[0][0] = s_value[0] - 1.0e-0
         s_boundary[0][1] = s_value[1] 
-        s_boundary[1][0] = s_value[0] + 1.0e-3
+        s_boundary[1][0] = s_value[0] + 1.0e-0
         s_boundary[1][1] = s_value[1] 
         
         return s_boundary
@@ -385,8 +385,10 @@ class GoverningEquations(Metric):
         x = self.x
         x_value = self.x_value
         
-        laplacian_u = 2*g11*g22*ddu_dds1 \
-                      + (g11*dg22_ds1 - g22*dg11_ds1)*du_ds1
+#        laplacian_u = 2*g11*g22*ddu_dds1 \
+#                      + (g11*dg22_ds1 - g22*dg11_ds1)*du_ds1
+        laplacian_u = 2*g11*ddu_dds1 + (dg22_ds1 - dg11_ds1)*du_ds1
+        
         
         coeff_laplacian_u = np.ndarray((6), 'object')
         coeff_laplacian_u[0] = laplacian_u
