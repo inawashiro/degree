@@ -213,26 +213,26 @@ class TheoreticalValue(ProblemSettings):
                 
         return a_theory
 
-    def r_theory(self):
+    def b_theory(self):
         """ s_Taylor Series Coefficients of u """
         s = self.s
         u = self.ProblemSettings.u(s)
         s_theory = self.s_theory()
         
-        r = np.ndarray((6,), 'object')
-        r[0] = u
-        r[1] = diff(u, s[0])
-        r[2] = diff(u, s[1])
-        r[3] = diff(u, s[0], 2)
-        r[4] = diff(u, s[0], s[1])
-        r[5] = diff(u, s[1], 2)
+        b = np.ndarray((6,), 'object')
+        b[0] = u
+        b[1] = diff(u, s[0])
+        b[2] = diff(u, s[1])
+        b[3] = diff(u, s[0], 2)
+        b[4] = diff(u, s[0], s[1])
+        b[5] = diff(u, s[1], 2)
         
-        r_theory = np.ndarray((len(r),), 'object')
-        for i in range(len(r)):
-            r_theory[i] = lambdify(s, r[i], 'numpy')
-            r_theory[i] = r_theory[i](s_theory[0], s_theory[1])
+        b_theory = np.ndarray((len(b),), 'object')
+        for i in range(len(b)):
+            b_theory[i] = lambdify(s, b[i], 'numpy')
+            b_theory[i] = b_theory[i](s_theory[0], s_theory[1])
         
-        return r_theory   
+        return b_theory   
         
     
 
@@ -289,58 +289,58 @@ if __name__ == '__main__':
     print('')    
     
     
-#    n = 5
-#    
-#    x_value = np.ndarray((len(x),))
-#    s_value = np.ndarray((len(s),))
-#    
-#    x_value_array = np.ndarray((n + 1, n + 1, len(x),))
-#    s_theory_array = np.ndarray((n + 1, n + 1, len(s),))
-#    a_theory_array = np.ndarray((n + 1, n + 1, len(s), 6))
-#    r_theory_array = np.ndarray((n + 1, n + 1, 6,))
-#    
-#    ###################################################
-#    TheoreticalValue = TheoreticalValue(x, s, x_value)
-#    ###################################################  
-#    
-#    for i in range(n + 1):
-#        for j in range(n + 1):
-#            x_value[0] = 1.0 + i/n
-#            x_value[1] = 1.0 + j/n
-#        
-#            s_theory = TheoreticalValue.s_theory()
-#            a_theory = TheoreticalValue.a_theory()
-#            r_theory = TheoreticalValue.r_theory()
-#            
-#            for k in range(len(x)):
-#                x_value_array[i][j][k] = x_value[k]
-#                
-#            for k in range(len(s)):
-#                s_theory_array[i][j][k] = s_theory[k]
-#                
-#                for l in range(6):
-#                    a_theory_array[i][j][k][l] = a_theory[k][l]
-#                
-#            for k in range(6):
-#                r_theory_array[i][j][k] = r_theory[k]
-#                
-#    
-#                
-#    print('x_values = ')
-#    print(x_value_array)
-#    print('')
-#    
-#    print('s_theory = ')
-#    print(s_theory_array)
-#    print('')
-#    
-#    print('a_theory = ')
-#    print(a_theory_array)
-#    print('')
-#    
-#    print('r_theory = ')
-#    print(r_theory_array)
-#    print('')
+    n = 5
+    
+    x_value = np.ndarray((len(x),))
+    s_value = np.ndarray((len(s),))
+    
+    x_value_array = np.ndarray((n + 1, n + 1, len(x),))
+    s_theory_array = np.ndarray((n + 1, n + 1, len(s),))
+    a_theory_array = np.ndarray((n + 1, n + 1, len(s), 6))
+    b_theory_array = np.ndarray((n + 1, n + 1, 6,))
+    
+    ###################################################
+    TheoreticalValue = TheoreticalValue(x, s, x_value)
+    ###################################################  
+    
+    for i in range(n + 1):
+        for j in range(n + 1):
+            x_value[0] = 1.0 + i/n
+            x_value[1] = 1.0 + j/n
+        
+            s_theory = TheoreticalValue.s_theory()
+            a_theory = TheoreticalValue.a_theory()
+            b_theory = TheoreticalValue.b_theory()
+            
+            for k in range(len(x)):
+                x_value_array[i][j][k] = x_value[k]
+                
+            for k in range(len(s)):
+                s_theory_array[i][j][k] = s_theory[k]
+                
+                for l in range(6):
+                    a_theory_array[i][j][k][l] = a_theory[k][l]
+                
+            for k in range(6):
+                b_theory_array[i][j][k] = b_theory[k]
+                
+    
+                
+    print('x_values = ')
+    print(x_value_array)
+    print('')
+    
+    print('s_theory = ')
+    print(s_theory_array)
+    print('')
+    
+    print('a_theory = ')
+    print(a_theory_array)
+    print('')
+    
+    print('b_theory = ')
+    print(b_theory_array)
+    print('')
     
     
     t1 = time.time()

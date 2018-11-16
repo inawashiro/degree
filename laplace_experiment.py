@@ -36,7 +36,7 @@ class Known(laplace_theory.TheoreticalValue):
         
     def known(self):
         a_theory = self.Theory.a_theory()
-        r_theory = self.Theory.r_theory()
+        b_theory = self.Theory.b_theory()
         unknown = self.unknown
         
         known = np.ndarray((18 - len(unknown),))
@@ -46,12 +46,12 @@ class Known(laplace_theory.TheoreticalValue):
         known[3] = a_theory[1][0]
         known[4] = a_theory[1][1]
         known[5] = a_theory[1][2]
-        known[6] = r_theory[0]
-        known[7] = r_theory[1]
-        known[8] = r_theory[2]
-        known[9] = r_theory[3]
-        known[10] = r_theory[4]
-        known[11] = r_theory[5]
+        known[6] = b_theory[0]
+        known[7] = b_theory[1]
+        known[8] = b_theory[2]
+        known[9] = b_theory[3]
+        known[10] = b_theory[4]
+        known[11] = b_theory[5]
         
         return known
 
@@ -80,7 +80,7 @@ class Unknown(laplace_theory.TheoreticalValue):
     def unknown_init(self):
         unknown_theory = self.unknown_theory()
     
-        e = 1.0
+        e = 0.0
         unknown_init = np.ndarray((len(unknown),))
         for i in range(len(unknown)):
             unknown_init[i] = (1 + random.uniform(-e, e)/100)*unknown_theory[i]
