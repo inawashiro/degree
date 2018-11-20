@@ -289,58 +289,58 @@ if __name__ == '__main__':
     print('')    
     
     
-    n = 5
-    
-    x_value = np.ndarray((len(x),))
-    s_value = np.ndarray((len(s),))
-    
-    x_value_array = np.ndarray((n + 1, n + 1, len(x),))
-    s_theory_array = np.ndarray((n + 1, n + 1, len(s),))
-    a_theory_array = np.ndarray((n + 1, n + 1, len(s), 6))
-    b_theory_array = np.ndarray((n + 1, n + 1, 6,))
-    
-    ###################################################
-    TheoreticalValue = TheoreticalValue(x, s, x_value)
-    ###################################################  
-    
-    for i in range(n + 1):
-        for j in range(n + 1):
-            x_value[0] = 1.0 + i/n
-            x_value[1] = 1.0 + j/n
-        
-            s_theory = TheoreticalValue.s_theory()
-            a_theory = TheoreticalValue.a_theory()
-            b_theory = TheoreticalValue.b_theory()
-            
-            for k in range(len(x)):
-                x_value_array[i][j][k] = x_value[k]
-                
-            for k in range(len(s)):
-                s_theory_array[i][j][k] = s_theory[k]
-                
-                for l in range(6):
-                    a_theory_array[i][j][k][l] = a_theory[k][l]
-                
-            for k in range(6):
-                b_theory_array[i][j][k] = b_theory[k]
-                
-    
-                
-    print('x_values = ')
-    print(x_value_array)
-    print('')
-    
-    print('s_theory = ')
-    print(s_theory_array)
-    print('')
-    
-    print('a_theory = ')
-    print(a_theory_array)
-    print('')
-    
-    print('b_theory = ')
-    print(b_theory_array)
-    print('')
+#    n = 5
+#    
+#    x_value = np.ndarray((len(x),))
+#    s_value = np.ndarray((len(s),))
+#    
+#    x_value_array = np.ndarray((n + 1, n + 1, len(x),))
+#    s_theory_array = np.ndarray((n + 1, n + 1, len(s),))
+#    a_theory_array = np.ndarray((n + 1, n + 1, len(s), 6))
+#    b_theory_array = np.ndarray((n + 1, n + 1, 6,))
+#    
+#    ###################################################
+#    TheoreticalValue = TheoreticalValue(x, s, x_value)
+#    ###################################################  
+#    
+#    for i in range(n + 1):
+#        for j in range(n + 1):
+#            x_value[0] = 1.0 + i/n
+#            x_value[1] = 1.0 + j/n
+#        
+#            s_theory = TheoreticalValue.s_theory()
+#            a_theory = TheoreticalValue.a_theory()
+#            b_theory = TheoreticalValue.b_theory()
+#            
+#            for k in range(len(x)):
+#                x_value_array[i][j][k] = x_value[k]
+#                
+#            for k in range(len(s)):
+#                s_theory_array[i][j][k] = s_theory[k]
+#                
+#                for l in range(6):
+#                    a_theory_array[i][j][k][l] = a_theory[k][l]
+#                
+#            for k in range(6):
+#                b_theory_array[i][j][k] = b_theory[k]
+#                
+#    
+#                
+#    print('x_values = ')
+#    print(x_value_array)
+#    print('')
+#    
+#    print('s_theory = ')
+#    print(s_theory_array)
+#    print('')
+#    
+#    print('a_theory = ')
+#    print(a_theory_array)
+#    print('')
+#    
+#    print('b_theory = ')
+#    print(b_theory_array)
+#    print('')
     
     
     t1 = time.time()

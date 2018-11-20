@@ -80,7 +80,7 @@ class Unknown(laplace_theory.TheoreticalValue):
     def unknown_init(self):
         unknown_theory = self.unknown_theory()
     
-        e = 0.0
+        e = 1.0
         unknown_init = np.ndarray((len(unknown),))
         for i in range(len(unknown)):
             unknown_init[i] = (1 + random.uniform(-e, e)/100)*unknown_theory[i]
@@ -314,24 +314,43 @@ class Metric(Derivative):
         self.Derivative = Derivative(x, s, unknown, x_value, unknown_init)
         self.x = x
     
-    def submetric(self):
-        """ Subscript Metric g_ij """
+#    def submetric(self):
+#        """ Subscript Metric g_ij """
+#        ds_dx = self.Derivative.ds_dx()
+#        
+#        ds_dx1 = np.ndarray((2,), 'object')
+#        ds_dx1[0] = ds_dx[0][0]
+#        ds_dx1[1] = ds_dx[1][0]
+#        ds_dx2 = np.ndarray((2,), 'object')
+#        ds_dx2[0] = ds_dx[0][1]
+#        ds_dx2[1] = ds_dx[1][1]
+#        
+#        submetric = np.ndarray((2, 2,), 'object')
+#        submetric[0][0] = dot(ds_dx1, ds_dx1)
+#        submetric[0][1] = dot(ds_dx1, ds_dx2)
+#        submetric[1][0] = dot(ds_dx2, ds_dx1)
+#        submetric[1][1] = dot(ds_dx2, ds_dx2)
+#        
+#        return submetric
+        
+    def supermetric(self):
+        """ Superscript Metric g^ij """
         ds_dx = self.Derivative.ds_dx()
         
-        ds_dx1 = np.ndarray((2,), 'object')
-        ds_dx1[0] = ds_dx[0][0]
-        ds_dx1[1] = ds_dx[1][0]
-        ds_dx2 = np.ndarray((2,), 'object')
-        ds_dx2[0] = ds_dx[0][1]
-        ds_dx2[1] = ds_dx[1][1]
+        ds1_dx = np.ndarray((2,), 'object')
+        ds1_dx[0] = ds_dx[0][0]
+        ds1_dx[1] = ds_dx[0][1]
+        ds2_dx = np.ndarray((2,), 'object')
+        ds2_dx[0] = ds_dx[1][0]
+        ds2_dx[1] = ds_dx[1][1]
         
-        submetric = np.ndarray((2, 2,), 'object')
-        submetric[0][0] = dot(ds_dx1, ds_dx1)
-        submetric[0][1] = dot(ds_dx1, ds_dx2)
-        submetric[1][0] = dot(ds_dx2, ds_dx1)
-        submetric[1][1] = dot(ds_dx2, ds_dx2)
+        supermetric = np.ndarray((2, 2,), 'object')
+        supermetric[0][0] = dot(ds1_dx, ds1_dx)
+        supermetric[0][1] = dot(ds1_dx, ds2_dx)
+        supermetric[1][0] = dot(ds2_dx, ds1_dx)
+        supermetric[1][1] = dot(ds2_dx, ds2_dx)
         
-        return submetric
+        return supermetric
   
     def dg_ds1(self):
         """ dg_ij/ds1 = dx1/ds1*dg_ij/dx1 + dx2/ds1*dg_ij/dx2 """
@@ -370,7 +389,8 @@ class GoverningEquations(Metric):
         
     def governing_equation_1(self):
         """ 1st Order x_Taylor Series of g_12 """
-        g12 = self.Metric.submetric()[0][1]
+#        g12 = self.Metric.submetric()[0][1]
+        g12 = self.Metric.supermetric()[0][1]
         x = self.x
         x_value = self.x_value
         
@@ -408,7 +428,6 @@ class GoverningEquations(Metric):
         
 #        laplacian_u = 2*g11*g22*ddu_dds1 \
 #                      + (g11*dg22_ds1 - g22*dg11_ds1)*du_ds1
-#        laplacian_u = 2*g11*ddu_dds1 + (dg22_ds1 - dg11_ds1)*du_ds1
         laplacian_u = ((ds1_dx1)**2 + (ds1_dx2)**2)*ddu_dds1 \
                       + (dds1_ddx1 + dds1_ddx2)*du_ds1
         
