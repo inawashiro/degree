@@ -416,6 +416,7 @@ class GoverningEquations(Metric):
         
 #        g11 = self.Metric.submetric()[0][0]
 #        g22 = self.Metric.submetric()[1][1]
+        g11 = self.Metric.supermetric()[0][0]
 #        dg11_ds1 = self.Metric.dg_ds1()[0][0]
 #        dg22_ds1 = self.Metric.dg_ds1()[1][1]
         
@@ -428,7 +429,9 @@ class GoverningEquations(Metric):
         
 #        laplacian_u = 2*g11*g22*ddu_dds1 \
 #                      + (g11*dg22_ds1 - g22*dg11_ds1)*du_ds1
-        laplacian_u = ((ds1_dx1)**2 + (ds1_dx2)**2)*ddu_dds1 \
+#        laplacian_u = ((ds1_dx1)**2 + (ds1_dx2)**2)*ddu_dds1 \
+#                      + (dds1_ddx1 + dds1_ddx2)*du_ds1
+        laplacian_u = g11*ddu_dds1 \
                       + (dds1_ddx1 + dds1_ddx2)*du_ds1
         
         
