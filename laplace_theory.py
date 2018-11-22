@@ -46,8 +46,8 @@ class ProblemSettings():
         
         s = np.ndarray((2,), 'object')
         """ f(z) = z**2 """
-#        s[0] = x[0]**2 - x[1]**2
-#        s[1] = 2*x[0]*x[1]
+        s[0] = x[0]**2 - x[1]**2
+        s[1] = 2*x[0]*x[1]
         """ f(z) = z**3 """
 #        s[0] = x[0]**3 - 3*x[0]*x[1]**2
 #        s[1] = -x[1]**3 + 3*x[0]**2*x[1]
@@ -61,8 +61,8 @@ class ProblemSettings():
 #        s[0] = exp(x[0])*sin(x[1])
 #        s[1] = exp(x[0])*cos(x[1])
         """ f(z) = exp((π/2)z) """
-        s[0] = exp(pi/2*x[0])*sin(pi/2*x[1])
-        s[1] = exp(pi/2*x[0])*cos(pi/2*x[1])
+#        s[0] = exp(pi/2*x[0])*sin(pi/2*x[1])
+#        s[1] = exp(pi/2*x[0])*cos(pi/2*x[1])
         return s
 
     def u(self, s):
