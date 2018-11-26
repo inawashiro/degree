@@ -80,7 +80,7 @@ class Unknown(laplace_theory.TheoreticalValue):
     def unknown_init(self):
         unknown_theory = self.unknown_theory()
     
-        e = 0.0
+        e = 1.0
         unknown_init = np.ndarray((len(unknown),))
         for i in range(len(unknown)):
             unknown_init[i] = (1 + random.uniform(-e, e)/100)*unknown_theory[i]
@@ -168,9 +168,9 @@ class BoundaryConditions(Taylor):
         s_value = self.PCS.s(x_value)
         s_boundary = np.ndarray((2, len(s_value)))
         
-        s_boundary[0][0] = s_value[0] - 1.0e-0
+        s_boundary[0][0] = s_value[0] - 1.0e-3
         s_boundary[0][1] = s_value[1] 
-        s_boundary[1][0] = s_value[0] + 1.0e-0
+        s_boundary[1][0] = s_value[0] + 1.0e-3
         s_boundary[1][1] = s_value[1] 
         
         return s_boundary
@@ -315,7 +315,7 @@ class Metric(Derivative):
         self.x = x
     
     def supermetric(self):
-        """ Subscript Metric g_ij """
+        """ Superscript Metric g^ij """
         ds_dx = self.Derivative.ds_dx()
         
         ds1_dx = np.ndarray((2,), 'object')
@@ -369,26 +369,25 @@ class GoverningEquations(Metric):
         self.x =  x
         self.x_value = x_value
         
-#    def governing_equation_1(self):
-#        """ 1st Order x_Taylor Series of g_12 """
-##        g12 = self.Metric.submetric()[0][1]
-#        g12 = self.Metric.supermetric()[0][1]
-#        x = self.x
-#        x_value = self.x_value
-#        
-#        coeff_g12 = np.ndarray((6), 'object')
-#        coeff_g12[0] = g12
-#        coeff_g12[1] = diff(g12, x[0])
-#        coeff_g12[2] = diff(g12, x[1])
-#        coeff_g12[3] = diff(g12, x[0], 2)
-#        coeff_g12[4] = diff(g12, x[0], x[1])
-#        coeff_g12[5] = diff(g12, x[1], 2)
-#        
-#        for i in range(len(coeff_g12)):
-#            coeff_g12[i] = lambdify(x, coeff_g12[i], 'numpy')
-#            coeff_g12[i] = coeff_g12[i](x_value[0], x_value[1])
-#            
-#        return coeff_g12
+    def governing_equation_1(self):
+        """ 1st Order x_Taylor Series of g_12 """
+        g12 = self.Metric.supermetric()[0][1]
+        x = self.x
+        x_value = self.x_value
+        
+        coeff_g12 = np.ndarray((6), 'object')
+        coeff_g12[0] = g12
+        coeff_g12[1] = diff(g12, x[0])
+        coeff_g12[2] = diff(g12, x[1])
+        coeff_g12[3] = diff(g12, x[0], 2)
+        coeff_g12[4] = diff(g12, x[0], x[1])
+        coeff_g12[5] = diff(g12, x[1], 2)
+        
+        for i in range(len(coeff_g12)):
+            coeff_g12[i] = lambdify(x, coeff_g12[i], 'numpy')
+            coeff_g12[i] = coeff_g12[i](x_value[0], x_value[1])
+            
+        return coeff_g12
     
     def governing_equation_2(self):
         """ 1st Order x_Taylor Series of Laplacian of u """
@@ -397,24 +396,24 @@ class GoverningEquations(Metric):
         du_ds1 = self.Derivative.du_ds()[0]
         ddu_dds1 = self.Derivative.ddu_dds()[0][0]
         
-        g11 = self.Metric.supermetric()[0][0]
-        g22 = self.Metric.supermetric()[1][1]
-        dg11_ds1 = self.Metric.dg_ds1()[0][0]
-        dg22_ds1 = self.Metric.dg_ds1()[1][1]
-        
+#        g11 = self.Metric.supermetric()[0][0]
+#        g22 = self.Metric.supermetric()[1][1]
+#        dg11_ds1 = self.Metric.dg_ds1()[0][0]
+#        dg22_ds1 = self.Metric.dg_ds1()[1][1]
+#        
         x = self.x
         x_value = self.x_value
-        
-        laplacian_u = 2*g11*g22*ddu_dds1 \
-                      + (g22*dg11_ds1 - g11*dg22_ds1)*du_ds1
+#        
+#        laplacian_u = 2*g11*g22*ddu_dds1 \
+#                      + (g22*dg11_ds1 - g11*dg22_ds1)*du_ds1
 
-#        ds1_dx1 = self.Derivative.ds_dx()[0][0]
-#        ds1_dx2 = self.Derivative.ds_dx()[0][1]
-#        dds1_ddx1 = self.Derivative.dds_ddx()[0][0][0]
-#        dds1_ddx2 = self.Derivative.dds_ddx()[0][1][1]
+        ds1_dx1 = self.Derivative.ds_dx()[0][0]
+        ds1_dx2 = self.Derivative.ds_dx()[0][1]
+        dds1_ddx1 = self.Derivative.dds_ddx()[0][0][0]
+        dds1_ddx2 = self.Derivative.dds_ddx()[0][1][1]
 
-#        laplacian_u = ((ds1_dx1)**2 + (ds1_dx2)**2)*ddu_dds1 \
-#                      + (dds1_ddx1 + dds1_ddx2)*du_ds1
+        laplacian_u = ((ds1_dx1)**2 + (ds1_dx2)**2)*ddu_dds1 \
+                      + (dds1_ddx1 + dds1_ddx2)*du_ds1
         
         
         coeff_laplacian_u = np.ndarray((6), 'object')
@@ -444,15 +443,15 @@ class Experiment(BoundaryConditions, GoverningEquations):
     def f(self):
         unknown = self.unknown
         bc = self.BC.boundary_conditions()
-#        ge1 = self.GE.governing_equation_1()
+        ge1 = self.GE.governing_equation_1()
         ge2 = self.GE.governing_equation_2()
         
         f = np.ndarray((len(unknown),), 'object')
         f[0] = bc[0]
         f[1] = bc[1]
-        f[2] = ge2[1]
-        f[3] = ge2[2]
-        f[4] = ge2[3]
+        f[2] = ge1[1]
+        f[3] = ge1[2]
+        f[4] = ge1[3]
         f[5] = ge2[0]
         
         return f
