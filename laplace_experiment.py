@@ -84,7 +84,7 @@ class Unknown(laplace_theory.TheoreticalValue):
     def unknown_init(self):
         unknown_theory = self.unknown_theory()
     
-        e = 0.0
+        e = 10000.0
         unknown_init = np.ndarray((len(unknown),))
         for i in range(len(unknown)):
             unknown_init[i] = (1 + random.uniform(-e, e)/100)*unknown_theory[i]
@@ -157,7 +157,7 @@ class Taylor(Known):
     
  
 class BoundaryConditions(Taylor):
-    """ Boundary s_coordinate """
+    """ Boundary Conditions along Streamline """
     
     def __init__(self, x, s, unknown, x_value, unknown_init):
         self.Taylor = Taylor(x, s, unknown, x_value, unknown_init)
@@ -370,7 +370,6 @@ class Laplacian(Metric):
         self.Derivative = self.Metric.Derivative
         
     def laplacian_u(self):
-        """ 1st Order x_Taylor Series of Laplacian of u """
         """ 2*g11*g22*u,11 + (g22*g11,1 - g11*g22,1)*u,1 """
         du_ds1 = self.Derivative.du_ds()[0]
         ddu_dds1 = self.Derivative.ddu_dds()[0][0]
@@ -412,12 +411,12 @@ class GoverningEquations(Laplacian):
         x_value = self.x_value
         
         coeff_du_ds2 = np.ndarray((6), 'object')
-        coeff_du_ds2[0] = du_ds2
+#        coeff_du_ds2[0] = du_ds2
         coeff_du_ds2[1] = diff(du_ds2, x[0])
         coeff_du_ds2[2] = diff(du_ds2, x[1])
-        coeff_du_ds2[3] = diff(du_ds2, x[0], 2)
-        coeff_du_ds2[4] = diff(du_ds2, x[0], x[1])
-        coeff_du_ds2[5] = diff(du_ds2, x[1], 2)
+#        coeff_du_ds2[3] = diff(du_ds2, x[0], 2)
+#        coeff_du_ds2[4] = diff(du_ds2, x[0], x[1])
+#        coeff_du_ds2[5] = diff(du_ds2, x[1], 2)
         
         for i in range(len(coeff_du_ds2)):
             coeff_du_ds2[i] = lambdify(x, coeff_du_ds2[i], 'numpy')
@@ -432,12 +431,12 @@ class GoverningEquations(Laplacian):
         x_value = self.x_value
         
         coeff_g12 = np.ndarray((6), 'object')
-        coeff_g12[0] = g12
+#        coeff_g12[0] = g12
         coeff_g12[1] = diff(g12, x[0])
         coeff_g12[2] = diff(g12, x[1])
         coeff_g12[3] = diff(g12, x[0], 2)
         coeff_g12[4] = diff(g12, x[0], x[1])
-        coeff_g12[5] = diff(g12, x[1], 2)
+#        coeff_g12[5] = diff(g12, x[1], 2)
         
         for i in range(len(coeff_g12)):
             coeff_g12[i] = lambdify(x, coeff_g12[i], 'numpy')
@@ -453,11 +452,11 @@ class GoverningEquations(Laplacian):
         
         coeff_laplacian_u = np.ndarray((6), 'object')
         coeff_laplacian_u[0] = laplacian_u
-        coeff_laplacian_u[1] = diff(laplacian_u, x[0])
-        coeff_laplacian_u[2] = diff(laplacian_u, x[1])
-        coeff_laplacian_u[3] = diff(laplacian_u, x[0], 2)
-        coeff_laplacian_u[4] = diff(laplacian_u, x[0], x[1])
-        coeff_laplacian_u[5] = diff(laplacian_u, x[1], 2)
+#        coeff_laplacian_u[1] = diff(laplacian_u, x[0])
+#        coeff_laplacian_u[2] = diff(laplacian_u, x[1])
+#        coeff_laplacian_u[3] = diff(laplacian_u, x[0], 2)
+#        coeff_laplacian_u[4] = diff(laplacian_u, x[0], x[1])
+#        coeff_laplacian_u[5] = diff(laplacian_u, x[1], 2)
         
         for i in range(len(coeff_laplacian_u)):
             coeff_laplacian_u[i] = lambdify(x, coeff_laplacian_u[i], 'numpy')
@@ -466,7 +465,7 @@ class GoverningEquations(Laplacian):
         return coeff_laplacian_u
 
 
-class Experiment(BoundaryConditions, GoverningEquations):
+class Solve(BoundaryConditions, GoverningEquations):
     """ Solve BVP on Line Element by Newton's Method """
     
     def __init__(self, x, s, unknown, x_value, unknown_init):
@@ -616,7 +615,7 @@ if __name__ == '__main__':
     error_init_array = np.ndarray((n, n, 1))
     error_experiment_array = np.ndarray((n, n, 1))
     
-    eigvals_A_init_array = np.ndarray((n, n, len(unknown)), 'complex')
+    abs_eigvals_A_init_array = np.ndarray((n, n, len(unknown)))
     
     
     def relative_error(a, b):
@@ -660,11 +659,12 @@ if __name__ == '__main__':
         
         
             ####################################################################
-            Experiment_call = Experiment(x, s, unknown, x_target, unknown_init)
+            Solve_call = Solve(x, s, unknown, x_target, unknown_init)
             ####################################################################
-            unknown_experiment = Experiment_call.solution()
-            A_init = Experiment_call.A(unknown_init)
+            unknown_experiment = Solve_call.solution()
+            A_init = Solve_call.A(unknown_init)
             eigvals_A_init = eigvals(A_init)
+            abs_eigvals_A_init = abs(eigvals_A_init)
             
             error_init = relative_error(unknown_theory, unknown_init)
             error_experiment = relative_error(unknown_theory, unknown_experiment)
@@ -676,7 +676,8 @@ if __name__ == '__main__':
                 unknown_theory_array[i][j][k] = unknown_theory[k]
                 unknown_init_array[i][j][k] = unknown_init[k]
                 unknown_experiment_array[i][j][k] = unknown_experiment[k]
-                eigvals_A_init_array[i][j][k] = eigvals_A_init[k]
+                abs_eigvals_A_init[k] = round(abs_eigvals_A_init[k], 8)
+                abs_eigvals_A_init_array[i][j][k] = abs_eigvals_A_init[k]
                 
             for k in range(1):
                 error_init_array[i][j][k] = error_init
@@ -719,12 +720,12 @@ if __name__ == '__main__':
     print(error_experiment_array)
     print('')
     
-    print('A_init = ')
-    print(A_init)
-    print('')
+#    print('A_init = ')
+#    print(A_init)
+#    print('')
     
-    print('eigvals_A_init = ')
-    print(eigvals_A_init_array)
+    print('abs_eigvals_A_init = ')
+    print(abs_eigvals_A_init_array)
     print('')
             
             
