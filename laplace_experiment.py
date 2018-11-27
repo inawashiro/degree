@@ -19,6 +19,9 @@ import sympy as sym
 from sympy import Symbol, diff, lambdify, nsolve
 sym.init_printing()
 
+# For Displaying Symbolic Notation
+from IPython.display import display
+
 # For Random Variables
 import random
 
@@ -370,13 +373,12 @@ class GoverningEquations(Metric):
         self.Taylor = self.Metric.Derivative.Taylor
         self.x =  x
         self.x_value = x_value
-        self.s = s
 
     def governing_equation_0(self):
         """ 1st Order x_Taylor Series of g_12 """
         du_ds2 = self.Derivative.du_ds()[1]
-        s = self.s
-        s_value = self.Taylor.s_value()
+        x = self.x
+        x_value = self.x_value
         
         coeff_du_ds2 = np.ndarray((6), 'object')
         coeff_du_ds2[0] = du_ds2
@@ -388,7 +390,7 @@ class GoverningEquations(Metric):
         
         for i in range(len(coeff_du_ds2)):
             coeff_du_ds2[i] = lambdify(x, coeff_du_ds2[i], 'numpy')
-            coeff_du_ds2[i] = coeff_du_ds2[i](s_value[0], s_value[1])
+            coeff_du_ds2[i] = coeff_du_ds2[i](x_value[0], x_value[1])
             
         return coeff_du_ds2
         
@@ -416,6 +418,9 @@ class GoverningEquations(Metric):
         """ 1st Order x_Taylor Series of Laplacian of u """
 #        """ 2*g11*g22*u,11 + (g11*g22,1 - g11,1*g22)*u,1 """
         """ 2*g11*g22*u,11 + (g22*g11,1 - g11*g22,1)*u,1 """
+        x = self.x
+        x_value = self.x_value
+        
         du_ds1 = self.Derivative.du_ds()[0]
         ddu_dds1 = self.Derivative.ddu_dds()[0][0]
         
@@ -423,10 +428,7 @@ class GoverningEquations(Metric):
 #        g22 = self.Metric.supermetric()[1][1]
 #        dg11_ds1 = self.Metric.dg_ds1()[0][0]
 #        dg22_ds1 = self.Metric.dg_ds1()[1][1]
-#        
-        x = self.x
-        x_value = self.x_value
-#        
+#
 #        laplacian_u = 2*g11*g22*ddu_dds1 \
 #                      + (g22*dg11_ds1 - g11*dg22_ds1)*du_ds1
 
@@ -455,7 +457,7 @@ class GoverningEquations(Metric):
 
 
 class Experiment(BoundaryConditions, GoverningEquations):
-    """ Solve G.E. & B.C. """
+    """ Solve BVP on Line Element by Newton's Method """
     
     def __init__(self, x, s, unknown, x_value, unknown_init):
         self.BC = BoundaryConditions(x, s, unknown, x_value, unknown_init)
@@ -474,11 +476,11 @@ class Experiment(BoundaryConditions, GoverningEquations):
         f[0] = bc[0]
         f[1] = bc[1]
         f[2] = ge0[0]
-        f[3] = ge0[1]
-        f[4] = ge0[2]
-        f[5] = ge1[1]
-        f[6] = ge1[2]
-        f[7] = ge1[3]
+        f[3] = ge1[1]
+        f[4] = ge1[2]
+        f[5] = ge1[3]
+        f[6] = ge1[4]
+        f[7] = ge1[5]
         f[8] = ge2[0]
         
         return f
@@ -625,6 +627,21 @@ if __name__ == '__main__':
             unknown_theory = Unknown_call.unknown_theory()
             unknown_init = Unknown_call.unknown_init()
         
+            ##################################################################################
+            BoundaryConditions_call = BoundaryConditions(x, s, unknown, x_target, unknown_init)
+            ##################################################################################
+            boundary_condtions = BoundaryConditions_call.boundary_conditions()
+            
+            ####################################################################
+            Derivative_call = Derivative(x, s, unknown, x_target, unknown_init)
+            ####################################################################
+            du_ds2 = Derivative_call.du_ds()[1]
+            
+            ############################################################
+            Metric_call = Metric(x, s, unknown, x_target, unknown_init)
+            ############################################################
+            g12 = Metric_call.supermetric()[0][1]
+            
             ####################################################################
             Experiment_call = Experiment(x, s, unknown, x_target, unknown_init)
             ####################################################################
@@ -647,6 +664,19 @@ if __name__ == '__main__':
             for k in range(1):
                 error_init_array[i][j][k] = error_init
                 error_experiment_array[i][j][k] = error_experiment
+
+    print('Boundary Condition = ')
+    for i in range(2):    
+        display(boundary_condtions[i])
+    print('')
+
+    print('du_ds2 = ')
+    display(du_ds2)
+    print('')
+    
+    print('g12 = ')
+    display(g12)
+    print('')
 
     print('unknown_theory = ')
     print(unknown_theory_array)
