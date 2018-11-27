@@ -84,7 +84,7 @@ class Unknown(laplace_theory.TheoreticalValue):
     def unknown_init(self):
         unknown_theory = self.unknown_theory()
     
-        e = 10000.0
+        e = 0.0
         unknown_init = np.ndarray((len(unknown),))
         for i in range(len(unknown)):
             unknown_init[i] = (1 + random.uniform(-e, e)/100)*unknown_theory[i]
@@ -676,7 +676,6 @@ if __name__ == '__main__':
                 unknown_theory_array[i][j][k] = unknown_theory[k]
                 unknown_init_array[i][j][k] = unknown_init[k]
                 unknown_experiment_array[i][j][k] = unknown_experiment[k]
-                abs_eigvals_A_init[k] = round(abs_eigvals_A_init[k], 8)
                 abs_eigvals_A_init_array[i][j][k] = abs_eigvals_A_init[k]
                 
             for k in range(1):

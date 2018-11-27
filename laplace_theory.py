@@ -58,8 +58,8 @@ class ProblemSettings():
         s[0] = 10*(x[0] + 1)/((x[0] + 1)**2 + x[1]**2)
         s[1] = -10*x[1]/((x[0] + 1)**2 + x[1]**2)
         """ f(z) = exp((π/4)z) """
-        s[0] = exp(pi/4*x[0])*sin(pi/4*x[1])
-        s[1] = exp(pi/4*x[0])*cos(pi/4*x[1])
+#        s[0] = exp(pi/4*x[0])*sin(pi/4*x[1])
+#        s[1] = exp(pi/4*x[0])*cos(pi/4*x[1])
         return s
 
     def u(self, s):
