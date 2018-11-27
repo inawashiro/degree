@@ -19,6 +19,9 @@ import sympy as sym
 from sympy import Symbol, diff, lambdify, nsolve
 sym.init_printing()
 
+# For Displaying Symbolic Notation
+from IPython.display import display
+
 # For Random Variables
 import random
 
@@ -36,7 +39,7 @@ class Known(laplace_theory.TheoreticalValue):
         
     def known(self):
         a_theory = self.Theory.a_theory()
-        r_theory = self.Theory.r_theory()
+        b_theory = self.Theory.b_theory()
         unknown = self.unknown
         
         known = np.ndarray((18 - len(unknown),))
@@ -46,12 +49,9 @@ class Known(laplace_theory.TheoreticalValue):
         known[3] = a_theory[1][0]
         known[4] = a_theory[1][1]
         known[5] = a_theory[1][2]
-        known[6] = r_theory[0]
-        known[7] = r_theory[1]
-        known[8] = r_theory[2]
-        known[9] = r_theory[3]
-        known[10] = r_theory[4]
-        known[11] = r_theory[5]
+        known[6] = b_theory[0]
+        known[7] = b_theory[1]
+        known[8] = b_theory[2]
         
         return known
 
@@ -66,6 +66,7 @@ class Unknown(laplace_theory.TheoreticalValue):
     def unknown_theory(self):
         unknown = self.unknown
         a_theory = self.Theory.a_theory()
+        b_theory = self.Theory.b_theory()
         
         unknown_theory = np.ndarray((len(unknown),))
         unknown_theory[0] = a_theory[0][3]
@@ -74,6 +75,9 @@ class Unknown(laplace_theory.TheoreticalValue):
         unknown_theory[3] = a_theory[1][3]
         unknown_theory[4] = a_theory[1][4]
         unknown_theory[5] = a_theory[1][5]
+        unknown_theory[6] = b_theory[3]
+        unknown_theory[7] = b_theory[4]
+        unknown_theory[8] = b_theory[5]
         
         return unknown_theory
         
@@ -138,9 +142,9 @@ class Taylor(Known):
         s_taylor_u = known[6] \
                      + known[7]*ds[0] \
                      + known[8]*ds[1] \
-                     + known[9]*ds[0]**2/2 \
-                     + known[10]*ds[0]*ds[1] \
-                     + known[11]*ds[1]**2/2
+                     + unknown[6]*ds[0]**2/2 \
+                     + unknown[7]*ds[0]*ds[1] \
+                     + unknown[8]*ds[1]**2/2
                      
         return s_taylor_u
     
@@ -168,9 +172,9 @@ class BoundaryConditions(Taylor):
         s_value = self.PCS.s(x_value)
         s_boundary = np.ndarray((2, len(s_value)))
         
-        s_boundary[0][0] = s_value[0] - 1.0e-2
+        s_boundary[0][0] = s_value[0] - 1.0e-3
         s_boundary[0][1] = s_value[1] 
-        s_boundary[1][0] = s_value[0] + 1.0e-2
+        s_boundary[1][0] = s_value[0] + 1.0e-3
         s_boundary[1][1] = s_value[1] 
         
         return s_boundary
@@ -290,7 +294,21 @@ class Derivative(Taylor):
         dx_ds[1][1] = ds_dx[0][0]/det
     
         return dx_ds
-
+    
+    def dds_ddx(self):
+        x = self.x
+        unknown = self.unknown
+        x_taylor_s = self.Taylor.x_taylor_s(x, unknown)
+        
+        dds_ddx = np.ndarray((2, 2, 2), 'object')
+        for i in range(2):
+            dds_ddx[i][0][0] = diff(x_taylor_s[i], x[0], 2)
+            dds_ddx[i][0][1] = diff(x_taylor_s[i], x[0], x[1])
+            dds_ddx[i][1][0] = diff(x_taylor_s[i], x[1], x[0])
+            dds_ddx[i][1][1] = diff(x_taylor_s[i], x[1], 2)
+        
+        return dds_ddx
+        
 
 class Metric(Derivative):
     """ x_Taylor Series of Metrics """
@@ -299,41 +317,41 @@ class Metric(Derivative):
         self.Derivative = Derivative(x, s, unknown, x_value, unknown_init)
         self.x = x
     
-    def submetric(self):
-        """ Subscript Metric g_ij """
+    def supermetric(self):
+        """ Superscript Metric g^ij """
         ds_dx = self.Derivative.ds_dx()
         
-        ds_dx1 = np.ndarray((2,), 'object')
-        ds_dx1[0] = ds_dx[0][0]
-        ds_dx1[1] = ds_dx[1][0]
-        ds_dx2 = np.ndarray((2,), 'object')
-        ds_dx2[0] = ds_dx[0][1]
-        ds_dx2[1] = ds_dx[1][1]
+        ds1_dx = np.ndarray((2,), 'object')
+        ds1_dx[0] = ds_dx[0][0]
+        ds1_dx[1] = ds_dx[0][1]
+        ds2_dx = np.ndarray((2,), 'object')
+        ds2_dx[0] = ds_dx[1][0]
+        ds2_dx[1] = ds_dx[1][1]
         
-        submetric = np.ndarray((2, 2,), 'object')
-        submetric[0][0] = dot(ds_dx1, ds_dx1)
-        submetric[0][1] = dot(ds_dx1, ds_dx2)
-        submetric[1][0] = dot(ds_dx2, ds_dx1)
-        submetric[1][1] = dot(ds_dx2, ds_dx2)
+        supermetric = np.ndarray((2, 2,), 'object')
+        supermetric[0][0] = dot(ds1_dx, ds1_dx)
+        supermetric[0][1] = dot(ds1_dx, ds2_dx)
+        supermetric[1][0] = dot(ds2_dx, ds1_dx)
+        supermetric[1][1] = dot(ds2_dx, ds2_dx)
         
-        return submetric
-  
+        return supermetric
+    
     def dg_ds1(self):
-        """ dg_ij/ds1 = dx1/ds1*dg_ij/dx1 + dx2/ds1*dg_ij/dx2 """
+        """ dg^ij/ds1 = dx1/ds1*dg^ij/dx1 + dx2/ds1*dg^ij/dx2 """
         dx1_ds1 = self.Derivative.dx_ds()[0][0]
         dx2_ds1 = self.Derivative.dx_ds()[1][0]
-        submetric = self.submetric()
+        supermetric = self.supermetric()
         x = self.x
         
         dg_dx1 = np.ndarray((2, 2), 'object')
         for i in range(2):
             for j in range(2):
-                dg_dx1[i][j] = diff(submetric[i][j], x[0]) 
+                dg_dx1[i][j] = diff(supermetric[i][j], x[0]) 
                 
         dg_dx2 = np.ndarray((2, 2), 'object')
         for i in range(2):
             for j in range(2):
-                dg_dx2[i][j] = diff(submetric[i][j], x[1])
+                dg_dx2[i][j] = diff(supermetric[i][j], x[1])
                     
         dg_ds1 = np.ndarray((2, 2,), 'object')
         for i in range(2):
@@ -342,59 +360,104 @@ class Metric(Derivative):
                                + dx2_ds1*dg_dx2[i][j]
         
         return dg_ds1
+        
 
-
-class GoverningEquations(Metric):
-    """ Derive Governing Equations """
+class Laplacian(Metric):
+    """ x_Taylor Series of Laplacian """
     
     def __init__(self, x, s, unknown, x_value, unknown_init):
         self.Metric = Metric(x, s, unknown, x_value, unknown_init)
         self.Derivative = self.Metric.Derivative
-        self.x =  x
-        self.x_value = x_value
         
-#    def governing_equation_1(self):
-#        """ 1st Order x_Taylor Series of g_12 """
-#        g12 = self.Metric.submetric()[0][1]
-#        x = self.x
-#        x_value = self.x_value
-#        
-#        coeff_g12 = np.ndarray((6), 'object')
-#        coeff_g12[0] = g12
-#        coeff_g12[1] = diff(g12, x[0])
-#        coeff_g12[2] = diff(g12, x[1])
-#        coeff_g12[3] = diff(g12, x[0], 2)
-#        coeff_g12[4] = diff(g12, x[0], x[1])
-#        coeff_g12[5] = diff(g12, x[1], 2)
-#        
-#        for i in range(len(coeff_g12)):
-#            coeff_g12[i] = lambdify(x, coeff_g12[i], 'numpy')
-#            coeff_g12[i] = coeff_g12[i](x_value[0], x_value[1])
-#            
-#        return coeff_g12
-    
-    def governing_equation_2(self):
+    def laplacian_u(self):
         """ 1st Order x_Taylor Series of Laplacian of u """
-        """ 2*g11*g22*u,11 + (g11*g22,1 - g11,1*g22)*u,1 """
+        """ 2*g11*g22*u,11 + (g22*g11,1 - g11*g22,1)*u,1 """
         du_ds1 = self.Derivative.du_ds()[0]
         ddu_dds1 = self.Derivative.ddu_dds()[0][0]
-        g11 = self.Metric.submetric()[0][0]
-        g22 = self.Metric.submetric()[1][1]
-        dg11_ds1 = self.Metric.dg_ds1()[0][0]
-        dg22_ds1 = self.Metric.dg_ds1()[1][1]
+        
+#        g11 = self.Metric.supermetric()[0][0]
+#        g22 = self.Metric.supermetric()[1][1]
+#        dg11_ds1 = self.Metric.dg_ds1()[0][0]
+#        dg22_ds1 = self.Metric.dg_ds1()[1][1]
+#
+#        laplacian_u = 2*g11*g22*ddu_dds1 \
+#                      + (g22*dg11_ds1 - g11*dg22_ds1)*du_ds1
+
+        ds1_dx1 = self.Derivative.ds_dx()[0][0]
+        ds1_dx2 = self.Derivative.ds_dx()[0][1]
+        dds1_ddx1 = self.Derivative.dds_ddx()[0][0][0]
+        dds1_ddx2 = self.Derivative.dds_ddx()[0][1][1]
+
+        laplacian_u = ((ds1_dx1)**2 + (ds1_dx2)**2)*ddu_dds1 \
+                      + (dds1_ddx1 + dds1_ddx2)*du_ds1
+        
+        return laplacian_u
+
+
+class GoverningEquations(Laplacian):
+    """ Derive Governing Equations """
+    
+    def __init__(self, x, s, unknown, x_value, unknown_init):
+        self.Laplacian = Laplacian(x, s, unknown, x_value, unknown_init)
+        self.Metric = self.Laplacian.Metric
+        self.Derivative = self.Laplacian.Metric.Derivative
+        self.Taylor = self.Laplacian.Metric.Derivative.Taylor
+        self.x =  x
+        self.x_value = x_value
+
+    def governing_equation_0(self):
+        """ 1st Order x_Taylor Series of g_12 """
+        du_ds2 = self.Derivative.du_ds()[1]
         x = self.x
         x_value = self.x_value
         
-        laplacian_u = 2*g11*g22*ddu_dds1 \
-                      + (g11*dg22_ds1 - g22*dg11_ds1)*du_ds1
+        coeff_du_ds2 = np.ndarray((6), 'object')
+        coeff_du_ds2[0] = du_ds2
+        coeff_du_ds2[1] = diff(du_ds2, x[0])
+        coeff_du_ds2[2] = diff(du_ds2, x[1])
+        coeff_du_ds2[3] = diff(du_ds2, x[0], 2)
+        coeff_du_ds2[4] = diff(du_ds2, x[0], x[1])
+        coeff_du_ds2[5] = diff(du_ds2, x[1], 2)
+        
+        for i in range(len(coeff_du_ds2)):
+            coeff_du_ds2[i] = lambdify(x, coeff_du_ds2[i], 'numpy')
+            coeff_du_ds2[i] = coeff_du_ds2[i](x_value[0], x_value[1])
+            
+        return coeff_du_ds2
+        
+    def governing_equation_1(self):
+        """ 1st Order x_Taylor Series of g_12 """
+        g12 = self.Metric.supermetric()[0][1]
+        x = self.x
+        x_value = self.x_value
+        
+        coeff_g12 = np.ndarray((6), 'object')
+        coeff_g12[0] = g12
+        coeff_g12[1] = diff(g12, x[0])
+        coeff_g12[2] = diff(g12, x[1])
+        coeff_g12[3] = diff(g12, x[0], 2)
+        coeff_g12[4] = diff(g12, x[0], x[1])
+        coeff_g12[5] = diff(g12, x[1], 2)
+        
+        for i in range(len(coeff_g12)):
+            coeff_g12[i] = lambdify(x, coeff_g12[i], 'numpy')
+            coeff_g12[i] = coeff_g12[i](x_value[0], x_value[1])
+            
+        return coeff_g12
+    
+    def governing_equation_2(self):
+        """ 1st Order x_Taylor Series of g_12 """
+        laplacian_u = self.Laplacian.laplacian_u()
+        x = self.x
+        x_value = self.x_value
         
         coeff_laplacian_u = np.ndarray((6), 'object')
         coeff_laplacian_u[0] = laplacian_u
         coeff_laplacian_u[1] = diff(laplacian_u, x[0])
         coeff_laplacian_u[2] = diff(laplacian_u, x[1])
         coeff_laplacian_u[3] = diff(laplacian_u, x[0], 2)
-#        coeff_laplacian_u[3] = diff(laplacian_u, x[0], x[1])
-#        coeff_laplacian_u[3] = diff(laplacian_u, x[1], 2)
+        coeff_laplacian_u[4] = diff(laplacian_u, x[0], x[1])
+        coeff_laplacian_u[5] = diff(laplacian_u, x[1], 2)
         
         for i in range(len(coeff_laplacian_u)):
             coeff_laplacian_u[i] = lambdify(x, coeff_laplacian_u[i], 'numpy')
@@ -404,7 +467,7 @@ class GoverningEquations(Metric):
 
 
 class Experiment(BoundaryConditions, GoverningEquations):
-    """ Solve G.E. & B.C. """
+    """ Solve BVP on Line Element by Newton's Method """
     
     def __init__(self, x, s, unknown, x_value, unknown_init):
         self.BC = BoundaryConditions(x, s, unknown, x_value, unknown_init)
@@ -415,16 +478,20 @@ class Experiment(BoundaryConditions, GoverningEquations):
     def f(self):
         unknown = self.unknown
         bc = self.BC.boundary_conditions()
-#        ge1 = self.GE.governing_equation_1()
+        ge0 = self.GE.governing_equation_0()
+        ge1 = self.GE.governing_equation_1()
         ge2 = self.GE.governing_equation_2()
         
         f = np.ndarray((len(unknown),), 'object')
         f[0] = bc[0]
         f[1] = bc[1]
-        f[2] = ge2[0]
-        f[3] = ge2[1]
-        f[4] = ge2[2]
-        f[5] = ge2[3]
+        f[2] = ge0[1]
+        f[3] = ge0[2]
+        f[4] = ge1[1]
+        f[5] = ge1[2]
+        f[6] = ge1[3]
+        f[7] = ge1[4]
+        f[8] = ge2[0]
         
         return f
     
@@ -443,8 +510,9 @@ class Experiment(BoundaryConditions, GoverningEquations):
                                   unknown_temp[3],
                                   unknown_temp[4],
                                   unknown_temp[5],
-#                                  unknown_temp[6],
-#                                  unknown_temp[7]
+                                  unknown_temp[6],
+                                  unknown_temp[7],
+                                  unknown_temp[8],
                                   )
         A = A.astype('double')
         
@@ -466,8 +534,9 @@ class Experiment(BoundaryConditions, GoverningEquations):
                         unknown_temp[3],
                         unknown_temp[4],
                         unknown_temp[5],
-#                        unknown_temp[6],
-#                        unknown_temp[7]
+                        unknown_temp[6],
+                        unknown_temp[7],
+                        unknown_temp[8],
                         )
         b = b.astype('double')
     
@@ -486,8 +555,9 @@ class Experiment(BoundaryConditions, GoverningEquations):
                                 unknown_temp[3],
                                 unknown_temp[4],
                                 unknown_temp[5],
-#                                unknown_temp[6],
-#                                unknown_temp[7]
+                                unknown_temp[6],
+                                unknown_temp[7],
+                                unknown_temp[8],
                                 )
         error = norm(error)
         
@@ -522,13 +592,16 @@ if __name__ == '__main__':
     s[0] = Symbol('s1', real = True)
     s[1] = Symbol('s2', real = True)
     
-    unknown = np.ndarray((6,), 'object')
-    unknown[0] = Symbol('a11', real = True)
-    unknown[1] = Symbol('a12', real = True)
-    unknown[2] = Symbol('a22', real = True)
-    unknown[3] = Symbol('b11', real = True)
-    unknown[4] = Symbol('b12', real = True)
-    unknown[5] = Symbol('b22', real = True)
+    unknown = np.ndarray((9,), 'object')
+    unknown[0] = Symbol('a1_11', real = True)
+    unknown[1] = Symbol('a1_12', real = True)
+    unknown[2] = Symbol('a1_22', real = True)
+    unknown[3] = Symbol('a2_11', real = True)
+    unknown[4] = Symbol('a2_12', real = True)
+    unknown[5] = Symbol('a2_22', real = True)
+    unknown[6] = Symbol('b11', real = True)
+    unknown[7] = Symbol('b12', real = True)
+    unknown[8] = Symbol('b22', real = True)
     
     n = 1
     
@@ -564,6 +637,28 @@ if __name__ == '__main__':
             unknown_theory = Unknown_call.unknown_theory()
             unknown_init = Unknown_call.unknown_init()
         
+        
+#            ##################################################################################
+#            BoundaryConditions_call = BoundaryConditions(x, s, unknown, x_target, unknown_init)
+#            ##################################################################################
+#            boundary_condtions = BoundaryConditions_call.boundary_conditions()
+#            
+#            ####################################################################
+#            Derivative_call = Derivative(x, s, unknown, x_target, unknown_init)
+#            ####################################################################
+#            du_ds2 = Derivative_call.du_ds()[1]
+#            
+#            ############################################################
+#            Metric_call = Metric(x, s, unknown, x_target, unknown_init)
+#            ############################################################
+#            g12 = Metric_call.supermetric()[0][1]
+#            
+#            ##################################################################
+#            Laplacian_call = Laplacian(x, s, unknown, x_target, unknown_init)
+#            ##################################################################
+#            laplacian_u = Laplacian_call.laplacian_u()
+        
+        
             ####################################################################
             Experiment_call = Experiment(x, s, unknown, x_target, unknown_init)
             ####################################################################
@@ -587,6 +682,24 @@ if __name__ == '__main__':
                 error_init_array[i][j][k] = error_init
                 error_experiment_array[i][j][k] = error_experiment
 
+#    print('Boundary Condition = ')
+#    for i in range(2):    
+#        display(boundary_condtions[i])
+#    print('')
+#
+#    print('du_ds2 = ')
+#    display(du_ds2)
+#    print('')
+#    
+#    print('g12 = ')
+#    display(g12)
+#    print('')
+#    
+#    print('laplcian_u = ')
+#    display(laplacian_u)
+#    print('')
+    
+
     print('unknown_theory = ')
     print(unknown_theory_array)
     print('')
@@ -604,6 +717,10 @@ if __name__ == '__main__':
           
     print('error_experiment(%) = ')
     print(error_experiment_array)
+    print('')
+    
+    print('A_init = ')
+    print(A_init)
     print('')
     
     print('eigvals_A_init = ')

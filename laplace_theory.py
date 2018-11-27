@@ -46,18 +46,23 @@ class ProblemSettings():
         
         s = np.ndarray((2,), 'object')
         """ f(z) = z**2 """
-#        s[0] = x[0]**2 - x[1]**2
-#        s[1] = 2*x[0]*x[1]
+        s[0] = x[0]**2 - x[1]**2
+        s[1] = 2*x[0]*x[1]
         """ f(z) = z**3 """
-#        s[0] = x[0]**3 - 3*x[0]*x[1]**2
-#        s[1] = -x[1]**3 + 3*x[0]**2*x[1]
+        s[0] = x[0]**3 - 3*x[0]*x[1]**2
+        s[1] = -x[1]**3 + 3*x[0]**2*x[1]
         """ f(z) = z**4 """
         s[0] = x[0]**4 - 6*x[0]**2*x[1]**2 + x[1]**4
         s[1] = 4*x[0]**3*x[1] - 4*x[0]*x[1]**3
+        """ f(z) = 10/(1 + z) """
+        s[0] = 10*(x[0] + 1)/((x[0] + 1)**2 + x[1]**2)
+        s[1] = -10*x[1]/((x[0] + 1)**2 + x[1]**2)
         """ f(z) = exp(z) """
-#        s[0] = exp(pi/2*x[0])*sin(pi/2*x[1])
-#        s[1] = exp(pi/2*x[0])*cos(pi/2*x[1])
-        
+        s[0] = exp(x[0])*sin(x[1])
+        s[1] = exp(x[0])*cos(x[1])
+        """ f(z) = exp((π/2)z) """
+        s[0] = exp(pi/2*x[0])*sin(pi/2*x[1])
+        s[1] = exp(pi/2*x[0])*cos(pi/2*x[1])
         return s
 
     def u(self, s):
@@ -200,7 +205,7 @@ class TheoreticalValue(ProblemSettings):
             a_theory[i][3] = diff(s[i], x[0], 2)
             a_theory[i][4] = diff(s[i], x[0], x[1])
             a_theory[i][5] = diff(s[i], x[1], 2)
-        
+            
         for i in range(len(s)):
             for j in range(6):
                 a_theory[i][j] = lambdify(x, a_theory[i][j], 'numpy')
@@ -208,26 +213,26 @@ class TheoreticalValue(ProblemSettings):
                 
         return a_theory
 
-    def r_theory(self):
+    def b_theory(self):
         """ s_Taylor Series Coefficients of u """
         s = self.s
         u = self.ProblemSettings.u(s)
         s_theory = self.s_theory()
         
-        r = np.ndarray((6,), 'object')
-        r[0] = u
-        r[1] = diff(u, s[0])
-        r[2] = diff(u, s[1])
-        r[3] = diff(u, s[0], 2)
-        r[4] = diff(u, s[0], s[1])
-        r[5] = diff(u, s[1], 2)
+        b = np.ndarray((6,), 'object')
+        b[0] = u
+        b[1] = diff(u, s[0])
+        b[2] = diff(u, s[1])
+        b[3] = diff(u, s[0], 2)
+        b[4] = diff(u, s[0], s[1])
+        b[5] = diff(u, s[1], 2)
         
-        r_theory = np.ndarray((len(r),), 'object')
-        for i in range(len(r)):
-            r_theory[i] = lambdify(s, r[i], 'numpy')
-            r_theory[i] = r_theory[i](s_theory[0], s_theory[1])
+        b_theory = np.ndarray((len(b),), 'object')
+        for i in range(len(b)):
+            b_theory[i] = lambdify(s, b[i], 'numpy')
+            b_theory[i] = b_theory[i](s_theory[0], s_theory[1])
         
-        return r_theory   
+        return b_theory   
         
     
 
@@ -292,7 +297,7 @@ if __name__ == '__main__':
 #    x_value_array = np.ndarray((n + 1, n + 1, len(x),))
 #    s_theory_array = np.ndarray((n + 1, n + 1, len(s),))
 #    a_theory_array = np.ndarray((n + 1, n + 1, len(s), 6))
-#    r_theory_array = np.ndarray((n + 1, n + 1, 6,))
+#    b_theory_array = np.ndarray((n + 1, n + 1, 6,))
 #    
 #    ###################################################
 #    TheoreticalValue = TheoreticalValue(x, s, x_value)
@@ -305,7 +310,7 @@ if __name__ == '__main__':
 #        
 #            s_theory = TheoreticalValue.s_theory()
 #            a_theory = TheoreticalValue.a_theory()
-#            r_theory = TheoreticalValue.r_theory()
+#            b_theory = TheoreticalValue.b_theory()
 #            
 #            for k in range(len(x)):
 #                x_value_array[i][j][k] = x_value[k]
@@ -317,7 +322,7 @@ if __name__ == '__main__':
 #                    a_theory_array[i][j][k][l] = a_theory[k][l]
 #                
 #            for k in range(6):
-#                r_theory_array[i][j][k] = r_theory[k]
+#                b_theory_array[i][j][k] = b_theory[k]
 #                
 #    
 #                
@@ -333,8 +338,8 @@ if __name__ == '__main__':
 #    print(a_theory_array)
 #    print('')
 #    
-#    print('r_theory = ')
-#    print(r_theory_array)
+#    print('b_theory = ')
+#    print(b_theory_array)
 #    print('')
     
     
