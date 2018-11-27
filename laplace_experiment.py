@@ -362,15 +362,47 @@ class Metric(Derivative):
         
         return dg_ds1
         
-        
 
-class GoverningEquations(Metric):
-    """ Derive Governing Equations """
+
+class Laplacian(Metric):
+    """ x_Taylor Series of Laplacian """
     
     def __init__(self, x, s, unknown, x_value, unknown_init):
         self.Metric = Metric(x, s, unknown, x_value, unknown_init)
         self.Derivative = self.Metric.Derivative
-        self.Taylor = self.Metric.Derivative.Taylor
+        
+    def laplacian_u(self):
+        """ 1st Order x_Taylor Series of Laplacian of u """
+        """ 2*g11*g22*u,11 + (g22*g11,1 - g11*g22,1)*u,1 """
+        du_ds1 = self.Derivative.du_ds()[0]
+        ddu_dds1 = self.Derivative.ddu_dds()[0][0]
+        
+#        g11 = self.Metric.supermetric()[0][0]
+#        g22 = self.Metric.supermetric()[1][1]
+#        dg11_ds1 = self.Metric.dg_ds1()[0][0]
+#        dg22_ds1 = self.Metric.dg_ds1()[1][1]
+#
+#        laplacian_u = 2*g11*g22*ddu_dds1 \
+#                      + (g22*dg11_ds1 - g11*dg22_ds1)*du_ds1
+
+        ds1_dx1 = self.Derivative.ds_dx()[0][0]
+        ds1_dx2 = self.Derivative.ds_dx()[0][1]
+        dds1_ddx1 = self.Derivative.dds_ddx()[0][0][0]
+        dds1_ddx2 = self.Derivative.dds_ddx()[0][1][1]
+
+        laplacian_u = ((ds1_dx1)**2 + (ds1_dx2)**2)*ddu_dds1 \
+                      + (dds1_ddx1 + dds1_ddx2)*du_ds1
+        
+        return laplacian_u
+
+class GoverningEquations(Laplacian):
+    """ Derive Governing Equations """
+    
+    def __init__(self, x, s, unknown, x_value, unknown_init):
+        self.Laplacian = Laplacian(x, s, unknown, x_value, unknown_init)
+        self.Metric = self.Laplacian.Metric
+        self.Derivative = self.Laplacian.Metric.Derivative
+        self.Taylor = self.Laplacian.Metric.Derivative.Taylor
         self.x =  x
         self.x_value = x_value
 
@@ -415,31 +447,10 @@ class GoverningEquations(Metric):
         return coeff_g12
     
     def governing_equation_2(self):
-        """ 1st Order x_Taylor Series of Laplacian of u """
-#        """ 2*g11*g22*u,11 + (g11*g22,1 - g11,1*g22)*u,1 """
-        """ 2*g11*g22*u,11 + (g22*g11,1 - g11*g22,1)*u,1 """
+        """ 1st Order x_Taylor Series of g_12 """
+        laplacian_u = self.Laplacian.laplacian_u()
         x = self.x
         x_value = self.x_value
-        
-        du_ds1 = self.Derivative.du_ds()[0]
-        ddu_dds1 = self.Derivative.ddu_dds()[0][0]
-        
-#        g11 = self.Metric.supermetric()[0][0]
-#        g22 = self.Metric.supermetric()[1][1]
-#        dg11_ds1 = self.Metric.dg_ds1()[0][0]
-#        dg22_ds1 = self.Metric.dg_ds1()[1][1]
-#
-#        laplacian_u = 2*g11*g22*ddu_dds1 \
-#                      + (g22*dg11_ds1 - g11*dg22_ds1)*du_ds1
-
-        ds1_dx1 = self.Derivative.ds_dx()[0][0]
-        ds1_dx2 = self.Derivative.ds_dx()[0][1]
-        dds1_ddx1 = self.Derivative.dds_ddx()[0][0][0]
-        dds1_ddx2 = self.Derivative.dds_ddx()[0][1][1]
-
-        laplacian_u = ((ds1_dx1)**2 + (ds1_dx2)**2)*ddu_dds1 \
-                      + (dds1_ddx1 + dds1_ddx2)*du_ds1
-        
         
         coeff_laplacian_u = np.ndarray((6), 'object')
         coeff_laplacian_u[0] = laplacian_u
@@ -627,6 +638,7 @@ if __name__ == '__main__':
             unknown_theory = Unknown_call.unknown_theory()
             unknown_init = Unknown_call.unknown_init()
         
+        
             ##################################################################################
             BoundaryConditions_call = BoundaryConditions(x, s, unknown, x_target, unknown_init)
             ##################################################################################
@@ -642,6 +654,12 @@ if __name__ == '__main__':
             ############################################################
             g12 = Metric_call.supermetric()[0][1]
             
+            ##################################################################
+            Laplacian_call = Laplacian(x, s, unknown, x_target, unknown_init)
+            ##################################################################
+            laplacian_u = Laplacian_call.laplacian_u()
+        
+        
             ####################################################################
             Experiment_call = Experiment(x, s, unknown, x_target, unknown_init)
             ####################################################################
@@ -677,6 +695,11 @@ if __name__ == '__main__':
     print('g12 = ')
     display(g12)
     print('')
+    
+    print('laplcian_u = ')
+    display(laplacian_u)
+    print('')
+    
 
     print('unknown_theory = ')
     print(unknown_theory_array)
