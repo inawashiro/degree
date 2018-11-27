@@ -310,7 +310,6 @@ class Derivative(Taylor):
         return dds_ddx
         
 
-
 class Metric(Derivative):
     """ x_Taylor Series of Metrics """
     
@@ -363,7 +362,6 @@ class Metric(Derivative):
         return dg_ds1
         
 
-
 class Laplacian(Metric):
     """ x_Taylor Series of Laplacian """
     
@@ -395,6 +393,7 @@ class Laplacian(Metric):
         
         return laplacian_u
 
+
 class GoverningEquations(Laplacian):
     """ Derive Governing Equations """
     
@@ -414,11 +413,11 @@ class GoverningEquations(Laplacian):
         
         coeff_du_ds2 = np.ndarray((6), 'object')
         coeff_du_ds2[0] = du_ds2
-        coeff_du_ds2[1] = diff(du_ds2, s[0])
-        coeff_du_ds2[2] = diff(du_ds2, s[1])
-#        coeff_du_ds2[3] = diff(du_ds2, s[0], 2)
-#        coeff_du_ds2[4] = diff(du_ds2, s[0], s[1])
-#        coeff_du_ds2[5] = diff(du_ds2, s[1], 2)
+        coeff_du_ds2[1] = diff(du_ds2, x[0])
+        coeff_du_ds2[2] = diff(du_ds2, x[1])
+        coeff_du_ds2[3] = diff(du_ds2, x[0], 2)
+        coeff_du_ds2[4] = diff(du_ds2, x[0], x[1])
+        coeff_du_ds2[5] = diff(du_ds2, x[1], 2)
         
         for i in range(len(coeff_du_ds2)):
             coeff_du_ds2[i] = lambdify(x, coeff_du_ds2[i], 'numpy')
@@ -457,8 +456,8 @@ class GoverningEquations(Laplacian):
         coeff_laplacian_u[1] = diff(laplacian_u, x[0])
         coeff_laplacian_u[2] = diff(laplacian_u, x[1])
         coeff_laplacian_u[3] = diff(laplacian_u, x[0], 2)
-#        coeff_laplacian_u[4] = diff(laplacian_u, x[0], x[1])
-#        coeff_laplacian_u[5] = diff(laplacian_u, x[1], 2)
+        coeff_laplacian_u[4] = diff(laplacian_u, x[0], x[1])
+        coeff_laplacian_u[5] = diff(laplacian_u, x[1], 2)
         
         for i in range(len(coeff_laplacian_u)):
             coeff_laplacian_u[i] = lambdify(x, coeff_laplacian_u[i], 'numpy')
@@ -486,12 +485,12 @@ class Experiment(BoundaryConditions, GoverningEquations):
         f = np.ndarray((len(unknown),), 'object')
         f[0] = bc[0]
         f[1] = bc[1]
-        f[2] = ge0[0]
-        f[3] = ge1[1]
-        f[4] = ge1[2]
-        f[5] = ge1[3]
-        f[6] = ge1[4]
-        f[7] = ge1[5]
+        f[2] = ge0[1]
+        f[3] = ge0[2]
+        f[4] = ge1[1]
+        f[5] = ge1[2]
+        f[6] = ge1[3]
+        f[7] = ge1[4]
         f[8] = ge2[0]
         
         return f
@@ -639,25 +638,25 @@ if __name__ == '__main__':
             unknown_init = Unknown_call.unknown_init()
         
         
-            ##################################################################################
-            BoundaryConditions_call = BoundaryConditions(x, s, unknown, x_target, unknown_init)
-            ##################################################################################
-            boundary_condtions = BoundaryConditions_call.boundary_conditions()
-            
-            ####################################################################
-            Derivative_call = Derivative(x, s, unknown, x_target, unknown_init)
-            ####################################################################
-            du_ds2 = Derivative_call.du_ds()[1]
-            
-            ############################################################
-            Metric_call = Metric(x, s, unknown, x_target, unknown_init)
-            ############################################################
-            g12 = Metric_call.supermetric()[0][1]
-            
-            ##################################################################
-            Laplacian_call = Laplacian(x, s, unknown, x_target, unknown_init)
-            ##################################################################
-            laplacian_u = Laplacian_call.laplacian_u()
+#            ##################################################################################
+#            BoundaryConditions_call = BoundaryConditions(x, s, unknown, x_target, unknown_init)
+#            ##################################################################################
+#            boundary_condtions = BoundaryConditions_call.boundary_conditions()
+#            
+#            ####################################################################
+#            Derivative_call = Derivative(x, s, unknown, x_target, unknown_init)
+#            ####################################################################
+#            du_ds2 = Derivative_call.du_ds()[1]
+#            
+#            ############################################################
+#            Metric_call = Metric(x, s, unknown, x_target, unknown_init)
+#            ############################################################
+#            g12 = Metric_call.supermetric()[0][1]
+#            
+#            ##################################################################
+#            Laplacian_call = Laplacian(x, s, unknown, x_target, unknown_init)
+#            ##################################################################
+#            laplacian_u = Laplacian_call.laplacian_u()
         
         
             ####################################################################
@@ -683,22 +682,22 @@ if __name__ == '__main__':
                 error_init_array[i][j][k] = error_init
                 error_experiment_array[i][j][k] = error_experiment
 
-    print('Boundary Condition = ')
-    for i in range(2):    
-        display(boundary_condtions[i])
-    print('')
-
-    print('du_ds2 = ')
-    display(du_ds2)
-    print('')
-    
-    print('g12 = ')
-    display(g12)
-    print('')
-    
-    print('laplcian_u = ')
-    display(laplacian_u)
-    print('')
+#    print('Boundary Condition = ')
+#    for i in range(2):    
+#        display(boundary_condtions[i])
+#    print('')
+#
+#    print('du_ds2 = ')
+#    display(du_ds2)
+#    print('')
+#    
+#    print('g12 = ')
+#    display(g12)
+#    print('')
+#    
+#    print('laplcian_u = ')
+#    display(laplacian_u)
+#    print('')
     
 
     print('unknown_theory = ')
