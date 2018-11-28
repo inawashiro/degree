@@ -6,21 +6,15 @@ Created on Thu Aug  2 14:00:27 2018
 """
 import laplace_theory
 
-# For Visualization
-import matplotlib.pyplot as plt
-
 # For Numerical Computation 
 import numpy as np
-from numpy import dot, absolute
-from numpy.linalg import norm, solve, eigvals
+from numpy import dot
+from numpy.linalg import norm, solve, eigvals, lstsq
 
 # For Symbolic Notation
 import sympy as sym
 from sympy import Symbol, diff, lambdify, nsolve
 sym.init_printing()
-
-# For Displaying Symbolic Notation
-from IPython.display import display
 
 # For Random Variables
 import random
@@ -82,9 +76,10 @@ class Unknown(laplace_theory.TheoreticalValue):
         return unknown_theory
         
     def unknown_init(self):
+        unknown = self.unknown
         unknown_theory = self.unknown_theory()
     
-        e = 0.0
+        e = 10000.0
         unknown_init = np.ndarray((len(unknown),))
         for i in range(len(unknown)):
             unknown_init[i] = (1 + random.uniform(-e, e)/100)*unknown_theory[i]
@@ -494,52 +489,52 @@ class Solve(BoundaryConditions, GoverningEquations):
         
         return f
     
-    def A(self, unknown_temp):
+    def Jacobian_f(self, unknown_temp):
         unknown = self.unknown
         f = self.f()
         
-        A = np.ndarray((len(f), len(unknown),), 'object')
+        Jacobian_f = np.ndarray((len(f), len(unknown),), 'object')
         for i in range(len(f)):
             for j in range(len(unknown)):
-                A[i][j] = diff(f[i], unknown[j])
-                A[i][j] = lambdify(unknown, A[i][j], 'numpy')
-                A[i][j] = A[i][j](unknown_temp[0],
-                                  unknown_temp[1],
-                                  unknown_temp[2],
-                                  unknown_temp[3],
-                                  unknown_temp[4],
-                                  unknown_temp[5],
-                                  unknown_temp[6],
-                                  unknown_temp[7],
-                                  unknown_temp[8],
-                                  )
-        A = A.astype('double')
+                Jacobian_f[i][j] = diff(f[i], unknown[j])
+                Jacobian_f[i][j] = lambdify(unknown, Jacobian_f[i][j], 'numpy')
+                Jacobian_f[i][j] = Jacobian_f[i][j](unknown_temp[0],
+                                                    unknown_temp[1],
+                                                    unknown_temp[2],
+                                                    unknown_temp[3],
+                                                    unknown_temp[4],
+                                                    unknown_temp[5],
+                                                    unknown_temp[6],
+                                                    unknown_temp[7],
+                                                    unknown_temp[8],
+                                                    )
+        Jacobian_f = Jacobian_f.astype('double')
         
-        return A
+        return Jacobian_f
     
-    def b(self, unknown_temp):
+    def residual(self, unknown_temp):
         unknown = self.unknown
         f = self.f()
         
-        b = np.ndarray((len(f),), 'object')
+        residual = np.ndarray((len(f),), 'object')
         for i in range(len(f)):
-            b[i] = -f[i]
+            residual[i] = -f[i]
             for j in range(len(unknown)):
-                b[i] += diff(f[i], unknown[j])*unknown[j]
-            b[i] = lambdify(unknown, b[i], 'numpy')
-            b[i] = b[i](unknown_temp[0],
-                        unknown_temp[1],
-                        unknown_temp[2],
-                        unknown_temp[3],
-                        unknown_temp[4],
-                        unknown_temp[5],
-                        unknown_temp[6],
-                        unknown_temp[7],
-                        unknown_temp[8],
-                        )
-        b = b.astype('double')
+                residual[i] += diff(f[i], unknown[j])*unknown[j]
+            residual[i] = lambdify(unknown, residual[i], 'numpy')
+            residual[i] = residual[i](unknown_temp[0],
+                                      unknown_temp[1],
+                                      unknown_temp[2],
+                                      unknown_temp[3],
+                                      unknown_temp[4],
+                                      unknown_temp[5],
+                                      unknown_temp[6],
+                                      unknown_temp[7],
+                                      unknown_temp[8],
+                                      )
+        residual = residual.astype('double')
     
-        return b    
+        return residual   
     
     def error(self, unknown_temp):
         unknown = self.unknown
@@ -568,9 +563,10 @@ class Solve(BoundaryConditions, GoverningEquations):
         error = self.error(unknown_temp)
         
         while error > 1.0e-8:
-            A = self.A(unknown_temp)
-            b = self.b(unknown_temp)
-            unknown_temp = solve(A, b)        
+            Jacobian_f = self.Jacobian_f(unknown_temp)
+            residual = self.residual(unknown_temp)
+#            unknown_temp = solve(Jacobian_f, residual)
+            unknown_temp = lstsq(Jacobian_f, residual)[0]
             error = self.error(unknown_temp)
         
         solution = unknown_temp
@@ -615,7 +611,7 @@ if __name__ == '__main__':
     error_init_array = np.ndarray((n, n, 1))
     error_experiment_array = np.ndarray((n, n, 1))
     
-    abs_eigvals_A_init_array = np.ndarray((n, n, len(unknown)))
+    abs_eigvals_Jacobian_f_init_array = np.ndarray((n, n, len(unknown)))
     
     
     def relative_error(a, b):
@@ -636,35 +632,13 @@ if __name__ == '__main__':
             unknown_theory = Unknown_call.unknown_theory()
             unknown_init = Unknown_call.unknown_init()
         
-        
-#            ##################################################################################
-#            BoundaryConditions_call = BoundaryConditions(x, s, unknown, x_target, unknown_init)
-#            ##################################################################################
-#            boundary_condtions = BoundaryConditions_call.boundary_conditions()
-#            
-#            ####################################################################
-#            Derivative_call = Derivative(x, s, unknown, x_target, unknown_init)
-#            ####################################################################
-#            du_ds2 = Derivative_call.du_ds()[1]
-#            
-#            ############################################################
-#            Metric_call = Metric(x, s, unknown, x_target, unknown_init)
-#            ############################################################
-#            g12 = Metric_call.supermetric()[0][1]
-#            
-#            ##################################################################
-#            Laplacian_call = Laplacian(x, s, unknown, x_target, unknown_init)
-#            ##################################################################
-#            laplacian_u = Laplacian_call.laplacian_u()
-        
-        
             ####################################################################
             Solve_call = Solve(x, s, unknown, x_target, unknown_init)
             ####################################################################
             unknown_experiment = Solve_call.solution()
-            A_init = Solve_call.A(unknown_init)
-            eigvals_A_init = eigvals(A_init)
-            abs_eigvals_A_init = abs(eigvals_A_init)
+            Jacobian_f_init = Solve_call.Jacobian_f(unknown_init)
+            eigvals_Jacobian_f_init = eigvals(Jacobian_f_init)
+            abs_eigvals_Jacobian_f_init = abs(eigvals_Jacobian_f_init)
             
             error_init = relative_error(unknown_theory, unknown_init)
             error_experiment = relative_error(unknown_theory, unknown_experiment)
@@ -676,29 +650,11 @@ if __name__ == '__main__':
                 unknown_theory_array[i][j][k] = unknown_theory[k]
                 unknown_init_array[i][j][k] = unknown_init[k]
                 unknown_experiment_array[i][j][k] = unknown_experiment[k]
-                abs_eigvals_A_init_array[i][j][k] = abs_eigvals_A_init[k]
+                abs_eigvals_Jacobian_f_init_array[i][j][k] = abs_eigvals_Jacobian_f_init[k]
                 
             for k in range(1):
                 error_init_array[i][j][k] = error_init
                 error_experiment_array[i][j][k] = error_experiment
-
-#    print('Boundary Condition = ')
-#    for i in range(2):    
-#        display(boundary_condtions[i])
-#    print('')
-#
-#    print('du_ds2 = ')
-#    display(du_ds2)
-#    print('')
-#    
-#    print('g12 = ')
-#    display(g12)
-#    print('')
-#    
-#    print('laplcian_u = ')
-#    display(laplacian_u)
-#    print('')
-    
 
     print('unknown_theory = ')
     print(unknown_theory_array)
@@ -719,12 +675,12 @@ if __name__ == '__main__':
     print(error_experiment_array)
     print('')
     
-#    print('A_init = ')
-#    print(A_init)
+#    print('Jacobian_f_init = ')
+#    print(Jacobian_f_init)
 #    print('')
     
-    print('abs_eigvals_A_init = ')
-    print(abs_eigvals_A_init_array)
+    print('abs_eigvals_Jacobian_f_init = ')
+    print(abs_eigvals_Jacobian_f_init_array)
     print('')
             
             
