@@ -79,7 +79,7 @@ class Unknown(laplace_theory.TheoreticalValue):
         unknown = self.unknown
         unknown_theory = self.unknown_theory()
     
-        e = 10000.0
+        e = 1.0
         unknown_init = np.ndarray((len(unknown),))
         for i in range(len(unknown)):
             unknown_init[i] = (1 + random.uniform(-e, e)/100)*unknown_theory[i]
@@ -365,25 +365,25 @@ class Laplacian(Metric):
         self.Derivative = self.Metric.Derivative
         
     def laplacian_u(self):
-        """ 2*g11*g22*u,11 + (g22*g11,1 - g11*g22,1)*u,1 """
+        """ g11*g22*u,11 + 1/2*(g22*g11,1 - g11*g22,1)*u,1 """
         du_ds1 = self.Derivative.du_ds()[0]
         ddu_dds1 = self.Derivative.ddu_dds()[0][0]
         
-#        g11 = self.Metric.supermetric()[0][0]
-#        g22 = self.Metric.supermetric()[1][1]
-#        dg11_ds1 = self.Metric.dg_ds1()[0][0]
-#        dg22_ds1 = self.Metric.dg_ds1()[1][1]
+        g11 = self.Metric.supermetric()[0][0]
+        g22 = self.Metric.supermetric()[1][1]
+        dg11_ds1 = self.Metric.dg_ds1()[0][0]
+        dg22_ds1 = self.Metric.dg_ds1()[1][1]
+
+        laplacian_u = g11*g22*ddu_dds1 \
+                      + 1/2*(g22*dg11_ds1 - g11*dg22_ds1)*du_ds1
+
+#        ds1_dx1 = self.Derivative.ds_dx()[0][0]
+#        ds1_dx2 = self.Derivative.ds_dx()[0][1]
+#        dds1_ddx1 = self.Derivative.dds_ddx()[0][0][0]
+#        dds1_ddx2 = self.Derivative.dds_ddx()[0][1][1]
 #
-#        laplacian_u = 2*g11*g22*ddu_dds1 \
-#                      + (g22*dg11_ds1 - g11*dg22_ds1)*du_ds1
-
-        ds1_dx1 = self.Derivative.ds_dx()[0][0]
-        ds1_dx2 = self.Derivative.ds_dx()[0][1]
-        dds1_ddx1 = self.Derivative.dds_ddx()[0][0][0]
-        dds1_ddx2 = self.Derivative.dds_ddx()[0][1][1]
-
-        laplacian_u = ((ds1_dx1)**2 + (ds1_dx2)**2)*ddu_dds1 \
-                      + (dds1_ddx1 + dds1_ddx2)*du_ds1
+#        laplacian_u = ((ds1_dx1)**2 + (ds1_dx2)**2)*ddu_dds1 \
+#                      + (dds1_ddx1 + dds1_ddx2)*du_ds1
         
         return laplacian_u
 
