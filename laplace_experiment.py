@@ -79,7 +79,7 @@ class Unknown(laplace_theory.TheoreticalValue):
         unknown = self.unknown
         unknown_theory = self.unknown_theory()
     
-        e = 1.0
+        e = 0.0
         unknown_init = np.ndarray((len(unknown),))
         for i in range(len(unknown)):
             unknown_init[i] = (1 + random.uniform(-e, e)/100)*unknown_theory[i]
@@ -376,6 +376,7 @@ class Laplacian(Metric):
 
         laplacian_u = g11*g22*ddu_dds1 \
                       + 1/2*(g22*dg11_ds1 - g11*dg22_ds1)*du_ds1
+#        laplacian_u = g11*ddu_dds1 + 1/2*dg11_ds1*du_ds1
 
 #        ds1_dx1 = self.Derivative.ds_dx()[0][0]
 #        ds1_dx2 = self.Derivative.ds_dx()[0][1]
@@ -431,7 +432,7 @@ class GoverningEquations(Laplacian):
         coeff_g12[2] = diff(g12, x[1])
         coeff_g12[3] = diff(g12, x[0], 2)
         coeff_g12[4] = diff(g12, x[0], x[1])
-#        coeff_g12[5] = diff(g12, x[1], 2)
+        coeff_g12[5] = diff(g12, x[1], 2)
         
         for i in range(len(coeff_g12)):
             coeff_g12[i] = lambdify(x, coeff_g12[i], 'numpy')
@@ -679,9 +680,9 @@ if __name__ == '__main__':
 #    print(Jacobian_f_init)
 #    print('')
     
-    print('abs_eigvals_Jacobian_f_init = ')
-    print(abs_eigvals_Jacobian_f_init_array)
-    print('')
+#    print('abs_eigvals_Jacobian_f_init = ')
+#    print(abs_eigvals_Jacobian_f_init_array)
+#    print('')
             
             
     t1 = time.time()
