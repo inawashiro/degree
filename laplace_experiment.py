@@ -376,7 +376,6 @@ class Laplacian(Metric):
 
         laplacian_u = g11*g22*ddu_dds1 \
                       + 1/2*(g22*dg11_ds1 - g11*dg22_ds1)*du_ds1
-#        laplacian_u = g11*ddu_dds1 + 1/2*dg11_ds1*du_ds1
 
 #        ds1_dx1 = self.Derivative.ds_dx()[0][0]
 #        ds1_dx2 = self.Derivative.ds_dx()[0][1]
