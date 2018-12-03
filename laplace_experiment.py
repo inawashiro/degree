@@ -16,9 +16,6 @@ import sympy as sym
 from sympy import Symbol, diff, lambdify, nsolve
 sym.init_printing()
 
-# For Displaying Symbolic Notation
-from IPython.display import display
-
 # For Random Variables
 import random
 
@@ -606,7 +603,7 @@ if __name__ == '__main__':
     ################################
     f_id = 'z**2'
     n = 3
-    error_limit = 0.0
+    error_limit = 1000.0
     s_distance = 1.0e-0
     ##############################
     
@@ -663,18 +660,20 @@ if __name__ == '__main__':
                 
             error_array[i][j][0] = error_init
             error_array[i][j][1] = error_terminal
-         
-    print('f_id = ')
-    print(f_id)
+     
     print('')
-            
-    print('x_target = ')
-    print(x_target_array)
+    print('f(z) = ', f_id)
+    
+    print('n = ', n)
+    
+    print('error_limit = ', error_limit)    
+    
+    print('s_distance = ', s_distance)
     print('')
     
-    print('s_distance = ')
-    print(s_distance)
-    print('')
+    print('x_target = ')
+    print(x_target_array)
+    print('')    
     
     print('error_init(%) & error_terminal(%) = ')
     print(error_array)
@@ -697,13 +696,4 @@ if __name__ == '__main__':
     
     
     
-    
-
-
-
-
-
-
-
-
 
