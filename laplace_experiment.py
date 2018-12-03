@@ -16,6 +16,9 @@ import sympy as sym
 from sympy import Symbol, diff, lambdify, nsolve
 sym.init_printing()
 
+# For Displaying Symbolic Notation
+from IPython.display import display
+
 # For Random Variables
 import random
 
@@ -27,8 +30,8 @@ import time
 class Known(laplace_theory.TheoreticalValue):
     """ Known Values """
     
-    def __init__(self, x, s, unknown, x_value):
-        self.Theory = laplace_theory.TheoreticalValue(x, s, x_value)
+    def __init__(self, f_id, x, s, unknown, x_value):
+        self.Theory = laplace_theory.TheoreticalValue(f_id, x, s, x_value)
         self.unknown = unknown
         
     def known(self):
@@ -53,8 +56,8 @@ class Known(laplace_theory.TheoreticalValue):
 class Unknown(laplace_theory.TheoreticalValue):
     """ Values Related to Unknowns """
 
-    def __init__(self, x, s, unknown, x_value):
-        self.Theory = laplace_theory.TheoreticalValue(x, s, x_value)
+    def __init__(self, f_id, x, s, unknown, x_value):
+        self.Theory = laplace_theory.TheoreticalValue(f_id, x, s, x_value)
         self.unknown = unknown
         
     def unknown_theory(self):
@@ -75,14 +78,14 @@ class Unknown(laplace_theory.TheoreticalValue):
         
         return unknown_theory
         
-    def unknown_init(self):
+    def unknown_init(self, error_limit):
         unknown = self.unknown
         unknown_theory = self.unknown_theory()
     
-        e = 0.0
         unknown_init = np.ndarray((len(unknown),))
         for i in range(len(unknown)):
-            unknown_init[i] = (1 + random.uniform(-e, e)/100)*unknown_theory[i]
+            e = random.uniform(-error_limit, error_limit)
+            unknown_init[i] = (1 + e/100)*unknown_theory[i]
         
         return unknown_init
 
@@ -90,8 +93,8 @@ class Unknown(laplace_theory.TheoreticalValue):
 class Taylor(Known):
     """ Taylor Series Expressions """
     
-    def __init__(self, x, s, unknown, x_value, unknown_init):
-        self.Known = Known(x, s, unknown, x_value)
+    def __init__(self, f_id, x, s, unknown, x_value, unknown_init):
+        self.Known = Known(f_id, x, s, unknown, x_value)
         self.x_value = x_value
         self.unknown_init = unknown_init
         
@@ -154,22 +157,24 @@ class Taylor(Known):
 class BoundaryConditions(Taylor):
     """ Boundary Conditions along Streamline """
     
-    def __init__(self, x, s, unknown, x_value, unknown_init):
-        self.Taylor = Taylor(x, s, unknown, x_value, unknown_init)
+    def __init__(self, f_id, x, s, unknown, x_value, unknown_init, s_distance):
+        self.Taylor = Taylor(f_id, x, s, unknown, x_value, unknown_init)
         self.PCS = self.Taylor.Known.Theory.ProblemSettings
         self.x = x
         self.unknown = unknown
         self.x_value = x_value
         self.unknown_init = unknown_init
+        self.s_distance = s_distance
         
     def s_boundary(self):
         x_value = self.x_value
         s_value = self.PCS.s(x_value)
-        s_boundary = np.ndarray((2, len(s_value)))
+        s_distance = self.s_distance
         
-        s_boundary[0][0] = s_value[0] - 1.0e-3
+        s_boundary = np.ndarray((2, len(s_value)))
+        s_boundary[0][0] = s_value[0] - s_distance
         s_boundary[0][1] = s_value[1] 
-        s_boundary[1][0] = s_value[0] + 1.0e-3
+        s_boundary[1][0] = s_value[0] + s_distance
         s_boundary[1][1] = s_value[1] 
         
         return s_boundary
@@ -221,8 +226,8 @@ class BoundaryConditions(Taylor):
 class Derivative(Taylor):
     """ x_Taylor Series of Derivatives """
     
-    def __init__(self, x, s, unknown, x_value, unknown_init):
-        self.Taylor = Taylor(x, s, unknown, x_value, unknown_init)
+    def __init__(self, f_id, x, s, unknown, x_value, unknown_init):
+        self.Taylor = Taylor(f_id, x, s, unknown, x_value, unknown_init)
         self.x = x
         self.s = s
         self.unknown = unknown
@@ -308,8 +313,8 @@ class Derivative(Taylor):
 class Metric(Derivative):
     """ x_Taylor Series of Metrics """
     
-    def __init__(self, x, s, unknown, x_value, unknown_init):
-        self.Derivative = Derivative(x, s, unknown, x_value, unknown_init)
+    def __init__(self, f_id, x, s, unknown, x_value, unknown_init):
+        self.Derivative = Derivative(f_id, x, s, unknown, x_value, unknown_init)
         self.x = x
     
     def supermetric(self):
@@ -360,8 +365,8 @@ class Metric(Derivative):
 class Laplacian(Metric):
     """ x_Taylor Series of Laplacian """
     
-    def __init__(self, x, s, unknown, x_value, unknown_init):
-        self.Metric = Metric(x, s, unknown, x_value, unknown_init)
+    def __init__(self, f_id, x, s, unknown, x_value, unknown_init):
+        self.Metric = Metric(f_id, x, s, unknown, x_value, unknown_init)
         self.Derivative = self.Metric.Derivative
         
     def laplacian_u(self):
@@ -369,21 +374,21 @@ class Laplacian(Metric):
         du_ds1 = self.Derivative.du_ds()[0]
         ddu_dds1 = self.Derivative.ddu_dds()[0][0]
         
-        g11 = self.Metric.supermetric()[0][0]
-        g22 = self.Metric.supermetric()[1][1]
-        dg11_ds1 = self.Metric.dg_ds1()[0][0]
-        dg22_ds1 = self.Metric.dg_ds1()[1][1]
-
-        laplacian_u = g11*g22*ddu_dds1 \
-                      + 1/2*(g22*dg11_ds1 - g11*dg22_ds1)*du_ds1
-
-#        ds1_dx1 = self.Derivative.ds_dx()[0][0]
-#        ds1_dx2 = self.Derivative.ds_dx()[0][1]
-#        dds1_ddx1 = self.Derivative.dds_ddx()[0][0][0]
-#        dds1_ddx2 = self.Derivative.dds_ddx()[0][1][1]
+#        g11 = self.Metric.supermetric()[0][0]
+#        g22 = self.Metric.supermetric()[1][1]
+#        dg11_ds1 = self.Metric.dg_ds1()[0][0]
+#        dg22_ds1 = self.Metric.dg_ds1()[1][1]
 #
-#        laplacian_u = ((ds1_dx1)**2 + (ds1_dx2)**2)*ddu_dds1 \
-#                      + (dds1_ddx1 + dds1_ddx2)*du_ds1
+#        laplacian_u = 2*g11*g22*ddu_dds1 \
+#                      + (g22*dg11_ds1 - g11*dg22_ds1)*du_ds1
+
+        ds1_dx1 = self.Derivative.ds_dx()[0][0]
+        ds1_dx2 = self.Derivative.ds_dx()[0][1]
+        dds1_ddx1 = self.Derivative.dds_ddx()[0][0][0]
+        dds1_ddx2 = self.Derivative.dds_ddx()[0][1][1]
+
+        laplacian_u = ((ds1_dx1)**2 + (ds1_dx2)**2)*ddu_dds1 \
+                      + (dds1_ddx1 + dds1_ddx2)*du_ds1
         
         return laplacian_u
 
@@ -391,8 +396,8 @@ class Laplacian(Metric):
 class GoverningEquations(Laplacian):
     """ Derive Governing Equations """
     
-    def __init__(self, x, s, unknown, x_value, unknown_init):
-        self.Laplacian = Laplacian(x, s, unknown, x_value, unknown_init)
+    def __init__(self, f_id, x, s, unknown, x_value, unknown_init):
+        self.Laplacian = Laplacian(f_id, x, s, unknown, x_value, unknown_init)
         self.Metric = self.Laplacian.Metric
         self.Derivative = self.Laplacian.Metric.Derivative
         self.Taylor = self.Laplacian.Metric.Derivative.Taylor
@@ -463,9 +468,9 @@ class GoverningEquations(Laplacian):
 class Solve(BoundaryConditions, GoverningEquations):
     """ Solve BVP on Line Element by Newton's Method """
     
-    def __init__(self, x, s, unknown, x_value, unknown_init):
-        self.BC = BoundaryConditions(x, s, unknown, x_value, unknown_init)
-        self.GE = GoverningEquations(x, s, unknown, x_value, unknown_init)
+    def __init__(self, f_id, x, s, unknown, x_value, unknown_init, s_distance):
+        self.BC = BoundaryConditions(f_id, x, s, unknown, x_value, unknown_init, s_distance)
+        self.GE = GoverningEquations(f_id, x, s, unknown, x_value, unknown_init)
         self.unknown = unknown
         self.unknown_init = unknown_init
     
@@ -598,7 +603,12 @@ if __name__ == '__main__':
     unknown[7] = Symbol('b12', real = True)
     unknown[8] = Symbol('b22', real = True)
     
-    n = 1
+    ################################
+    f_id = 'z**2'
+    n = 3
+    error_limit = 0.0
+    s_distance = 1.0e-0
+    ##############################
     
     x_target = np.ndarray((len(x),))
     
@@ -606,10 +616,9 @@ if __name__ == '__main__':
     
     unknown_theory_array = np.ndarray((n, n, len(unknown)))
     unknown_init_array = np.ndarray((n, n, len(unknown)))
-    unknown_experiment_array = np.ndarray((n, n, len(unknown)))
+    unknown_terminal_array = np.ndarray((n, n, len(unknown)))
     
-    error_init_array = np.ndarray((n, n, 1))
-    error_experiment_array = np.ndarray((n, n, 1))
+    error_array = np.ndarray((n, n, 2))
     
     abs_eigvals_Jacobian_f_init_array = np.ndarray((n, n, len(unknown)))
     
@@ -623,25 +632,25 @@ if __name__ == '__main__':
     
     for i in range(n):
         for j in range(n):
-            x_target[0] = 1.0 + i/n
-            x_target[1] = 1.0 + j/n
+            x_target[0] =  2*(i + 1)/(n + 1)
+            x_target[1] =  2*(j + 1)/(n + 1)
             
-            ################################################
-            Unknown_call = Unknown(x, s, unknown, x_target)
-            ################################################
+            #####################################################
+            Unknown_call = Unknown(f_id, x, s, unknown, x_target)
+            #####################################################
             unknown_theory = Unknown_call.unknown_theory()
-            unknown_init = Unknown_call.unknown_init()
+            unknown_init = Unknown_call.unknown_init(error_limit)
         
-            ####################################################################
-            Solve_call = Solve(x, s, unknown, x_target, unknown_init)
-            ####################################################################
-            unknown_experiment = Solve_call.solution()
+            ###########################################################################
+            Solve_call = Solve(f_id, x, s, unknown, x_target, unknown_init, s_distance)
+            ###########################################################################
+            unknown_terminal = Solve_call.solution()
             Jacobian_f_init = Solve_call.Jacobian_f(unknown_init)
             eigvals_Jacobian_f_init = eigvals(Jacobian_f_init)
             abs_eigvals_Jacobian_f_init = abs(eigvals_Jacobian_f_init)
             
             error_init = relative_error(unknown_theory, unknown_init)
-            error_experiment = relative_error(unknown_theory, unknown_experiment)
+            error_terminal = relative_error(unknown_theory, unknown_terminal)
             
             for k in range(len(x)):
                 x_target_array[i][j][k] = x_target[k]
@@ -649,39 +658,27 @@ if __name__ == '__main__':
             for k in range(len(unknown)):
                 unknown_theory_array[i][j][k] = unknown_theory[k]
                 unknown_init_array[i][j][k] = unknown_init[k]
-                unknown_experiment_array[i][j][k] = unknown_experiment[k]
+                unknown_terminal_array[i][j][k] = unknown_terminal[k]
                 abs_eigvals_Jacobian_f_init_array[i][j][k] = abs_eigvals_Jacobian_f_init[k]
                 
-            for k in range(1):
-                error_init_array[i][j][k] = error_init
-                error_experiment_array[i][j][k] = error_experiment
-
-    print('unknown_theory = ')
-    print(unknown_theory_array)
+            error_array[i][j][0] = error_init
+            error_array[i][j][1] = error_terminal
+         
+    print('f_id = ')
+    print(f_id)
     print('')
             
-    print('unknown_init = ')
-    print(unknown_init_array)
-    print('')
-          
-    print('error_init(%) = ')
-    print(error_init_array)
-    print()    
-    print('unknown_experiment = ')
-    print(unknown_experiment_array)
-    print('')
-          
-    print('error_experiment(%) = ')
-    print(error_experiment_array)
+    print('x_target = ')
+    print(x_target_array)
     print('')
     
-#    print('Jacobian_f_init = ')
-#    print(Jacobian_f_init)
-#    print('')
+    print('s_distance = ')
+    print(s_distance)
+    print('')
     
-#    print('abs_eigvals_Jacobian_f_init = ')
-#    print(abs_eigvals_Jacobian_f_init_array)
-#    print('')
+    print('error_init(%) & error_terminal(%) = ')
+    print(error_array)
+    print('')
             
             
     t1 = time.time()
@@ -696,6 +693,10 @@ if __name__ == '__main__':
 
 
         
+    
+    
+    
+    
     
 
 

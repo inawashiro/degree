@@ -21,6 +21,9 @@ import sympy as sym
 from sympy import Symbol, diff, lambdify, simplify, exp, sin, cos
 sym.init_printing()
 
+# For Displaying Symbolic Notation
+from IPython.display import display
+
 # For Constants
 import math
 from math import pi
@@ -31,35 +34,38 @@ import os
 # For Measuring Computation Time
 import time
 
-# For Displaying Symbolic Notation
-from IPython.display import display
-
 
 
 
 class ProblemSettings():
     """ Define Principal Coordinate System """
     
+    def __init__(self, f_id):
+        self.f_id = f_id
+        
     def s(self, x):
         """ Principal Coordinate System """
         """ s1 = Re{f(z)} & s2 = Im{f(z)} """
+        f_id = self.f_id
         
         s = np.ndarray((2,), 'object')
-        """ f(z) = z**2 """
-        s[0] = x[0]**2 - x[1]**2
-        s[1] = 2*x[0]*x[1]
-        """ f(z) = z**3 """
-        s[0] = x[0]**3 - 3*x[0]*x[1]**2
-        s[1] = -x[1]**3 + 3*x[0]**2*x[1]
-        """ f(z) = z**4 """
-        s[0] = x[0]**4 - 6*x[0]**2*x[1]**2 + x[1]**4
-        s[1] = 4*x[0]**3*x[1] - 4*x[0]*x[1]**3
-        """ f(z) = 10/(1 + z) """
-        s[0] = 10*(x[0] + 1)/((x[0] + 1)**2 + x[1]**2)
-        s[1] = -10*x[1]/((x[0] + 1)**2 + x[1]**2)
-        """ f(z) = exp((π/2)z) """
-        s[0] = exp(pi/2*x[0])*sin(pi/2*x[1])
-        s[1] = exp(pi/2*x[0])*cos(pi/2*x[1])
+        
+        if f_id == 'z**2':
+            s[0] = x[0]**2 - x[1]**2
+            s[1] = 2*x[0]*x[1]        
+        if f_id == 'z**3':
+            s[0] = x[0]**3 - 3*x[0]*x[1]**2
+            s[1] = -x[1]**3 + 3*x[0]**2*x[1]        
+        if f_id == 'z**4':
+            s[0] = x[0]**4 - 6*x[0]**2*x[1]**2 + x[1]**4
+            s[1] = 4*x[0]**3*x[1] - 4*x[0]*x[1]**3
+        if f_id == 'exp((π/2)z)':
+            s[0] = exp(pi/2*x[0])*sin(pi/2*x[1])
+            s[1] = exp(pi/2*x[0])*cos(pi/2*x[1])
+#        if f_id == '10/(1 + z)':
+#            s[0] = 10*(x[0] + 1)/((x[0] + 1)**2 + x[1]**2)
+#            s[1] = -10*x[1]/((x[0] + 1)**2 + x[1]**2)
+    
         return s
 
     def u(self, s):
@@ -72,8 +78,8 @@ class ProblemSettings():
 class Verification(ProblemSettings):
     """ Verify Problem Settings """
     
-    def __init__(self, x, s):
-        self.ProblemSettings = ProblemSettings()
+    def __init__(self, f_id, x, s):
+        self.ProblemSettings = ProblemSettings(f_id)
         self.x = x
         self.s = s
         
@@ -118,8 +124,8 @@ class Verification(ProblemSettings):
 class Plot(ProblemSettings):
     """ Display Plot """
     
-    def __init__(self, x, s, x_value):
-        self.ProblemSettings = ProblemSettings()
+    def __init__(self, f_id, x, s, x_value):
+        self.ProblemSettings = ProblemSettings(f_id)
         self.x = x
         self.s = s
         self.x_value = x_value
@@ -175,8 +181,8 @@ class Plot(ProblemSettings):
 class TheoreticalValue(ProblemSettings):
     """  Theoretical Values of Taylor Series Coefficients """
     
-    def __init__(self, x, s, x_value):
-        self.ProblemSettings = ProblemSettings()
+    def __init__(self, f_id, x, s, x_value):
+        self.ProblemSettings = ProblemSettings(f_id)
         self.x = x
         self.s = s
         self.x_value = x_value
@@ -249,9 +255,11 @@ if __name__ == '__main__':
     s[0] = Symbol('s1', real = True)
     s[1] = Symbol('s2', real = True)
     
-    ##################################
-    Verification = Verification(x, s)
-    ##################################
+    f_id = 'z**2'
+    
+    #######################################
+    Verification = Verification(f_id, x, s)
+    #######################################
     laplacian_u = Verification.laplacian_u()
     du_ds2 = Verification.du_ds2()
     g12 = Verification.g12()
@@ -272,9 +280,9 @@ if __name__ == '__main__':
     x_value = np.meshgrid(np.arange(0, 2, 0.01), 
                           np.arange(0, 2, 0.01))
     
-    ###########################
-    Plot = Plot(x, s, x_value)
-    ###########################
+    ################################
+    Plot = Plot(f_id, x, s, x_value)
+    ################################
     os.chdir('./graph')
     
     print('3D Plot of u')
@@ -286,24 +294,24 @@ if __name__ == '__main__':
     print('')    
     
     
-#    n = 5
+#    n = 3
 #    
 #    x_value = np.ndarray((len(x),))
 #    s_value = np.ndarray((len(s),))
 #    
-#    x_value_array = np.ndarray((n + 1, n + 1, len(x),))
-#    s_theory_array = np.ndarray((n + 1, n + 1, len(s),))
-#    a_theory_array = np.ndarray((n + 1, n + 1, len(s), 6))
-#    b_theory_array = np.ndarray((n + 1, n + 1, 6,))
+#    x_value_array = np.ndarray((n, n, len(x),))
+#    s_theory_array = np.ndarray((n, n, len(s),))
+#    a_theory_array = np.ndarray((n, n, len(s), 6))
+#    b_theory_array = np.ndarray((n, n, 6,))
 #    
-#    ###################################################
-#    TheoreticalValue = TheoreticalValue(x, s, x_value)
-#    ###################################################  
+#    ########################################################
+#    TheoreticalValue = TheoreticalValue(f_id, x, s, x_value)
+#    ########################################################  
 #    
-#    for i in range(n + 1):
-#        for j in range(n + 1):
-#            x_value[0] = 1.0 + i/n
-#            x_value[1] = 1.0 + j/n
+#    for i in range(n):
+#        for j in range(n):
+#            x_value[0] =  2*(i + 1)/(n + 1)
+#            x_value[1] =  2*(j + 1)/(n + 1)
 #        
 #            s_theory = TheoreticalValue.s_theory()
 #            a_theory = TheoreticalValue.a_theory()
@@ -321,22 +329,8 @@ if __name__ == '__main__':
 #            for k in range(6):
 #                b_theory_array[i][j][k] = b_theory[k]
 #                
-#    
-#                
-#    print('x_values = ')
+#    print('x_target = ')
 #    print(x_value_array)
-#    print('')
-#    
-#    print('s_theory = ')
-#    print(s_theory_array)
-#    print('')
-#    
-#    print('a_theory = ')
-#    print(a_theory_array)
-#    print('')
-#    
-#    print('b_theory = ')
-#    print(b_theory_array)
 #    print('')
     
     
