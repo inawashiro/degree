@@ -237,9 +237,6 @@ class TheoreticalValue(ProblemSettings):
         
         return b_theory   
         
-    
-
-        
 
 
 if __name__ == '__main__':
@@ -350,6 +347,4 @@ if __name__ == '__main__':
     
     
     
-    
-    
-                                                                                                                                    
+                                                                                                                                        
