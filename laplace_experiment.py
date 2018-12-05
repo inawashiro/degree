@@ -156,7 +156,7 @@ class BoundaryConditions(Taylor):
     
     def __init__(self, f_id, x, s, unknown, x_value, unknown_init, element_size):
         self.Taylor = Taylor(f_id, x, s, unknown, x_value, unknown_init)
-        self.PCS = self.Taylor.Known.Theory.ProblemSettings
+        self.ProblemSettings = self.Taylor.Known.Theory.ProblemSettings
         self.x = x
         self.unknown = unknown
         self.x_value = x_value
@@ -165,7 +165,7 @@ class BoundaryConditions(Taylor):
         
     def s_boundary(self):
         x_value = self.x_value
-        s_value = self.PCS.s(x_value)
+        s_value = self.ProblemSettings.s(x_value)
         element_size = self.element_size
         
         s_boundary = np.ndarray((2, len(s_value)))
@@ -180,7 +180,7 @@ class BoundaryConditions(Taylor):
         x = self.x
         x_value = self.x_value
         s_boundary = self.s_boundary()
-        s = self.PCS.s(x)
+        s = self.ProblemSettings.s(x)
         
         f = np.ndarray((2, len(x),), 'object')
         for i in range(2):
@@ -202,7 +202,7 @@ class BoundaryConditions(Taylor):
         
         u_boundary = np.ndarray((2),)
         for i in range(2):
-            u_boundary[i] = self.PCS.u(s_boundary[i])
+            u_boundary[i] = self.ProblemSettings.u(s_boundary[i])
         
         return u_boundary
     
@@ -601,13 +601,13 @@ if __name__ == '__main__':
     unknown[8] = Symbol('b22', real = True)
     
     ################################
-#    f_id = 'z**2'
+    f_id = 'z**2'
 #    f_id = 'z**3'
 #    f_id = 'z**4'
-    f_id = 'exp((π/2)z)'
-    n = 1
-    error_limit = 10000.0
-    element_size = 1.0e-3
+#    f_id = 'exp((π/2)z)'
+    n = 3
+    error_limit = 1.0
+    element_size = 1.0e-0
     ##############################
     
     x_target = np.ndarray((len(x),))
@@ -684,6 +684,7 @@ if __name__ == '__main__':
     print('Elapsed Time = ')
     print(round(t1 - t0), '(s)')
     print('')
+
 
 
 
