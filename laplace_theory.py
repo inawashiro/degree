@@ -252,7 +252,12 @@ if __name__ == '__main__':
     s[0] = Symbol('s1', real = True)
     s[1] = Symbol('s2', real = True)
     
-    f_id = 'z**2'
+    ####################
+#    f_id = 'z**2'
+#    f_id = 'z**3'
+#    f_id = 'z**4'
+    f_id = 'exp((π/2)z)'
+    ####################
     
     #######################################
     Verification = Verification(f_id, x, s)
@@ -334,11 +339,6 @@ if __name__ == '__main__':
     t1 = time.time()
     
     print('Elapsed Time = ', round(t1 - t0), '(s)')
-    
-    
-    
-    
-    
     
     
     
