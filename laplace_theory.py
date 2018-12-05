@@ -252,7 +252,7 @@ if __name__ == '__main__':
     s[0] = Symbol('s1', real = True)
     s[1] = Symbol('s2', real = True)
     
-    f_id = 'z**2'
+    f_id = 'z**4'
     
     #######################################
     Verification = Verification(f_id, x, s)

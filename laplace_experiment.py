@@ -154,24 +154,24 @@ class Taylor(Known):
 class BoundaryConditions(Taylor):
     """ Boundary Conditions along Streamline """
     
-    def __init__(self, f_id, x, s, unknown, x_value, unknown_init, s_distance):
+    def __init__(self, f_id, x, s, unknown, x_value, unknown_init, element_size):
         self.Taylor = Taylor(f_id, x, s, unknown, x_value, unknown_init)
         self.PCS = self.Taylor.Known.Theory.ProblemSettings
         self.x = x
         self.unknown = unknown
         self.x_value = x_value
         self.unknown_init = unknown_init
-        self.s_distance = s_distance
+        self.element_size = element_size
         
     def s_boundary(self):
         x_value = self.x_value
         s_value = self.PCS.s(x_value)
-        s_distance = self.s_distance
+        element_size = self.element_size
         
         s_boundary = np.ndarray((2, len(s_value)))
-        s_boundary[0][0] = s_value[0] - s_distance
+        s_boundary[0][0] = s_value[0] - element_size/2
         s_boundary[0][1] = s_value[1] 
-        s_boundary[1][0] = s_value[0] + s_distance
+        s_boundary[1][0] = s_value[0] + element_size/2
         s_boundary[1][1] = s_value[1] 
         
         return s_boundary
@@ -465,8 +465,8 @@ class GoverningEquations(Laplacian):
 class Solve(BoundaryConditions, GoverningEquations):
     """ Solve BVP on Line Element by Newton's Method """
     
-    def __init__(self, f_id, x, s, unknown, x_value, unknown_init, s_distance):
-        self.BC = BoundaryConditions(f_id, x, s, unknown, x_value, unknown_init, s_distance)
+    def __init__(self, f_id, x, s, unknown, x_value, unknown_init, element_size):
+        self.BC = BoundaryConditions(f_id, x, s, unknown, x_value, unknown_init, element_size)
         self.GE = GoverningEquations(f_id, x, s, unknown, x_value, unknown_init)
         self.unknown = unknown
         self.unknown_init = unknown_init
@@ -601,10 +601,13 @@ if __name__ == '__main__':
     unknown[8] = Symbol('b22', real = True)
     
     ################################
-    f_id = 'z**2'
-    n = 3
-    error_limit = 1000.0
-    s_distance = 1.0e-0
+#    f_id = 'z**2'
+#    f_id = 'z**3'
+#    f_id = 'z**4'
+    f_id = 'exp((π/2)z)'
+    n = 1
+    error_limit = 10000.0
+    element_size = 1.0e-3
     ##############################
     
     x_target = np.ndarray((len(x),))
@@ -639,7 +642,7 @@ if __name__ == '__main__':
             unknown_init = Unknown_call.unknown_init(error_limit)
         
             ###########################################################################
-            Solve_call = Solve(f_id, x, s, unknown, x_target, unknown_init, s_distance)
+            Solve_call = Solve(f_id, x, s, unknown, x_target, unknown_init, element_size)
             ###########################################################################
             unknown_terminal = Solve_call.solution()
             Jacobian_f_init = Solve_call.Jacobian_f(unknown_init)
@@ -664,11 +667,7 @@ if __name__ == '__main__':
     print('')
     print('f(z) = ', f_id)
     
-    print('n = ', n)
-    
-    print('error_limit = ', error_limit)    
-    
-    print('s_distance = ', s_distance)
+    print('element_size = ', element_size)
     print('')
     
     print('x_target = ')
