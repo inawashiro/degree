@@ -16,6 +16,9 @@ import sympy as sym
 from sympy import Symbol, diff, lambdify, nsolve
 sym.init_printing()
 
+# For Displaying Symbolic Notation
+from IPython.display import display
+
 # For Random Variables
 import random
 
@@ -38,14 +41,8 @@ class Known(laplace_theory.TheoreticalValue):
         
         known = np.ndarray((18 - len(unknown),))
         known[0] = a_theory[0][0]
-        known[1] = a_theory[0][1]
-        known[2] = a_theory[0][2]
-        known[3] = a_theory[1][0]
-        known[4] = a_theory[1][1]
-        known[5] = a_theory[1][2]
-        known[6] = b_theory[0]
-        known[7] = b_theory[1]
-        known[8] = b_theory[2]
+        known[1] = a_theory[1][0]
+        known[2] = b_theory[0]
         
         return known
 
@@ -63,15 +60,21 @@ class Unknown(laplace_theory.TheoreticalValue):
         b_theory = self.Theory.b_theory()
         
         unknown_theory = np.ndarray((len(unknown),))
-        unknown_theory[0] = a_theory[0][3]
-        unknown_theory[1] = a_theory[0][4]
-        unknown_theory[2] = a_theory[0][5]
-        unknown_theory[3] = a_theory[1][3]
-        unknown_theory[4] = a_theory[1][4]
-        unknown_theory[5] = a_theory[1][5]
-        unknown_theory[6] = b_theory[3]
-        unknown_theory[7] = b_theory[4]
-        unknown_theory[8] = b_theory[5]
+        unknown_theory[0] = a_theory[0][1]
+        unknown_theory[1] = a_theory[0][2]
+        unknown_theory[2] = a_theory[0][3]
+        unknown_theory[3] = a_theory[0][4]
+        unknown_theory[4] = a_theory[0][5]
+        unknown_theory[5] = a_theory[1][1]
+        unknown_theory[6] = a_theory[1][2]
+        unknown_theory[7] = a_theory[1][3]
+        unknown_theory[8] = a_theory[1][4]
+        unknown_theory[9] = a_theory[1][5]
+        unknown_theory[10] = b_theory[1]
+        unknown_theory[11] = b_theory[2]
+        unknown_theory[12] = b_theory[3]
+        unknown_theory[13] = b_theory[4]
+        unknown_theory[14] = b_theory[5]
         
         return unknown_theory
         
@@ -105,18 +108,18 @@ class Taylor(Known):
         x_taylor_s = np.ndarray((2,), 'object')
     
         x_taylor_s[0] = known[0] \
-                        + known[1]*dx[0] \
-                        + known[2]*dx[1] \
-                        + unknown[0]*dx[0]**2/2 \
-                        + unknown[1]*dx[0]*dx[1] \
-                        + unknown[2]*dx[1]**2/2
-               
-        x_taylor_s[1] = known[3] \
-                        + known[4]*dx[0] \
-                        + known[5]*dx[1] \
-                        + unknown[3]*dx[0]**2/2 \
-                        + unknown[4]*dx[0]*dx[1] \
-                        + unknown[5]*dx[1]**2/2
+                        + unknown[0]*dx[0] \
+                        + unknown[1]*dx[1] \
+                        + unknown[2]*dx[0]**2/2 \
+                        + unknown[3]*dx[0]*dx[1] \
+                        + unknown[4]*dx[1]**2/2
+             
+        x_taylor_s[1] = known[1] \
+                        + unknown[5]*dx[0] \
+                        + unknown[6]*dx[1] \
+                        + unknown[7]*dx[0]**2/2 \
+                        + unknown[8]*dx[0]*dx[1] \
+                        + unknown[9]*dx[1]**2/2
         
         return x_taylor_s
         
@@ -134,12 +137,12 @@ class Taylor(Known):
         
         ds = s - s_value
         
-        s_taylor_u = known[6] \
-                     + known[7]*ds[0] \
-                     + known[8]*ds[1] \
-                     + unknown[6]*ds[0]**2/2 \
-                     + unknown[7]*ds[0]*ds[1] \
-                     + unknown[8]*ds[1]**2/2
+        s_taylor_u = known[2] \
+                     + unknown[10]*ds[0] \
+                     + unknown[11]*ds[1] \
+                     + unknown[12]*ds[0]**2/2 \
+                     + unknown[13]*ds[0]*ds[1] \
+                     + unknown[14]*ds[1]**2/2
                      
         return s_taylor_u
     
@@ -176,24 +179,24 @@ class BoundaryConditions(Taylor):
         
         return s_boundary
     
-    def x_boundary(self):
-        x = self.x
-        x_value = self.x_value
-        s_boundary = self.s_boundary()
-        s = self.ProblemSettings.s(x)
-        
-        f = np.ndarray((2, len(x),), 'object')
-        for i in range(2):
-            for j in range(len(x)):
-                f[i][j] = s[j] - s_boundary[i][j]
-
-        x_boundary = np.ndarray((2, len(x),))
-        for i in range(2):
-            for j in range(len(x)):
-                x_boundary[i][j] = nsolve((f[i][0], f[i][1]), \
-                                          (x[0], x[1]), \
-                                          (x_value[0], x_value[1]) \
-                                          )[j]
+#    def x_boundary(self):
+#        x = self.x
+#        x_value = self.x_value
+#        s_boundary = self.s_boundary()
+#        s = self.ProblemSettings.s(x)
+#        
+#        f = np.ndarray((2, len(x),), 'object')
+#        for i in range(2):
+#            for j in range(len(x)):
+#                f[i][j] = s[j] - s_boundary[i][j]
+#
+#        x_boundary = np.ndarray((2, len(x),))
+#        for i in range(2):
+#            for j in range(len(x)):
+#                x_boundary[i][j] = nsolve((f[i][0], f[i][1]), \
+#                                          (x[0], x[1]), \
+#                                          (x_value[0], x_value[1]) \
+#                                          )[j]
                 
         return x_boundary
     
@@ -208,14 +211,20 @@ class BoundaryConditions(Taylor):
     
     def boundary_conditions(self):
         unknown = self.unknown
-        x_boundary = self.x_boundary()
+#        x_boundary = self.x_boundary()
+        s_boundary = self.s_boundary()
         u_boundary = self.u_boundary()
         
-        x_taylor_u = np.ndarray((2,), 'object')
+#        x_taylor_u = np.ndarray((2,), 'object')
+#        bc = np.ndarray((2,), 'object')
+#        for i in range(2):
+#            x_taylor_u[i] = self.Taylor.x_taylor_u(x_boundary[i], unknown)
+#            bc[i] = x_taylor_u[i] - u_boundary[i]
+        s_taylor_u = np.ndarray((2,), 'object')
         bc = np.ndarray((2,), 'object')
         for i in range(2):
-            x_taylor_u[i] = self.Taylor.x_taylor_u(x_boundary[i], unknown)
-            bc[i] = x_taylor_u[i] - u_boundary[i]
+            s_taylor_u[i] = self.Taylor.s_taylor_u(s_boundary[i], unknown)
+            bc[i] = s_taylor_u[i] - u_boundary[i]
             
         return bc
         
@@ -402,7 +411,7 @@ class GoverningEquations(Laplacian):
         self.x_value = x_value
 
     def governing_equation_0(self):
-        """ 1st Order x_Taylor Series of g_12 """
+        """ 1st Order x_Taylor Series of du/ds2 """
         du_ds2 = self.Derivative.du_ds()[1]
         x = self.x
         x_value = self.x_value
@@ -411,9 +420,9 @@ class GoverningEquations(Laplacian):
 #        coeff_du_ds2[0] = du_ds2
         coeff_du_ds2[1] = diff(du_ds2, x[0])
         coeff_du_ds2[2] = diff(du_ds2, x[1])
-#        coeff_du_ds2[3] = diff(du_ds2, x[0], 2)
-#        coeff_du_ds2[4] = diff(du_ds2, x[0], x[1])
-#        coeff_du_ds2[5] = diff(du_ds2, x[1], 2)
+        coeff_du_ds2[3] = diff(du_ds2, x[0], 2)
+        coeff_du_ds2[4] = diff(du_ds2, x[0], x[1])
+        coeff_du_ds2[5] = diff(du_ds2, x[1], 2)
         
         for i in range(len(coeff_du_ds2)):
             coeff_du_ds2[i] = lambdify(x, coeff_du_ds2[i], 'numpy')
@@ -422,7 +431,7 @@ class GoverningEquations(Laplacian):
         return coeff_du_ds2
         
     def governing_equation_1(self):
-        """ 1st Order x_Taylor Series of g_12 """
+        """ 1st Order x_Taylor Series of g^12 """
         g12 = self.Metric.supermetric()[0][1]
         x = self.x
         x_value = self.x_value
@@ -449,8 +458,8 @@ class GoverningEquations(Laplacian):
         
         coeff_laplacian_u = np.ndarray((6), 'object')
         coeff_laplacian_u[0] = laplacian_u
-#        coeff_laplacian_u[1] = diff(laplacian_u, x[0])
-#        coeff_laplacian_u[2] = diff(laplacian_u, x[1])
+        coeff_laplacian_u[1] = diff(laplacian_u, x[0])
+        coeff_laplacian_u[2] = diff(laplacian_u, x[1])
 #        coeff_laplacian_u[3] = diff(laplacian_u, x[0], 2)
 #        coeff_laplacian_u[4] = diff(laplacian_u, x[0], x[1])
 #        coeff_laplacian_u[5] = diff(laplacian_u, x[1], 2)
@@ -483,11 +492,17 @@ class Solve(BoundaryConditions, GoverningEquations):
         f[1] = bc[1]
         f[2] = ge0[1]
         f[3] = ge0[2]
-        f[4] = ge1[1]
-        f[5] = ge1[2]
-        f[6] = ge1[3]
-        f[7] = ge1[4]
-        f[8] = ge2[0]
+        f[4] = ge0[3]
+        f[5] = ge0[4]
+        f[6] = ge0[5]
+        f[7] = ge1[1]
+        f[8] = ge1[2]
+        f[9] = ge1[3]
+        f[10] = ge1[4]
+        f[11] = ge1[5]
+        f[12] = ge2[0]
+        f[13] = ge2[1]
+        f[14] = ge2[2]
         
         return f
     
@@ -509,6 +524,12 @@ class Solve(BoundaryConditions, GoverningEquations):
                                                     unknown_temp[6],
                                                     unknown_temp[7],
                                                     unknown_temp[8],
+                                                    unknown_temp[9],
+                                                    unknown_temp[10],
+                                                    unknown_temp[11],
+                                                    unknown_temp[12],
+                                                    unknown_temp[13],
+                                                    unknown_temp[14],
                                                     )
         Jacobian_f = Jacobian_f.astype('double')
         
@@ -533,6 +554,12 @@ class Solve(BoundaryConditions, GoverningEquations):
                                       unknown_temp[6],
                                       unknown_temp[7],
                                       unknown_temp[8],
+                                      unknown_temp[9],
+                                      unknown_temp[10],
+                                      unknown_temp[11],
+                                      unknown_temp[12],
+                                      unknown_temp[13],
+                                      unknown_temp[14],
                                       )
         residual = residual.astype('double')
     
@@ -554,6 +581,12 @@ class Solve(BoundaryConditions, GoverningEquations):
                                 unknown_temp[6],
                                 unknown_temp[7],
                                 unknown_temp[8],
+                                unknown_temp[9],
+                                unknown_temp[10],
+                                unknown_temp[11],
+                                unknown_temp[12],
+                                unknown_temp[13],
+                                unknown_temp[14],
                                 )
         error = norm(error)
         
@@ -589,24 +622,30 @@ if __name__ == '__main__':
     s[0] = Symbol('s1', real = True)
     s[1] = Symbol('s2', real = True)
     
-    unknown = np.ndarray((9,), 'object')
-    unknown[0] = Symbol('a1_11', real = True)
-    unknown[1] = Symbol('a1_12', real = True)
-    unknown[2] = Symbol('a1_22', real = True)
-    unknown[3] = Symbol('a2_11', real = True)
-    unknown[4] = Symbol('a2_12', real = True)
-    unknown[5] = Symbol('a2_22', real = True)
-    unknown[6] = Symbol('b11', real = True)
-    unknown[7] = Symbol('b12', real = True)
-    unknown[8] = Symbol('b22', real = True)
+    unknown = np.ndarray((15,), 'object')
+    unknown[0] = Symbol('a1', real = True)
+    unknown[1] = Symbol('a2', real = True)
+    unknown[2] = Symbol('a11', real = True)
+    unknown[3] = Symbol('a12', real = True)
+    unknown[4] = Symbol('a22', real = True)
+    unknown[5] = Symbol('b1', real = True)
+    unknown[6] = Symbol('b2', real = True)
+    unknown[7] = Symbol('b11', real = True)
+    unknown[8] = Symbol('b12', real = True)
+    unknown[9] = Symbol('b22', real = True)
+    unknown[10] = Symbol('c1', real = True)
+    unknown[11] = Symbol('c2', real = True)
+    unknown[12] = Symbol('c11', real = True)
+    unknown[13] = Symbol('c12', real = True)
+    unknown[14] = Symbol('c22', real = True)
     
     ################################
     f_id = 'z**2'
 #    f_id = 'z**3'
 #    f_id = 'z**4'
 #    f_id = 'exp((π/2)z)'
-    n = 3
-    error_limit = 1.0
+    n = 1
+    error_limit = 0.0
     element_size = 1.0e-0
     ##############################
     
@@ -645,7 +684,9 @@ if __name__ == '__main__':
             Solve_call = Solve(f_id, x, s, unknown, x_target, unknown_init, element_size)
             ###########################################################################
             unknown_terminal = Solve_call.solution()
+            f_init = Solve_call.f()
             Jacobian_f_init = Solve_call.Jacobian_f(unknown_init)
+            residual_init = Solve_call.residual(unknown_init)
             eigvals_Jacobian_f_init = eigvals(Jacobian_f_init)
             abs_eigvals_Jacobian_f_init = abs(eigvals_Jacobian_f_init)
             
@@ -677,6 +718,35 @@ if __name__ == '__main__':
     print('error_init(%) & error_terminal(%) = ')
     print(error_array)
     print('')
+    
+    print('unknown_theory = ')
+    print(unknown_theory)
+    print('')
+    
+    print('unknown_init = ')
+    print(unknown_init)
+    print('')
+    
+    print('unknown_terminal = ')
+    print(unknown_terminal)
+    print('')
+    
+    print('f_init = ')
+    for i in range(len(f_init)):
+        display(f_init[i])
+    print('')
+    
+    print('abs_eigvals_Jacobian_f_init = ')
+    print(abs_eigvals_Jacobian_f_init)
+    print('')
+    
+#    print('Jacobian_f_init = ')
+#    print(Jacobian_f_init)
+#    print('')
+    
+#    print('residual_init = ')
+#    print(residual_init)
+#    print('')
             
             
     t1 = time.time()
