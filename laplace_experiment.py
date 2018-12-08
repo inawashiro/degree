@@ -48,6 +48,7 @@ class Known(laplace_theory.TheoreticalValue):
         known[5] = a_theory[1][2]
         known[6] = b_theory[0]
         known[7] = b_theory[1]
+        known[8] = b_theory[2]
         
         return known
 
@@ -71,10 +72,9 @@ class Unknown(laplace_theory.TheoreticalValue):
         unknown_theory[3] = a_theory[1][3]
         unknown_theory[4] = a_theory[1][4]
         unknown_theory[5] = a_theory[1][5]
-        unknown_theory[6] = b_theory[2]
-        unknown_theory[7] = b_theory[3]
-        unknown_theory[8] = b_theory[4]
-        unknown_theory[9] = b_theory[5]
+        unknown_theory[6] = b_theory[3]
+        unknown_theory[7] = b_theory[4]
+        unknown_theory[8] = b_theory[5]
         
         return unknown_theory
         
@@ -139,10 +139,10 @@ class Taylor(Known):
         
         s_taylor_u = known[6] \
                      + known[7]*ds[0] \
-                     + unknown[6]*ds[1] \
-                     + unknown[7]*ds[0]**2/2 \
-                     + unknown[8]*ds[0]*ds[1] \
-                     + unknown[9]*ds[1]**2/2
+                     + known[8]*ds[1] \
+                     + unknown[6]*ds[0]**2/2 \
+                     + unknown[7]*ds[0]*ds[1] \
+                     + unknown[8]*ds[1]**2/2
                      
         return s_taylor_u
     
@@ -411,7 +411,7 @@ class GoverningEquations(Laplacian):
         x_value = self.x_value
         
         coeff_du_ds2 = np.ndarray((6), 'object')
-        coeff_du_ds2[0] = du_ds2
+#        coeff_du_ds2[0] = du_ds2
         coeff_du_ds2[1] = diff(du_ds2, x[0])
         coeff_du_ds2[2] = diff(du_ds2, x[1])
 #        coeff_du_ds2[3] = diff(du_ds2, x[0], 2)
@@ -484,14 +484,13 @@ class Solve(BoundaryConditions, GoverningEquations):
         f = np.ndarray((len(unknown),), 'object')
         f[0] = bc[0]
         f[1] = bc[1]
-        f[2] = ge0[0]
-        f[3] = ge0[1]
-        f[4] = ge0[2]
+        f[2] = ge0[1]
+        f[3] = ge0[2]
+        f[4] = ge1[1]
         f[5] = ge1[2]
         f[6] = ge1[3]
         f[7] = ge1[4]
-        f[8] = ge1[5]
-        f[9] = ge2[0]
+        f[8] = ge2[0]
         
         return f
     
@@ -513,7 +512,6 @@ class Solve(BoundaryConditions, GoverningEquations):
                                                     unknown_temp[6],
                                                     unknown_temp[7],
                                                     unknown_temp[8],
-                                                    unknown_temp[9],
                                                     )
         Jacobian_f = Jacobian_f.astype('double')
         
@@ -538,7 +536,6 @@ class Solve(BoundaryConditions, GoverningEquations):
                                       unknown_temp[6],
                                       unknown_temp[7],
                                       unknown_temp[8],
-                                      unknown_temp[9],
                                       )
         residual = residual.astype('double')
     
@@ -560,7 +557,6 @@ class Solve(BoundaryConditions, GoverningEquations):
                                 unknown_temp[6],
                                 unknown_temp[7],
                                 unknown_temp[8],
-                                unknown_temp[9],
                                 )
         error = norm(error)
         
@@ -596,26 +592,25 @@ if __name__ == '__main__':
     s[0] = Symbol('s1', real = True)
     s[1] = Symbol('s2', real = True)
     
-    unknown = np.ndarray((10,), 'object')
+    unknown = np.ndarray((9,), 'object')
     unknown[0] = Symbol('a1_11', real = True)
     unknown[1] = Symbol('a1_12', real = True)
     unknown[2] = Symbol('a1_22', real = True)
     unknown[3] = Symbol('a2_11', real = True)
     unknown[4] = Symbol('a2_12', real = True)
     unknown[5] = Symbol('a2_22', real = True)
-    unknown[6] = Symbol('b2', real = True)
-    unknown[7] = Symbol('b11', real = True)
-    unknown[8] = Symbol('b12', real = True)
-    unknown[9] = Symbol('b22', real = True)
+    unknown[6] = Symbol('b11', real = True)
+    unknown[7] = Symbol('b12', real = True)
+    unknown[8] = Symbol('b22', real = True)
     
     ################################
-    f_id = 'z**2'
-#    f_id = 'z**3'
+#    f_id = 'z**2'
+    f_id = 'z**3'
 #    f_id = 'z**4'
 #    f_id = 'exp((π/2)z)'
     n = 1
-    error_limit = 0.0
-    element_size = 1.0e-0
+    error_limit = 1.0
+    element_size = 1.0e-2
     ##############################
     
     x_target = np.ndarray((len(x),))
@@ -640,8 +635,8 @@ if __name__ == '__main__':
     
     for i in range(n):
         for j in range(n):
-            x_target[0] =  2*(i + 1)/(n + 1)
-            x_target[1] =  2*(j + 1)/(n + 1)
+            x_target[0] =  2*(i + 1)/(n + 1) + 0.1
+            x_target[1] =  2*(j + 1)/(n + 1) + 0.11
             
             #####################################################
             Unknown_call = Unknown(f_id, x, s, unknown, x_target)
@@ -704,9 +699,9 @@ if __name__ == '__main__':
     print(error_array)
     print('')
     
-#    print('abs_eigvals_Jacobian_f_init = ')
-#    print(abs_eigvals_Jacobian_f_init)
-#    print('')
+    print('abs_eigvals_Jacobian_f_init = ')
+    print(abs_eigvals_Jacobian_f_init)
+    print('')
             
             
     t1 = time.time()
