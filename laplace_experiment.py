@@ -12,9 +12,12 @@ from numpy import dot
 from numpy.linalg import norm, solve, eigvals, lstsq
 
 # For Symbolic Notation
-import sympy as sym
+import sympy as sp
 from sympy import Symbol, diff, lambdify, nsolve
 sym.init_printing()
+
+# For Displaying Symbolic Notation
+from IPython.display import display
 
 # For Random Variables
 import random
@@ -190,10 +193,10 @@ class BoundaryConditions(Taylor):
         x_boundary = np.ndarray((2, len(x),))
         for i in range(2):
             for j in range(len(x)):
-                x_boundary[i][j] = nsolve((f[i][0], f[i][1]), \
-                                          (x[0], x[1]), \
-                                          (x_value[0], x_value[1]) \
-                                          )[j]
+                x_boundary[i][j] = sp.nsolve((f[i][0], f[i][1]), \
+                                             (x[0], x[1]), \
+                                             (x_value[0], x_value[1]) \
+                                             )[j]
                 
         return x_boundary
     
@@ -238,10 +241,10 @@ class Derivative(Taylor):
         
         du_ds = np.ndarray((2,), 'object')
         for i in range(2):
-            du_ds[i] = diff(s_taylor_u, s[i])
+            du_ds[i] = sp.diff(s_taylor_u, s[i])
         
         for i in range(2):
-            du_ds[i] = lambdify(s, du_ds[i], 'numpy')
+            du_ds[i] = sp.lambdify(s, du_ds[i], 'numpy')
             du_ds[i] = du_ds[i](x_taylor_s[0], x_taylor_s[1])
         
         return du_ds
@@ -254,14 +257,14 @@ class Derivative(Taylor):
         x_taylor_s = self.Taylor.x_taylor_s(x, unknown)
         
         ddu_dds = np.ndarray((2, 2), 'object')
-        ddu_dds[0][0] = diff(s_taylor_u, s[0], 2)
-        ddu_dds[0][1] = diff(s_taylor_u, s[0], s[1])
-        ddu_dds[1][0] = diff(s_taylor_u, s[1], s[0])
-        ddu_dds[1][1] = diff(s_taylor_u, s[1], 2)
+        ddu_dds[0][0] = sp.diff(s_taylor_u, s[0], 2)
+        ddu_dds[0][1] = sp.diff(s_taylor_u, s[0], s[1])
+        ddu_dds[1][0] = sp.diff(s_taylor_u, s[1], s[0])
+        ddu_dds[1][1] = sp.diff(s_taylor_u, s[1], 2)
         
         for i in range(2):
             for j in range(2):
-                ddu_dds[i][j] = lambdify(s, ddu_dds[i][j], 'numpy')
+                ddu_dds[i][j] = sp.lambdify(s, ddu_dds[i][j], 'numpy')
                 ddu_dds[i][j] = ddu_dds[i][j](x_taylor_s[0], x_taylor_s[1])       
         
         return ddu_dds
@@ -272,10 +275,10 @@ class Derivative(Taylor):
         x_taylor_s = self.Taylor.x_taylor_s(x, unknown)
         
         ds_dx = np.ndarray((2, 2,), 'object')
-        ds_dx[0][0] = diff(x_taylor_s[0], x[0])
-        ds_dx[0][1] = diff(x_taylor_s[0], x[1])
-        ds_dx[1][0] = diff(x_taylor_s[1], x[0])
-        ds_dx[1][1] = diff(x_taylor_s[1], x[1])
+        ds_dx[0][0] = sp.diff(x_taylor_s[0], x[0])
+        ds_dx[0][1] = sp.diff(x_taylor_s[0], x[1])
+        ds_dx[1][0] = sp.diff(x_taylor_s[1], x[0])
+        ds_dx[1][1] = sp.diff(x_taylor_s[1], x[1])
                 
         return ds_dx
     
@@ -299,10 +302,10 @@ class Derivative(Taylor):
         
         dds_ddx = np.ndarray((2, 2, 2), 'object')
         for i in range(2):
-            dds_ddx[i][0][0] = diff(x_taylor_s[i], x[0], 2)
-            dds_ddx[i][0][1] = diff(x_taylor_s[i], x[0], x[1])
-            dds_ddx[i][1][0] = diff(x_taylor_s[i], x[1], x[0])
-            dds_ddx[i][1][1] = diff(x_taylor_s[i], x[1], 2)
+            dds_ddx[i][0][0] = sp.diff(x_taylor_s[i], x[0], 2)
+            dds_ddx[i][0][1] = sp.diff(x_taylor_s[i], x[0], x[1])
+            dds_ddx[i][1][0] = sp.diff(x_taylor_s[i], x[1], x[0])
+            dds_ddx[i][1][1] = sp.diff(x_taylor_s[i], x[1], 2)
         
         return dds_ddx
         
@@ -326,10 +329,10 @@ class Metric(Derivative):
         ds2_dx[1] = ds_dx[1][1]
         
         supermetric = np.ndarray((2, 2,), 'object')
-        supermetric[0][0] = dot(ds1_dx, ds1_dx)
-        supermetric[0][1] = dot(ds1_dx, ds2_dx)
-        supermetric[1][0] = dot(ds2_dx, ds1_dx)
-        supermetric[1][1] = dot(ds2_dx, ds2_dx)
+        supermetric[0][0] = np.dot(ds1_dx, ds1_dx)
+        supermetric[0][1] = np.dot(ds1_dx, ds2_dx)
+        supermetric[1][0] = np.dot(ds2_dx, ds1_dx)
+        supermetric[1][1] = np.dot(ds2_dx, ds2_dx)
         
         return supermetric
     
@@ -343,12 +346,12 @@ class Metric(Derivative):
         dg_dx1 = np.ndarray((2, 2), 'object')
         for i in range(2):
             for j in range(2):
-                dg_dx1[i][j] = diff(supermetric[i][j], x[0]) 
+                dg_dx1[i][j] = sp.diff(supermetric[i][j], x[0]) 
                 
         dg_dx2 = np.ndarray((2, 2), 'object')
         for i in range(2):
             for j in range(2):
-                dg_dx2[i][j] = diff(supermetric[i][j], x[1])
+                dg_dx2[i][j] = sp.diff(supermetric[i][j], x[1])
                     
         dg_ds1 = np.ndarray((2, 2,), 'object')
         for i in range(2):
@@ -409,14 +412,14 @@ class GoverningEquations(Laplacian):
         
         coeff_du_ds2 = np.ndarray((6), 'object')
 #        coeff_du_ds2[0] = du_ds2
-        coeff_du_ds2[1] = diff(du_ds2, x[0])
-        coeff_du_ds2[2] = diff(du_ds2, x[1])
-#        coeff_du_ds2[3] = diff(du_ds2, x[0], 2)
-#        coeff_du_ds2[4] = diff(du_ds2, x[0], x[1])
-#        coeff_du_ds2[5] = diff(du_ds2, x[1], 2)
+        coeff_du_ds2[1] = sp.diff(du_ds2, x[0])
+        coeff_du_ds2[2] = sp.diff(du_ds2, x[1])
+#        coeff_du_ds2[3] = sp.diff(du_ds2, x[0], 2)
+#        coeff_du_ds2[4] = sp.diff(du_ds2, x[0], x[1])
+#        coeff_du_ds2[5] = sp.diff(du_ds2, x[1], 2)
         
         for i in range(len(coeff_du_ds2)):
-            coeff_du_ds2[i] = lambdify(x, coeff_du_ds2[i], 'numpy')
+            coeff_du_ds2[i] = sp.lambdify(x, coeff_du_ds2[i], 'numpy')
             coeff_du_ds2[i] = coeff_du_ds2[i](x_value[0], x_value[1])
             
         return coeff_du_ds2
@@ -429,14 +432,14 @@ class GoverningEquations(Laplacian):
         
         coeff_g12 = np.ndarray((6), 'object')
 #        coeff_g12[0] = g12
-        coeff_g12[1] = diff(g12, x[0])
-        coeff_g12[2] = diff(g12, x[1])
-        coeff_g12[3] = diff(g12, x[0], 2)
-        coeff_g12[4] = diff(g12, x[0], x[1])
-        coeff_g12[5] = diff(g12, x[1], 2)
+        coeff_g12[1] = sp.diff(g12, x[0])
+        coeff_g12[2] = sp.diff(g12, x[1])
+        coeff_g12[3] = sp.diff(g12, x[0], 2)
+        coeff_g12[4] = sp.diff(g12, x[0], x[1])
+        coeff_g12[5] = sp.diff(g12, x[1], 2)
         
         for i in range(len(coeff_g12)):
-            coeff_g12[i] = lambdify(x, coeff_g12[i], 'numpy')
+            coeff_g12[i] = sp.lambdify(x, coeff_g12[i], 'numpy')
             coeff_g12[i] = coeff_g12[i](x_value[0], x_value[1])
             
         return coeff_g12
@@ -449,14 +452,14 @@ class GoverningEquations(Laplacian):
         
         coeff_laplacian_u = np.ndarray((6), 'object')
         coeff_laplacian_u[0] = laplacian_u
-#        coeff_laplacian_u[1] = diff(laplacian_u, x[0])
-#        coeff_laplacian_u[2] = diff(laplacian_u, x[1])
-#        coeff_laplacian_u[3] = diff(laplacian_u, x[0], 2)
-#        coeff_laplacian_u[4] = diff(laplacian_u, x[0], x[1])
-#        coeff_laplacian_u[5] = diff(laplacian_u, x[1], 2)
+#        coeff_laplacian_u[1] = sp.diff(laplacian_u, x[0])
+#        coeff_laplacian_u[2] = sp.diff(laplacian_u, x[1])
+#        coeff_laplacian_u[3] = sp.diff(laplacian_u, x[0], 2)
+#        coeff_laplacian_u[4] = sp.diff(laplacian_u, x[0], x[1])
+#        coeff_laplacian_u[5] = sp.diff(laplacian_u, x[1], 2)
         
         for i in range(len(coeff_laplacian_u)):
-            coeff_laplacian_u[i] = lambdify(x, coeff_laplacian_u[i], 'numpy')
+            coeff_laplacian_u[i] = sp.lambdify(x, coeff_laplacian_u[i], 'numpy')
             coeff_laplacian_u[i] = coeff_laplacian_u[i](x_value[0], x_value[1])
             
         return coeff_laplacian_u
@@ -498,8 +501,8 @@ class Solve(BoundaryConditions, GoverningEquations):
         Jacobian_f = np.ndarray((len(f), len(unknown),), 'object')
         for i in range(len(f)):
             for j in range(len(unknown)):
-                Jacobian_f[i][j] = diff(f[i], unknown[j])
-                Jacobian_f[i][j] = lambdify(unknown, Jacobian_f[i][j], 'numpy')
+                Jacobian_f[i][j] = sp.diff(f[i], unknown[j])
+                Jacobian_f[i][j] = sp.lambdify(unknown, Jacobian_f[i][j], 'numpy')
                 Jacobian_f[i][j] = Jacobian_f[i][j](unknown_temp[0],
                                                     unknown_temp[1],
                                                     unknown_temp[2],
@@ -522,8 +525,8 @@ class Solve(BoundaryConditions, GoverningEquations):
         for i in range(len(f)):
             residual[i] = -f[i]
             for j in range(len(unknown)):
-                residual[i] += diff(f[i], unknown[j])*unknown[j]
-            residual[i] = lambdify(unknown, residual[i], 'numpy')
+                residual[i] += sp.diff(f[i], unknown[j])*unknown[j]
+            residual[i] = sp.lambdify(unknown, residual[i], 'numpy')
             residual[i] = residual[i](unknown_temp[0],
                                       unknown_temp[1],
                                       unknown_temp[2],
@@ -544,7 +547,7 @@ class Solve(BoundaryConditions, GoverningEquations):
         
         error = np.ndarray((len(f),), 'object')
         for i in range(len(f)):
-            error[i] = lambdify(unknown, f[i], 'numpy')
+            error[i] = sp.lambdify(unknown, f[i], 'numpy')
             error[i] = error[i](unknown_temp[0],
                                 unknown_temp[1],
                                 unknown_temp[2],
@@ -555,7 +558,7 @@ class Solve(BoundaryConditions, GoverningEquations):
                                 unknown_temp[7],
                                 unknown_temp[8],
                                 )
-        error = norm(error)
+        error = np.linalg.norm(error)
         
         return error
     
@@ -567,8 +570,8 @@ class Solve(BoundaryConditions, GoverningEquations):
         while error > 1.0e-8:
             Jacobian_f = self.Jacobian_f(unknown_temp)
             residual = self.residual(unknown_temp)
-#            unknown_temp = solve(Jacobian_f, residual)
-            unknown_temp = lstsq(Jacobian_f, residual)[0]
+#            unknown_temp = np.linalg.solve(Jacobian_f, residual)
+            unknown_temp = np.linalg.lstsq(Jacobian_f, residual)[0]
             error = self.error(unknown_temp)
         
         solution = unknown_temp
@@ -582,87 +585,88 @@ if __name__ == '__main__':
     t0 = time.time()
     
     x = np.ndarray((2,), 'object')
-    x[0] = Symbol('x1', real = True)
-    x[1] = Symbol('x2', real = True)
+    x[0] = sp.Symbol('x1', real = True)
+    x[1] = sp.Symbol('x2', real = True)
     
     s = np.ndarray((2,), 'object')
-    s[0] = Symbol('s1', real = True)
-    s[1] = Symbol('s2', real = True)
+    s[0] = sp.Symbol('s1', real = True)
+    s[1] = sp.Symbol('s2', real = True)
     
     unknown = np.ndarray((9,), 'object')
-    unknown[0] = Symbol('a1_11', real = True)
-    unknown[1] = Symbol('a1_12', real = True)
-    unknown[2] = Symbol('a1_22', real = True)
-    unknown[3] = Symbol('a2_11', real = True)
-    unknown[4] = Symbol('a2_12', real = True)
-    unknown[5] = Symbol('a2_22', real = True)
-    unknown[6] = Symbol('b11', real = True)
-    unknown[7] = Symbol('b12', real = True)
-    unknown[8] = Symbol('b22', real = True)
+    unknown[0] = sp.Symbol('a1_11', real = True)
+    unknown[1] = sp.Symbol('a1_12', real = True)
+    unknown[2] = sp.Symbol('a1_22', real = True)
+    unknown[3] = sp.Symbol('a2_11', real = True)
+    unknown[4] = sp.Symbol('a2_12', real = True)
+    unknown[5] = sp.Symbol('a2_22', real = True)
+    unknown[6] = sp.Symbol('b11', real = True)
+    unknown[7] = sp.Symbol('b12', real = True)
+    unknown[8] = sp.Symbol('b22', real = True)
     
     ################################
     f_id = 'z**2'
-#    f_id = 'z**3'
+    f_id = 'z**3'
 #    f_id = 'z**4'
 #    f_id = 'exp((π/2)z)'
-    n = 3
-    error_limit = 1.0
-    element_size = 1.0e-0
+    n = 9
+    error_limit = 1000.0
+    element_size = 1.0e-3
     ##############################
     
     x_target = np.ndarray((len(x),))
     
-    x_target_array = np.ndarray((n, n, len(x),))
+    x_target_array = np.ndarray((n, len(x),))
     
-    unknown_theory_array = np.ndarray((n, n, len(unknown)))
-    unknown_init_array = np.ndarray((n, n, len(unknown)))
-    unknown_terminal_array = np.ndarray((n, n, len(unknown)))
+    unknown_theory_array = np.ndarray((n, len(unknown)))
+    unknown_init_array = np.ndarray((n, len(unknown)))
+    unknown_terminal_array = np.ndarray((n, len(unknown)))
     
-    error_array = np.ndarray((n, n, 2))
+    error_array = np.ndarray((n, 2))
     
-    abs_eigvals_Jacobian_f_init_array = np.ndarray((n, n, len(unknown)))
+    abs_eigvals_Jacobian_f_init_array = np.ndarray((n, len(unknown)))
     
     
     def relative_error(a, b):
         
-        relative_error = round(norm(b - a)/norm(a), 4)*100
+        relative_error = round(np.linalg.norm(b - a)/np.linalg.norm(a), 4)*100
         
         return relative_error
     
     
     for i in range(n):
-        for j in range(n):
-            x_target[0] =  2*(i + 1)/(n + 1)
-            x_target[1] =  2*(j + 1)/(n + 1)
-            
-            #####################################################
-            Unknown_call = Unknown(f_id, x, s, unknown, x_target)
-            #####################################################
-            unknown_theory = Unknown_call.unknown_theory()
-            unknown_init = Unknown_call.unknown_init(error_limit)
+        x_target[0] =  2*(i + 1)/(n + 1) + 0.0
+        x_target[1] =  2*(i + 1)/(n + 1) + 0.0
         
-            ###########################################################################
-            Solve_call = Solve(f_id, x, s, unknown, x_target, unknown_init, element_size)
-            ###########################################################################
-            unknown_terminal = Solve_call.solution()
-            Jacobian_f_init = Solve_call.Jacobian_f(unknown_init)
-            eigvals_Jacobian_f_init = eigvals(Jacobian_f_init)
-            abs_eigvals_Jacobian_f_init = abs(eigvals_Jacobian_f_init)
-            
-            error_init = relative_error(unknown_theory, unknown_init)
-            error_terminal = relative_error(unknown_theory, unknown_terminal)
-            
-            for k in range(len(x)):
-                x_target_array[i][j][k] = x_target[k]
+        #####################################################
+        Unknown_call = Unknown(f_id, x, s, unknown, x_target)
+        #####################################################
+        unknown_theory = Unknown_call.unknown_theory()
+        unknown_init = Unknown_call.unknown_init(error_limit)
     
-            for k in range(len(unknown)):
-                unknown_theory_array[i][j][k] = unknown_theory[k]
-                unknown_init_array[i][j][k] = unknown_init[k]
-                unknown_terminal_array[i][j][k] = unknown_terminal[k]
-                abs_eigvals_Jacobian_f_init_array[i][j][k] = abs_eigvals_Jacobian_f_init[k]
-                
-            error_array[i][j][0] = error_init
-            error_array[i][j][1] = error_terminal
+        ###########################################################################
+        Solve_call = Solve(f_id, x, s, unknown, x_target, unknown_init, element_size)
+        ###########################################################################
+        unknown_terminal = Solve_call.solution()
+        f_init = Solve_call.f()
+        Jacobian_f_init = Solve_call.Jacobian_f(unknown_init)
+        eigvals_Jacobian_f_init = np.linalg.eigvals(Jacobian_f_init)
+        abs_eigvals_Jacobian_f_init = abs(eigvals_Jacobian_f_init)
+        
+        error_init = relative_error(unknown_theory, unknown_init)
+        error_terminal = relative_error(unknown_theory, unknown_terminal)
+        
+        for k in range(len(x)):
+            x_target_array[i][k] = x_target[k]
+
+        for k in range(len(unknown)):
+            unknown_theory_array[i][k] = unknown_theory[k]
+            unknown_init_array[i][k] = unknown_init[k]
+            unknown_terminal_array[i][k] = unknown_terminal[k]
+            abs_eigvals_Jacobian_f_init_array[i][k] = abs_eigvals_Jacobian_f_init[k]
+            
+        error_array[i][0] = error_init
+        error_array[i][1] = error_terminal
+            
      
     print('')
     print('f(z) = ', f_id)
@@ -672,11 +676,32 @@ if __name__ == '__main__':
     
     print('x_target = ')
     print(x_target_array)
-    print('')    
+    print('')
+    
+#    print('f_init = ')
+#    for i in range(len(f_init)):
+#        display(f_init[i])
+#    print('')
+    
+#    print('unknown_theory = ')
+#    print(unknown_theory)
+#    print('')
+#    
+#    print('unknown_init = ')
+#    print(unknown_init)
+#    print('')
+#    
+#    print('unknown_terminal = ')
+#    print(unknown_terminal)
+#    print('')
     
     print('error_init(%) & error_terminal(%) = ')
     print(error_array)
     print('')
+    
+#    print('abs_eigvals_Jacobian_f_init = ')
+#    print(abs_eigvals_Jacobian_f_init)
+#    print('')
             
             
     t1 = time.time()

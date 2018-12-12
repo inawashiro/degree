@@ -149,12 +149,13 @@ class Plot(ProblemSettings):
         fig = plt.figure()
         ax = fig.gca(projection = '3d')
         ax.plot_wireframe(x_value[0], x_value[1], u_value, linewidth = 0.2)
+        
+        plt.xticks([0.0, 0.5, 1.0, 1.5, 2.0])
+        plt.yticks([0.0, 0.5, 1.0, 1.5, 2.0])
 
         plt.savefig('target_function_3d.pdf')
         plt.savefig('target_function_3d.png')
         plt.pause(.01)
-       
-        return s_value
         
     def principal_coordinate_system_plot(self):
         x_value = self.x_value
@@ -172,6 +173,9 @@ class Plot(ProblemSettings):
         cr_s2 = plt.contour(x_value[0], x_value[1], s_value[1], interval2, colors = 'blue')
 #        levels2 = cr_s2.levels
 #        cr_s2.clabel(levels2[::5], fmt = '%3.1f')
+        
+        plt.xticks([0.0, 0.5, 1.0, 1.5, 2.0])
+        plt.yticks([0.0, 0.5, 1.0, 1.5, 2.0])
         
         plt.savefig('principal_coordinate_system.pdf')
         plt.savefig('principal_coordinate_system.png')
