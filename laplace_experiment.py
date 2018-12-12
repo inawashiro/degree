@@ -606,11 +606,11 @@ if __name__ == '__main__':
     ################################
     f_id = 'z**2'
     f_id = 'z**3'
-#    f_id = 'z**4'
+    f_id = 'z**4'
 #    f_id = 'exp((π/2)z)'
     n = 9
-    error_limit = 1000.0
-    element_size = 1.0e-3
+    error_limit = 100.0
+    element_size = 1.0e-4
     ##############################
     
     x_target = np.ndarray((len(x),))

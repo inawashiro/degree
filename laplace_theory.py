@@ -108,14 +108,14 @@ class Verification(ProblemSettings):
         x = self.x
         s = self.ProblemSettings.s(x)
         
-        ds_dx1 = np.ndarray((2,), 'object')
-        ds_dx1[0] = diff(s[0], x[0])
-        ds_dx1[1] = diff(s[1], x[0])
-        ds_dx2 = np.ndarray((2,), 'object')
-        ds_dx2[0] = diff(s[0], x[1])
-        ds_dx2[1] = diff(s[1], x[1])
+        ds1_dx = np.ndarray((2,), 'object')
+        ds1_dx[0] = diff(s[0], x[0])
+        ds1_dx[1] = diff(s[0], x[1])
+        ds2_dx = np.ndarray((2,), 'object')
+        ds2_dx[0] = diff(s[1], x[0])
+        ds2_dx[1] = diff(s[1], x[1])
         
-        g12 = dot(ds_dx1, ds_dx2)
+        g12 = dot(ds1_dx, ds2_dx)
         g12 = simplify(g12)
     
         return g12
@@ -258,9 +258,9 @@ if __name__ == '__main__':
     
     ####################
 #    f_id = 'z**2'
-#    f_id = 'z**3'
+    f_id = 'z**3'
 #    f_id = 'z**4'
-    f_id = 'exp((π/2)z)'
+#    f_id = 'exp((π/2)z)'
     ####################
     
     #######################################
