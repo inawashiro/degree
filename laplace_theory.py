@@ -50,18 +50,18 @@ class ProblemSettings():
         
         s = np.ndarray((2,), 'object')
         
-        if f_id == 'z**2':
+        if f_id == 'z^2':
             s[0] = x[0]**2 - x[1]**2
             s[1] = 2*x[0]*x[1]        
-        if f_id == 'z**3':
+        if f_id == 'z^3':
             s[0] = x[0]**3 - 3*x[0]*x[1]**2
             s[1] = -x[1]**3 + 3*x[0]**2*x[1]        
-        if f_id == 'z**4':
+        if f_id == 'z^4':
             s[0] = x[0]**4 - 6*x[0]**2*x[1]**2 + x[1]**4
             s[1] = 4*x[0]**3*x[1] - 4*x[0]*x[1]**3
-        if f_id == 'exp((π/2)z)':
-            s[0] = exp(pi/2*x[0])*sin(pi/2*x[1])
-            s[1] = exp(pi/2*x[0])*cos(pi/2*x[1])
+        if f_id == 'exp(z)':
+            s[0] = exp((pi/2)*x[0])*sin((pi/2)*x[1])
+            s[1] = exp((pi/2)*x[0])*cos((pi/2)*x[1])
 #        if f_id == '10/(1 + z)':
 #            s[0] = 10*(x[0] + 1)/((x[0] + 1)**2 + x[1]**2)
 #            s[1] = -10*x[1]/((x[0] + 1)**2 + x[1]**2)
@@ -126,6 +126,7 @@ class Plot(ProblemSettings):
     
     def __init__(self, f_id, x, s, x_value):
         self.ProblemSettings = ProblemSettings(f_id)
+        self.f_id = f_id
         self.x = x
         self.s = s
         self.x_value = x_value
@@ -142,6 +143,7 @@ class Plot(ProblemSettings):
         return s_value
     
     def u_plot(self):
+        f_id = self.f_id
         x_value = self.x_value
         s_value = self.s_value()
         u_value = self.ProblemSettings.u(s_value)
@@ -150,14 +152,15 @@ class Plot(ProblemSettings):
         ax = fig.gca(projection = '3d')
         ax.plot_wireframe(x_value[0], x_value[1], u_value, linewidth = 0.2)
         
-        plt.xticks([0.0, 0.5, 1.0, 1.5, 2.0])
-        plt.yticks([0.0, 0.5, 1.0, 1.5, 2.0])
+        plt.xticks([-2.0, -1.0, 0, 1.0, 2.0])
+        plt.yticks([-2.0, -1.0, 0, 1.0, 2.0])
 
-        plt.savefig('target_function_3d.pdf')
-        plt.savefig('target_function_3d.png')
+        plt.savefig('./' + f_id + '/3d_plot.pdf')
+        plt.savefig('./' + f_id + '/3d_plot.png')
         plt.pause(.01)
         
     def principal_coordinate_system_plot(self):
+        f_id = self.f_id
         x_value = self.x_value
         s_value = self.s_value()
             
@@ -166,19 +169,14 @@ class Plot(ProblemSettings):
         interval1 = np.arange(-100, 100, 1.0)
         interval2 = np.arange(-100, 100, 1.0)
         
-        cr_s1 = plt.contour(x_value[0], x_value[1], s_value[0], interval1, colors = 'red')
-#        levels1 = cr_s1.levels
-#        cr_s1.clabel(levels1[::5], fmt = '%3.1f')
-        
+        cr_s1 = plt.contour(x_value[0], x_value[1], s_value[0], interval1, colors = 'red')        
         cr_s2 = plt.contour(x_value[0], x_value[1], s_value[1], interval2, colors = 'blue')
-#        levels2 = cr_s2.levels
-#        cr_s2.clabel(levels2[::5], fmt = '%3.1f')
         
-        plt.xticks([0.0, 0.5, 1.0, 1.5, 2.0])
-        plt.yticks([0.0, 0.5, 1.0, 1.5, 2.0])
+        plt.xticks([-2.0, -1.0, 0, 1.0, 2.0])
+        plt.yticks([-2.0, -1.0, 0, 1.0, 2.0])
         
-        plt.savefig('principal_coordinate_system.pdf')
-        plt.savefig('principal_coordinate_system.png')
+        plt.savefig('./' + f_id + '/principal_coordinate_system.pdf')
+        plt.savefig('./' + f_id + '/principal_coordinate_system.png')
         plt.pause(.01)
         
     
@@ -187,6 +185,7 @@ class TheoreticalValue(ProblemSettings):
     
     def __init__(self, f_id, x, s, x_value):
         self.ProblemSettings = ProblemSettings(f_id)
+        self.f_id = f_id
         self.x = x
         self.s = s
         self.x_value = x_value
@@ -257,11 +256,15 @@ if __name__ == '__main__':
     s[1] = Symbol('s2', real = True)
     
     ####################
-#    f_id = 'z**2'
-    f_id = 'z**3'
-#    f_id = 'z**4'
-#    f_id = 'exp((π/2)z)'
+#    f_id = 'z^2'
+#    f_id = 'z^3'
+#    f_id = 'z^4'
+    f_id = 'exp(z)'
     ####################
+    
+    print('')
+    print('f(z) = ', f_id)
+    print('')
     
     #######################################
     Verification = Verification(f_id, x, s)
@@ -282,9 +285,8 @@ if __name__ == '__main__':
     display(g12)
     print('')
     
-    
-    x_value = np.meshgrid(np.arange(0, 2, 0.01), 
-                          np.arange(0, 2, 0.01))
+    x_value = np.meshgrid(np.arange(-2.0, 2.0, 0.01), 
+                          np.arange(-2.0, 2.0, 0.01))
     
     ################################
     Plot = Plot(f_id, x, s, x_value)
