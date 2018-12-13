@@ -62,9 +62,6 @@ class ProblemSettings():
         if f_id == 'exp(z)':
             s[0] = exp((pi/2)*x[0])*sin((pi/2)*x[1])
             s[1] = exp((pi/2)*x[0])*cos((pi/2)*x[1])
-#        if f_id == '10/(1 + z)':
-#            s[0] = 10*(x[0] + 1)/((x[0] + 1)**2 + x[1]**2)
-#            s[1] = -10*x[1]/((x[0] + 1)**2 + x[1]**2)
     
         return s
 
@@ -129,6 +126,8 @@ class Plot(ProblemSettings):
         self.f_id = f_id
         self.x = x
         self.s = s
+        self.x_min = x_min
+        self.x_max = x_max
         self.x_value = x_value
     
     def s_value(self):
@@ -152,31 +151,34 @@ class Plot(ProblemSettings):
         ax = fig.gca(projection = '3d')
         ax.plot_wireframe(x_value[0], x_value[1], u_value, linewidth = 0.2)
         
-        plt.xticks([-2.0, -1.0, 0, 1.0, 2.0])
-        plt.yticks([-2.0, -1.0, 0, 1.0, 2.0])
+        plt.locator_params(axis='x',nbins=5)
+        plt.locator_params(axis='y',nbins=5)
+        plt.locator_params(axis='z',nbins=5)
 
-        plt.savefig('./' + f_id + '/3d_plot.pdf')
-        plt.savefig('./' + f_id + '/3d_plot.png')
+        plt.savefig('../graph/' + f_id + '/3d_plot.pdf')
+        plt.savefig('../graph/' + f_id + '/3d_plot.png')
+        
         plt.pause(.01)
         
     def principal_coordinate_system_plot(self):
         f_id = self.f_id
         x_value = self.x_value
         s_value = self.s_value()
-            
-        plt.gca().set_aspect('equal', adjustable='box')
+        
+        ax = plt.gca()
+        ax.set_aspect('equal', adjustable='box')
         
         interval1 = np.arange(-100, 100, 1.0)
         interval2 = np.arange(-100, 100, 1.0)
         
-        cr_s1 = plt.contour(x_value[0], x_value[1], s_value[0], interval1, colors = 'red')        
-        cr_s2 = plt.contour(x_value[0], x_value[1], s_value[1], interval2, colors = 'blue')
+        plt.contour(x_value[0], x_value[1], s_value[0], interval1, colors = 'red')        
+        plt.contour(x_value[0], x_value[1], s_value[1], interval2, colors = 'blue')
         
-        plt.xticks([-2.0, -1.0, 0, 1.0, 2.0])
-        plt.yticks([-2.0, -1.0, 0, 1.0, 2.0])
+        plt.locator_params(axis='x',nbins=5)
+        plt.locator_params(axis='y',nbins=5)
         
-        plt.savefig('./' + f_id + '/principal_coordinate_system.pdf')
-        plt.savefig('./' + f_id + '/principal_coordinate_system.png')
+        plt.savefig('../graph/' + f_id + '/principal_coordinate_system.pdf')
+        plt.savefig('../graph/' + f_id + '/principal_coordinate_system.png')
         plt.pause(.01)
         
     
@@ -285,12 +287,20 @@ if __name__ == '__main__':
     display(g12)
     print('')
     
-    x_value = np.meshgrid(np.arange(-2.0, 2.0, 0.01), 
-                          np.arange(-2.0, 2.0, 0.01))
+    x_min = np.ndarray((2))
+    x_min[0] = 0.0
+    x_min[1] = 0.0
     
-    ################################
+    x_max = np.ndarray((2))
+    x_max[0] = 2.0
+    x_max[1] = 2.0
+    
+    x_value = np.meshgrid(np.arange(x_min[0], x_max[0], (x_max[0] - x_min[0])/500), 
+                          np.arange(x_min[1], x_max[1], (x_max[1] - x_min[1])/500))
+    
+    #################################
     Plot = Plot(f_id, x, s, x_value)
-    ################################
+    #################################
     os.chdir('./graph')
     
     print('3D Plot of u')
@@ -300,46 +310,6 @@ if __name__ == '__main__':
     print('Principal Coordinate System')
     Plot.principal_coordinate_system_plot()
     print('')    
-    
-    
-#    n = 3
-#    
-#    x_value = np.ndarray((len(x),))
-#    s_value = np.ndarray((len(s),))
-#    
-#    x_value_array = np.ndarray((n, n, len(x),))
-#    s_theory_array = np.ndarray((n, n, len(s),))
-#    a_theory_array = np.ndarray((n, n, len(s), 6))
-#    b_theory_array = np.ndarray((n, n, 6,))
-#    
-#    ########################################################
-#    TheoreticalValue = TheoreticalValue(f_id, x, s, x_value)
-#    ########################################################  
-#    
-#    for i in range(n):
-#        for j in range(n):
-#            x_value[0] =  2*(i + 1)/(n + 1)
-#            x_value[1] =  2*(j + 1)/(n + 1)
-#        
-#            s_theory = TheoreticalValue.s_theory()
-#            a_theory = TheoreticalValue.a_theory()
-#            b_theory = TheoreticalValue.b_theory()
-#            
-#            for k in range(len(x)):
-#                x_value_array[i][j][k] = x_value[k]
-#                
-#            for k in range(len(s)):
-#                s_theory_array[i][j][k] = s_theory[k]
-#                
-#                for l in range(6):
-#                    a_theory_array[i][j][k][l] = a_theory[k][l]
-#                
-#            for k in range(6):
-#                b_theory_array[i][j][k] = b_theory[k]
-#                
-#    print('x_target = ')
-#    print(x_value_array)
-#    print('')
     
     
     t1 = time.time()
