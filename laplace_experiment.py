@@ -12,9 +12,12 @@ from numpy import dot
 from numpy.linalg import norm, solve, eigvals, lstsq
 
 # For Symbolic Notation
-import sympy as sp
+import sympy as syp
 from sympy import Symbol, diff, lambdify, nsolve
-sym.init_printing()
+syp.init_printing()
+
+import scipy as scp
+from scipy.sparse.linalg import spsolve, lsqr
 
 # For Displaying Symbolic Notation
 from IPython.display import display
@@ -193,7 +196,7 @@ class BoundaryConditions(Taylor):
         x_boundary = np.ndarray((2, len(x),))
         for i in range(2):
             for j in range(len(x)):
-                x_boundary[i][j] = sp.nsolve((f[i][0], f[i][1]), \
+                x_boundary[i][j] = syp.nsolve((f[i][0], f[i][1]), \
                                              (x[0], x[1]), \
                                              (x_value[0], x_value[1]) \
                                              )[j]
@@ -468,11 +471,12 @@ class GoverningEquations(Laplacian):
 class Solve(BoundaryConditions, GoverningEquations):
     """ Solve BVP on Line Element by Newton's Method """
     
-    def __init__(self, f_id, x, s, unknown, x_value, unknown_init, element_size):
+    def __init__(self, f_id, x, s, unknown, x_value, unknown_init, element_size, convergence_criteria):
         self.BC = BoundaryConditions(f_id, x, s, unknown, x_value, unknown_init, element_size)
         self.GE = GoverningEquations(f_id, x, s, unknown, x_value, unknown_init)
         self.unknown = unknown
         self.unknown_init = unknown_init
+        self.convergence_criteria = convergence_criteria
     
     def f(self):
         unknown = self.unknown
@@ -565,13 +569,16 @@ class Solve(BoundaryConditions, GoverningEquations):
     def solution(self):
         unknown_init = self.unknown_init
         unknown_temp = unknown_init
+        convergence_criteria = self.convergence_criteria
         error = self.error(unknown_temp)
         
-        while error > 1.0e-8:
+        while error > convergence_criteria:
             Jacobian_f = self.Jacobian_f(unknown_temp)
             residual = self.residual(unknown_temp)
 #            unknown_temp = np.linalg.solve(Jacobian_f, residual)
-            unknown_temp = np.linalg.lstsq(Jacobian_f, residual)[0]
+#            unknown_temp = np.linalg.lstsq(Jacobian_f, residual)[0]
+#            unknown_temp = scp.sparse.linalg.spsolve(Jacobian_f, residual)
+            unknown_temp = scp.sparse.linalg.lsqr(Jacobian_f, residual)
             error = self.error(unknown_temp)
         
         solution = unknown_temp
@@ -605,12 +612,13 @@ if __name__ == '__main__':
     
     ################################
 #    f_id = 'z^2'
-#    f_id = 'z^3'
+    f_id = 'z^3'
 #    f_id = 'z^4'
-    f_id = 'exp(z)'
+#    f_id = 'exp(z)'
     n = 1
     error_limit = 1.0
-    element_size = 1.0e-3
+    element_size = 1.0e-2
+    convergence_criteria = 1.0e-8
     ##############################
     
     x_target = np.ndarray((len(x),))
@@ -626,7 +634,7 @@ if __name__ == '__main__':
     error_sum_array[0] = 0
     error_sum_array[1] = 0
     
-    abs_eigvals_Jacobian_f_init_array = np.ndarray((n, len(unknown)))
+    min_abs_eigvals_Jacobian_f_init_array = np.ndarray((n, 1))
     
     
     def relative_error(a, b):
@@ -636,24 +644,35 @@ if __name__ == '__main__':
         return relative_error
     
     
+    x_min = np.ndarray((2))
+    x_min[0] = 0.0
+    x_min[1] = 0.0
+    
+    x_max = np.ndarray((2))
+    x_max[0] = 2.0
+    x_max[1] = 2.0
+    
     for i in range(n):
-        x_target[0] =  2*(i + 1)/(n + 1) + 0.0
-        x_target[1] =  2*(i + 1)/(n + 1) + 0.0
+#        x_target[0] =  2.0*(i + 1)/(n + 1) + 0.1
+#        x_target[1] =  2.0*(i + 1)/(n + 1) + 0.0
+        x_target[0] = random.uniform(x_min[0], x_max[0])
+        x_target[1] = random.uniform(x_min[1], x_max[1])
         
-        #####################################################
+        ######################################################
         Unknown_call = Unknown(f_id, x, s, unknown, x_target)
-        #####################################################
+        ######################################################
         unknown_theory = Unknown_call.unknown_theory()
         unknown_init = Unknown_call.unknown_init(error_limit)
     
-        ##############################################################################
-        Solve_call = Solve(f_id, x, s, unknown, x_target, unknown_init, element_size)
-        ##############################################################################
+        ####################################################################################################
+        Solve_call = Solve(f_id, x, s, unknown, x_target, unknown_init, element_size, convergence_criteria)
+        ####################################################################################################
         unknown_terminal = Solve_call.solution()
         f_init = Solve_call.f()
         Jacobian_f_init = Solve_call.Jacobian_f(unknown_init)
         eigvals_Jacobian_f_init = eigvals(Jacobian_f_init)
         abs_eigvals_Jacobian_f_init = abs(eigvals_Jacobian_f_init)
+        min_abs_eigvals_Jacobian_f_init_array[i] = min(abs_eigvals_Jacobian_f_init)
         
         error_init = relative_error(unknown_theory, unknown_init)
         error_terminal = relative_error(unknown_theory, unknown_terminal)
@@ -665,7 +684,6 @@ if __name__ == '__main__':
             unknown_theory_array[i][k] = unknown_theory[k]
             unknown_init_array[i][k] = unknown_init[k]
             unknown_terminal_array[i][k] = unknown_terminal[k]
-            abs_eigvals_Jacobian_f_init_array[i][k] = abs_eigvals_Jacobian_f_init[k]
             
         error_array[i][0] = error_init
         error_array[i][1] = error_terminal
@@ -707,8 +725,8 @@ if __name__ == '__main__':
     print(error_sum_array)
     print('')
     
-#    print('abs_eigvals_Jacobian_f_init = ')
-#    print(abs_eigvals_Jacobian_f_init)
+#    print('min_abs_eigvals_Jacobian_f_init = ')
+#    print(min_abs_eigvals_Jacobian_f_init_array)
 #    print('')
             
             
