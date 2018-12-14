@@ -60,8 +60,8 @@ class ProblemSettings():
             s[0] = x[0]**4 - 6*x[0]**2*x[1]**2 + x[1]**4
             s[1] = 4*x[0]**3*x[1] - 4*x[0]*x[1]**3
         if f_id == 'exp(z)':
-            s[0] = exp((pi/2)*x[0])*sin((pi/2)*x[1])
-            s[1] = exp((pi/2)*x[0])*cos((pi/2)*x[1])
+            s[0] = exp(x[0])*sin(x[1])
+            s[1] = exp(x[0])*cos(x[1])
     
         return s
 
@@ -121,13 +121,12 @@ class Verification(ProblemSettings):
 class Plot(ProblemSettings):
     """ Display Plot """
     
-    def __init__(self, f_id, x, s, x_value):
+    def __init__(self, f_id, x, s, x_sidelength, x_value):
         self.ProblemSettings = ProblemSettings(f_id)
         self.f_id = f_id
         self.x = x
         self.s = s
-        self.x_min = x_min
-        self.x_max = x_max
+        self.x_sidelength = x_sidelength
         self.x_value = x_value
     
     def s_value(self):
@@ -143,6 +142,7 @@ class Plot(ProblemSettings):
     
     def u_plot(self):
         f_id = self.f_id
+        x_sidelength = self.x_sidelength
         x_value = self.x_value
         s_value = self.s_value()
         u_value = self.ProblemSettings.u(s_value)
@@ -179,6 +179,7 @@ class Plot(ProblemSettings):
         
         plt.savefig('../graph/' + f_id + '/principal_coordinate_system.pdf')
         plt.savefig('../graph/' + f_id + '/principal_coordinate_system.png')
+        
         plt.pause(.01)
         
     
@@ -258,10 +259,10 @@ if __name__ == '__main__':
     s[1] = Symbol('s2', real = True)
     
     ####################
-#    f_id = 'z^2'
+    f_id = 'z^2'
 #    f_id = 'z^3'
 #    f_id = 'z^4'
-    f_id = 'exp(z)'
+#    f_id = 'exp(z)'
     ####################
     
     print('')
@@ -295,12 +296,16 @@ if __name__ == '__main__':
     x_max[0] = 2.0
     x_max[1] = 2.0
     
-    x_value = np.meshgrid(np.arange(x_min[0], x_max[0], (x_max[0] - x_min[0])/500), 
-                          np.arange(x_min[1], x_max[1], (x_max[1] - x_min[1])/500))
+    x_sidelength = np.ndarray((2))
+    x_sidelength[0] = x_max[0] - x_min[0]
+    x_sidelength[1] = x_max[1] - x_min[1]
     
-    #################################
-    Plot = Plot(f_id, x, s, x_value)
-    #################################
+    x_value = np.meshgrid(np.arange(x_min[0], x_max[0], (x_sidelength[0])/500), 
+                          np.arange(x_min[1], x_max[1], (x_sidelength[1])/500))
+    
+    ###############################################
+    Plot = Plot(f_id, x, s, x_sidelength, x_value)
+    ###############################################
     os.chdir('./graph')
     
     print('3D Plot of u')

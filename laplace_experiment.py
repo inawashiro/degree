@@ -12,9 +12,12 @@ from numpy import dot
 from numpy.linalg import norm, solve, eigvals, lstsq
 
 # For Symbolic Notation
-import sympy as sp
+import sympy as syp
 from sympy import Symbol, diff, lambdify, nsolve
-sym.init_printing()
+syp.init_printing()
+
+import scipy as scp
+from scipy.sparse.linalg import spsolve, lsqr
 
 # For Displaying Symbolic Notation
 from IPython.display import display
@@ -193,7 +196,7 @@ class BoundaryConditions(Taylor):
         x_boundary = np.ndarray((2, len(x),))
         for i in range(2):
             for j in range(len(x)):
-                x_boundary[i][j] = sp.nsolve((f[i][0], f[i][1]), \
+                x_boundary[i][j] = syp.nsolve((f[i][0], f[i][1]), \
                                              (x[0], x[1]), \
                                              (x_value[0], x_value[1]) \
                                              )[j]
@@ -365,30 +368,34 @@ class Metric(Derivative):
 class Laplacian(Metric):
     """ x_Taylor Series of Laplacian """
     
-    def __init__(self, f_id, x, s, unknown, x_value, unknown_init):
+    def __init__(self, f_id, ge_id, x, s, unknown, x_value, unknown_init):
         self.Metric = Metric(f_id, x, s, unknown, x_value, unknown_init)
         self.Derivative = self.Metric.Derivative
+        self.ge_id = ge_id
         
     def laplacian_u(self):
         """ g11*g22*u,11 + 1/2*(g22*g11,1 - g11*g22,1)*u,1 """
+        ge_id = self.ge_id
         du_ds1 = self.Derivative.du_ds()[0]
         ddu_dds1 = self.Derivative.ddu_dds()[0][0]
         
-#        g11 = self.Metric.supermetric()[0][0]
-#        g22 = self.Metric.supermetric()[1][1]
-#        dg11_ds1 = self.Metric.dg_ds1()[0][0]
-#        dg22_ds1 = self.Metric.dg_ds1()[1][1]
-#
-#        laplacian_u = 2*g11*g22*ddu_dds1 \
-#                      + (g22*dg11_ds1 - g11*dg22_ds1)*du_ds1
-
-        ds1_dx1 = self.Derivative.ds_dx()[0][0]
-        ds1_dx2 = self.Derivative.ds_dx()[0][1]
-        dds1_ddx1 = self.Derivative.dds_ddx()[0][0][0]
-        dds1_ddx2 = self.Derivative.dds_ddx()[0][1][1]
-
-        laplacian_u = ((ds1_dx1)**2 + (ds1_dx2)**2)*ddu_dds1 \
-                      + (dds1_ddx1 + dds1_ddx2)*du_ds1
+        if ge_id == 'metric':
+            g11 = self.Metric.supermetric()[0][0]
+            g22 = self.Metric.supermetric()[1][1]
+            dg11_ds1 = self.Metric.dg_ds1()[0][0]
+            dg22_ds1 = self.Metric.dg_ds1()[1][1]
+    
+            laplacian_u = 2*g11*g22*ddu_dds1 \
+                          + (g22*dg11_ds1 - g11*dg22_ds1)*du_ds1
+            
+        if ge_id == 'derivative':
+            ds1_dx1 = self.Derivative.ds_dx()[0][0]
+            ds1_dx2 = self.Derivative.ds_dx()[0][1]
+            dds1_ddx1 = self.Derivative.dds_ddx()[0][0][0]
+            dds1_ddx2 = self.Derivative.dds_ddx()[0][1][1]
+    
+            laplacian_u = ((ds1_dx1)**2 + (ds1_dx2)**2)*ddu_dds1 \
+                          + (dds1_ddx1 + dds1_ddx2)*du_ds1    
         
         return laplacian_u
 
@@ -396,8 +403,8 @@ class Laplacian(Metric):
 class GoverningEquations(Laplacian):
     """ Derive Governing Equations """
     
-    def __init__(self, f_id, x, s, unknown, x_value, unknown_init):
-        self.Laplacian = Laplacian(f_id, x, s, unknown, x_value, unknown_init)
+    def __init__(self, f_id, ge_id, x, s, unknown, x_value, unknown_init):
+        self.Laplacian = Laplacian(f_id, ge_id, x, s, unknown, x_value, unknown_init)
         self.Metric = self.Laplacian.Metric
         self.Derivative = self.Laplacian.Metric.Derivative
         self.Taylor = self.Laplacian.Metric.Derivative.Taylor
@@ -468,11 +475,12 @@ class GoverningEquations(Laplacian):
 class Solve(BoundaryConditions, GoverningEquations):
     """ Solve BVP on Line Element by Newton's Method """
     
-    def __init__(self, f_id, x, s, unknown, x_value, unknown_init, element_size):
+    def __init__(self, f_id, ge_id, x, s, unknown, x_value, unknown_init, element_size, newton_tol):
         self.BC = BoundaryConditions(f_id, x, s, unknown, x_value, unknown_init, element_size)
-        self.GE = GoverningEquations(f_id, x, s, unknown, x_value, unknown_init)
+        self.GE = GoverningEquations(f_id, ge_id, x, s, unknown, x_value, unknown_init)
         self.unknown = unknown
         self.unknown_init = unknown_init
+        self.newton_tol = newton_tol
     
     def f(self):
         unknown = self.unknown
@@ -541,38 +549,42 @@ class Solve(BoundaryConditions, GoverningEquations):
     
         return residual   
     
-    def error(self, unknown_temp):
+    def newton_error(self, unknown_temp):
         unknown = self.unknown
         f = self.f()
         
-        error = np.ndarray((len(f),), 'object')
+        newton_error = np.ndarray((len(f),), 'object')
         for i in range(len(f)):
-            error[i] = lambdify(unknown, f[i], 'numpy')
-            error[i] = error[i](unknown_temp[0],
-                                unknown_temp[1],
-                                unknown_temp[2],
-                                unknown_temp[3],
-                                unknown_temp[4],
-                                unknown_temp[5],
-                                unknown_temp[6],
-                                unknown_temp[7],
-                                unknown_temp[8],
-                                )
-        error = norm(error)
+            newton_error[i] = lambdify(unknown, f[i], 'numpy')
+            newton_error[i] = newton_error[i](unknown_temp[0],
+                                              unknown_temp[1],
+                                              unknown_temp[2],
+                                              unknown_temp[3],
+                                              unknown_temp[4],
+                                              unknown_temp[5],
+                                              unknown_temp[6],
+                                              unknown_temp[7],
+                                              unknown_temp[8],
+                                              )
+        newton_error = norm(newton_error)
         
-        return error
+        return newton_error
     
     def solution(self):
         unknown_init = self.unknown_init
         unknown_temp = unknown_init
-        error = self.error(unknown_temp)
+        newton_tol = self.newton_tol
+        newton_error = self.newton_error(unknown_temp)
         
-        while error > 1.0e-8:
+        while newton_error > newton_tol:
             Jacobian_f = self.Jacobian_f(unknown_temp)
             residual = self.residual(unknown_temp)
 #            unknown_temp = np.linalg.solve(Jacobian_f, residual)
             unknown_temp = np.linalg.lstsq(Jacobian_f, residual)[0]
-            error = self.error(unknown_temp)
+#            unknown_temp = scp.sparse.linalg.spsolve(Jacobian_f, residual)
+#            unknown_temp = scp.sparse.linalg.bicg(Jacobian_f, residual)[0]
+#            unknown_temp = scp.sparse.linalg.lsqr(Jacobian_f, residual)[0]
+            newton_error = self.newton_error(unknown_temp)
         
         solution = unknown_temp
         
@@ -605,13 +617,26 @@ if __name__ == '__main__':
     
     ################################
 #    f_id = 'z^2'
-#    f_id = 'z^3'
+    f_id = 'z^3'
 #    f_id = 'z^4'
-    f_id = 'exp(z)'
-    n = 1
-    error_limit = 1.0
-    element_size = 1.0e-3
+#    f_id = 'exp(z)'
+    
+    ge_id = 'metric'
+#    ge_id = 'derivative'
+    
+    n = 20
+    error_init_limit = 1000.0
+    element_size = 1.0e-2
+    newton_tol = 1.0e-8
     ##############################
+    
+    print('')
+    print('f(z) = ', f_id)
+    print('G.E. = ', ge_id)
+    print('error_init_limit = ', error_init_limit)
+    print('element_size = ', element_size)
+    print('newton_tol = ', newton_tol)
+    print('')
     
     x_target = np.ndarray((len(x),))
     
@@ -626,7 +651,7 @@ if __name__ == '__main__':
     error_sum_array[0] = 0
     error_sum_array[1] = 0
     
-    abs_eigvals_Jacobian_f_init_array = np.ndarray((n, len(unknown)))
+    min_abs_eigvals_Jacobian_f_init_array = np.ndarray((n, 1))
     
     
     def relative_error(a, b):
@@ -636,68 +661,54 @@ if __name__ == '__main__':
         return relative_error
     
     
-    for i in range(n):
-        x_target[0] =  2*(i + 1)/(n + 1) + 0.0
-        x_target[1] =  2*(i + 1)/(n + 1) + 0.0
-        
-        #####################################################
-        Unknown_call = Unknown(f_id, x, s, unknown, x_target)
-        #####################################################
-        unknown_theory = Unknown_call.unknown_theory()
-        unknown_init = Unknown_call.unknown_init(error_limit)
+    x_min = np.ndarray((2))
+    x_min[0] = 0.0
+    x_min[1] = 0.0
     
-        ##############################################################################
-        Solve_call = Solve(f_id, x, s, unknown, x_target, unknown_init, element_size)
-        ##############################################################################
+    x_max = np.ndarray((2))
+    x_max[0] = 2.0
+    x_max[1] = 2.0
+    
+    for i in range(n):
+        x_target[0] = random.uniform(x_min[0], x_max[0])
+        x_target[1] = random.uniform(x_min[1], x_max[1])
+        
+        ######################################################
+        Unknown_call = Unknown(f_id, x, s, unknown, x_target)
+        ######################################################
+        unknown_theory = Unknown_call.unknown_theory()
+        unknown_init = Unknown_call.unknown_init(error_init_limit)
+    
+        #################################################################################################
+        Solve_call = Solve(f_id, ge_id, x, s, unknown, x_target, unknown_init, element_size, newton_tol)
+        #################################################################################################
         unknown_terminal = Solve_call.solution()
         f_init = Solve_call.f()
         Jacobian_f_init = Solve_call.Jacobian_f(unknown_init)
         eigvals_Jacobian_f_init = eigvals(Jacobian_f_init)
         abs_eigvals_Jacobian_f_init = abs(eigvals_Jacobian_f_init)
+        min_abs_eigvals_Jacobian_f_init_array[i] = min(abs_eigvals_Jacobian_f_init)
         
         error_init = relative_error(unknown_theory, unknown_init)
         error_terminal = relative_error(unknown_theory, unknown_terminal)
         
-        for k in range(len(x)):
-            x_target_array[i][k] = x_target[k]
+        for j in range(len(x)):
+            x_target_array[i][j] = x_target[j]
 
-        for k in range(len(unknown)):
-            unknown_theory_array[i][k] = unknown_theory[k]
-            unknown_init_array[i][k] = unknown_init[k]
-            unknown_terminal_array[i][k] = unknown_terminal[k]
-            abs_eigvals_Jacobian_f_init_array[i][k] = abs_eigvals_Jacobian_f_init[k]
+        for j in range(len(unknown)):
+            unknown_theory_array[i][j] = unknown_theory[j]
+            unknown_init_array[i][j] = unknown_init[j]
+            unknown_terminal_array[i][j] = unknown_terminal[j]
             
         error_array[i][0] = error_init
         error_array[i][1] = error_terminal
         error_sum_array[0] += error_init
         error_sum_array[1] += error_terminal
-     
-    print('')
-    print('f(z) = ', f_id)
     
-    print('element_size = ', element_size)
     print('')
-    
     print('x_target = ')
     print(x_target_array)
     print('')
-    
-#    print('f_init = ')
-#    for i in range(len(f_init)):
-#        display(f_init[i])
-#    print('')
-    
-#    print('unknown_theory = ')
-#    print(unknown_theory)
-#    print('')
-#    
-#    print('unknown_init = ')
-#    print(unknown_init)
-#    print('')
-#    
-#    print('unknown_terminal = ')
-#    print(unknown_terminal)
-#    print('')
     
     print('error_init(%) & error_terminal(%) = ')
     print(error_array)
@@ -707,8 +718,8 @@ if __name__ == '__main__':
     print(error_sum_array)
     print('')
     
-#    print('abs_eigvals_Jacobian_f_init = ')
-#    print(abs_eigvals_Jacobian_f_init)
+#    print('min_abs_eigvals_Jacobian_f_init = ')
+#    print(min_abs_eigvals_Jacobian_f_init_array)
 #    print('')
             
             
