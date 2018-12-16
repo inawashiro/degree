@@ -368,18 +368,18 @@ class Metric(Derivative):
 class Laplacian(Metric):
     """ x_Taylor Series of Laplacian """
     
-    def __init__(self, f_id, ge_id, x, s, unknown, x_value, unknown_init):
+    def __init__(self, f_id, laplacian_id, x, s, unknown, x_value, unknown_init):
         self.Metric = Metric(f_id, x, s, unknown, x_value, unknown_init)
         self.Derivative = self.Metric.Derivative
-        self.ge_id = ge_id
+        self.laplacian_id = laplacian_id
         
     def laplacian_u(self):
         """ g11*g22*u,11 + 1/2*(g22*g11,1 - g11*g22,1)*u,1 """
-        ge_id = self.ge_id
+        laplacian_id = self.laplacian_id
         du_ds1 = self.Derivative.du_ds()[0]
         ddu_dds1 = self.Derivative.ddu_dds()[0][0]
         
-        if ge_id == 'metric':
+        if laplacian_id == 'metric':
             g11 = self.Metric.supermetric()[0][0]
             g22 = self.Metric.supermetric()[1][1]
             dg11_ds1 = self.Metric.dg_ds1()[0][0]
@@ -388,7 +388,7 @@ class Laplacian(Metric):
             laplacian_u = 2*g11*g22*ddu_dds1 \
                           + (g22*dg11_ds1 - g11*dg22_ds1)*du_ds1
             
-        if ge_id == 'derivative':
+        if laplacian_id == 'derivative':
             ds1_dx1 = self.Derivative.ds_dx()[0][0]
             ds1_dx2 = self.Derivative.ds_dx()[0][1]
             dds1_ddx1 = self.Derivative.dds_ddx()[0][0][0]
@@ -475,12 +475,13 @@ class GoverningEquations(Laplacian):
 class Solve(BoundaryConditions, GoverningEquations):
     """ Solve BVP on Line Element by Newton's Method """
     
-    def __init__(self, f_id, ge_id, x, s, unknown, x_value, unknown_init, element_size, newton_tol):
+    def __init__(self, f_id, ge_id, solver_id, x, s, unknown, x_value, unknown_init, element_size, newton_tol):
         self.BC = BoundaryConditions(f_id, x, s, unknown, x_value, unknown_init, element_size)
         self.GE = GoverningEquations(f_id, ge_id, x, s, unknown, x_value, unknown_init)
         self.unknown = unknown
         self.unknown_init = unknown_init
         self.newton_tol = newton_tol
+        self.solver_id = solver_id
     
     def f(self):
         unknown = self.unknown
@@ -575,15 +576,23 @@ class Solve(BoundaryConditions, GoverningEquations):
         unknown_temp = unknown_init
         newton_tol = self.newton_tol
         newton_error = self.newton_error(unknown_temp)
+        solver_id = self.solver_id 
         
         while newton_error > newton_tol:
             Jacobian_f = self.Jacobian_f(unknown_temp)
             residual = self.residual(unknown_temp)
-#            unknown_temp = np.linalg.solve(Jacobian_f, residual)
-            unknown_temp = np.linalg.lstsq(Jacobian_f, residual)[0]
-#            unknown_temp = scp.sparse.linalg.spsolve(Jacobian_f, residual)
-#            unknown_temp = scp.sparse.linalg.bicg(Jacobian_f, residual)[0]
-#            unknown_temp = scp.sparse.linalg.lsqr(Jacobian_f, residual)[0]
+            
+            if solver_id == 'np.solve':
+                unknown_temp = np.linalg.solve(Jacobian_f, residual)
+            if solver_id == 'np.lstsq':
+                unknown_temp = np.linalg.lstsq(Jacobian_f, residual)[0]
+            if solver_id == 'scp.spsolve':
+                unknown_temp = scp.sparse.linalg.spsolve(Jacobian_f, residual)
+            if solver_id == 'scp.bicg':
+                unknown_temp = scp.sparse.linalg.bicg(Jacobian_f, residual)[0]
+            if solver_id == 'scp.lsqr':
+                unknown_temp = scp.sparse.linalg.lsqr(Jacobian_f, residual)[0]
+                
             newton_error = self.newton_error(unknown_temp)
         
         solution = unknown_temp
@@ -617,25 +626,32 @@ if __name__ == '__main__':
     
     ################################
 #    f_id = 'z^2'
-    f_id = 'z^3'
-#    f_id = 'z^4'
+#    f_id = 'z^3'
+    f_id = 'z^4'
 #    f_id = 'exp(z)'
     
-    ge_id = 'metric'
-#    ge_id = 'derivative'
+#    laplacian_id = 'metric'
+    laplacian_id = 'derivative'
     
     n = 20
     error_init_limit = 1000.0
     element_size = 1.0e-2
     newton_tol = 1.0e-8
+    
+#    solver_id = 'np.solve'
+    solver_id = 'np.lstsq'
+#    solver_id = 'scp.spsolve'
+#    solver_id = 'scp.bicg'
+#    solver_id = 'scp.lsqr'
     ##############################
     
     print('')
-    print('f(z) = ', f_id)
-    print('G.E. = ', ge_id)
-    print('error_init_limit = ', error_init_limit)
-    print('element_size = ', element_size)
-    print('newton_tol = ', newton_tol)
+    print('f(z) =', f_id)
+    print('Laplacian =', laplacian_id)
+    print('error_init_limit =', error_init_limit)
+    print('element_size =', element_size)
+    print('newton_tol =', newton_tol)
+    print('solver =', solver_id)
     print('')
     
     x_target = np.ndarray((len(x),))
@@ -680,7 +696,7 @@ if __name__ == '__main__':
         unknown_init = Unknown_call.unknown_init(error_init_limit)
     
         #################################################################################################
-        Solve_call = Solve(f_id, ge_id, x, s, unknown, x_target, unknown_init, element_size, newton_tol)
+        Solve_call = Solve(f_id, laplacian_id, solver_id, x, s, unknown, x_target, unknown_init, element_size, newton_tol)
         #################################################################################################
         unknown_terminal = Solve_call.solution()
         f_init = Solve_call.f()
