@@ -368,18 +368,18 @@ class Metric(Derivative):
 class Laplacian(Metric):
     """ x_Taylor Series of Laplacian """
     
-    def __init__(self, f_id, laplacian_id, x, s, unknown, x_value, unknown_init):
+    def __init__(self, f_id, formulation_id, x, s, unknown, x_value, unknown_init):
         self.Metric = Metric(f_id, x, s, unknown, x_value, unknown_init)
         self.Derivative = self.Metric.Derivative
-        self.laplacian_id = laplacian_id
+        self.formulation_id = formulation_id
         
     def laplacian_u(self):
         """ g11*g22*u,11 + 1/2*(g22*g11,1 - g11*g22,1)*u,1 """
-        laplacian_id = self.laplacian_id
+        formulation_id = self.formulation_id
         du_ds1 = self.Derivative.du_ds()[0]
         ddu_dds1 = self.Derivative.ddu_dds()[0][0]
         
-        if laplacian_id == 'metric':
+        if formulation_id == 'metric':
             g11 = self.Metric.supermetric()[0][0]
             g22 = self.Metric.supermetric()[1][1]
             dg11_ds1 = self.Metric.dg_ds1()[0][0]
@@ -388,7 +388,7 @@ class Laplacian(Metric):
             laplacian_u = 2*g11*g22*ddu_dds1 \
                           + (g22*dg11_ds1 - g11*dg22_ds1)*du_ds1
             
-        if laplacian_id == 'derivative':
+        if formulation_id == 'derivative':
             ds1_dx1 = self.Derivative.ds_dx()[0][0]
             ds1_dx2 = self.Derivative.ds_dx()[0][1]
             dds1_ddx1 = self.Derivative.dds_ddx()[0][0][0]
@@ -403,8 +403,8 @@ class Laplacian(Metric):
 class GoverningEquations(Laplacian):
     """ Derive Governing Equations """
     
-    def __init__(self, f_id, ge_id, x, s, unknown, x_value, unknown_init):
-        self.Laplacian = Laplacian(f_id, ge_id, x, s, unknown, x_value, unknown_init)
+    def __init__(self, f_id, formulation_id, x, s, unknown, x_value, unknown_init):
+        self.Laplacian = Laplacian(f_id, formulation_id, x, s, unknown, x_value, unknown_init)
         self.Metric = self.Laplacian.Metric
         self.Derivative = self.Laplacian.Metric.Derivative
         self.Taylor = self.Laplacian.Metric.Derivative.Taylor
@@ -475,13 +475,11 @@ class GoverningEquations(Laplacian):
 class Solve(BoundaryConditions, GoverningEquations):
     """ Solve BVP on Line Element by Newton's Method """
     
-    def __init__(self, f_id, ge_id, solver_id, x, s, unknown, x_value, unknown_init, element_size, newton_tol):
+    def __init__(self, f_id, ge_id, x, s, unknown, x_value, unknown_init, element_size):
         self.BC = BoundaryConditions(f_id, x, s, unknown, x_value, unknown_init, element_size)
         self.GE = GoverningEquations(f_id, ge_id, x, s, unknown, x_value, unknown_init)
         self.unknown = unknown
         self.unknown_init = unknown_init
-        self.newton_tol = newton_tol
-        self.solver_id = solver_id
     
     def f(self):
         unknown = self.unknown
@@ -571,12 +569,10 @@ class Solve(BoundaryConditions, GoverningEquations):
         
         return newton_error
     
-    def solution(self):
+    def solution(self, newton_tol, solver_id):
         unknown_init = self.unknown_init
         unknown_temp = unknown_init
-        newton_tol = self.newton_tol
         newton_error = self.newton_error(unknown_temp)
-        solver_id = self.solver_id 
         
         while newton_error > newton_tol:
             Jacobian_f = self.Jacobian_f(unknown_temp)
@@ -630,8 +626,8 @@ if __name__ == '__main__':
 #    f_id = 'z^4'
 #    f_id = 'exp(z)'
     
-#    laplacian_id = 'metric'
-    laplacian_id = 'derivative'
+#    formulation_id = 'metric'
+    formulation_id = 'derivative'
     
     n = 1
     error_init_limit = 0.0
@@ -647,7 +643,7 @@ if __name__ == '__main__':
     
     print('')
     print('f(z) =', f_id)
-    print('Laplacian =', laplacian_id)
+    print('formulation =', formulation_id)
     print('error_init_limit =', error_init_limit)
     print('element_size =', element_size)
     print('newton_tol =', newton_tol)
@@ -695,10 +691,10 @@ if __name__ == '__main__':
         unknown_theory = Unknown_call.unknown_theory()
         unknown_init = Unknown_call.unknown_init(error_init_limit)
     
-        ###################################################################################################################
-        Solve_call = Solve(f_id, laplacian_id, solver_id, x, s, unknown, x_target, unknown_init, element_size, newton_tol)
-        ###################################################################################################################
-        unknown_terminal = Solve_call.solution()
+        ##############################################################################################
+        Solve_call = Solve(f_id, formulation_id, x, s, unknown, x_target, unknown_init, element_size)
+        ##############################################################################################
+        unknown_terminal = Solve_call.solution(newton_tol, solver_id)
         f_init = Solve_call.f()
         Jacobian_f_init = Solve_call.Jacobian_f(unknown_init)
         eigvals_Jacobian_f_init = eigvals(Jacobian_f_init)
