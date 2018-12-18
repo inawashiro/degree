@@ -198,48 +198,47 @@ class TheoreticalValue(ProblemSettings):
         
         return s_theory
     
-    def a_theory(self):
+    def s_coeff_theory(self):
         """  x_Taylor Series Coefficients of s1 """
         x = self.x
         s = self.ProblemSettings.s(x)
         x_value = self.x_value
         
-        a_theory = np.ndarray((len(s), 6,), 'object')
+        s_coeff_theory = np.ndarray((len(s), 6,), 'object')
         for i in range(len(s)):
-            a_theory[i][0] = s[i]
-            a_theory[i][1] = diff(s[i], x[0])
-            a_theory[i][2] = diff(s[i], x[1])
-            a_theory[i][3] = diff(s[i], x[0], 2)
-            a_theory[i][4] = diff(s[i], x[0], x[1])
-            a_theory[i][5] = diff(s[i], x[1], 2)
+            s_coeff_theory[i][0] = s[i]
+            s_coeff_theory[i][1] = diff(s[i], x[0])
+            s_coeff_theory[i][2] = diff(s[i], x[1])
+            s_coeff_theory[i][3] = diff(s[i], x[0], 2)
+            s_coeff_theory[i][4] = diff(s[i], x[0], x[1])
+            s_coeff_theory[i][5] = diff(s[i], x[1], 2)
             
         for i in range(len(s)):
-            for j in range(6):
-                a_theory[i][j] = lambdify(x, a_theory[i][j], 'numpy')
-                a_theory[i][j] = a_theory[i][j](x_value[0], x_value[1])
+            for j in range(len(s_coeff_theory[i])):
+                s_coeff_theory[i][j] = lambdify(x, s_coeff_theory[i][j], 'numpy')
+                s_coeff_theory[i][j] = s_coeff_theory[i][j](x_value[0], x_value[1])
                 
-        return a_theory
+        return s_coeff_theory
 
-    def b_theory(self):
+    def u_coeff_theory(self):
         """ s_Taylor Series Coefficients of u """
         s = self.s
         u = self.ProblemSettings.u(s)
         s_theory = self.s_theory()
         
-        b = np.ndarray((6,), 'object')
-        b[0] = u
-        b[1] = diff(u, s[0])
-        b[2] = diff(u, s[1])
-        b[3] = diff(u, s[0], 2)
-        b[4] = diff(u, s[0], s[1])
-        b[5] = diff(u, s[1], 2)
+        u_coeff_theory = np.ndarray((6,), 'object')
+        u_coeff_theory[0] = u
+        u_coeff_theory[1] = diff(u, s[0])
+        u_coeff_theory[2] = diff(u, s[1])
+        u_coeff_theory[3] = diff(u, s[0], 2)
+        u_coeff_theory[4] = diff(u, s[0], s[1])
+        u_coeff_theory[5] = diff(u, s[1], 2)
         
-        b_theory = np.ndarray((len(b),), 'object')
-        for i in range(len(b)):
-            b_theory[i] = lambdify(s, b[i], 'numpy')
-            b_theory[i] = b_theory[i](s_theory[0], s_theory[1])
+        for i in range(len(u_coeff_theory)):
+            u_coeff_theory[i] = lambdify(s, u_coeff_theory[i], 'numpy')
+            u_coeff_theory[i] = u_coeff_theory[i](s_theory[0], s_theory[1])
         
-        return b_theory   
+        return u_coeff_theory   
         
 
 
@@ -326,4 +325,6 @@ if __name__ == '__main__':
     
     
     
-                                                                                                                                        
+    
+    
+    
