@@ -38,20 +38,20 @@ class Known(laplace_theory.TheoreticalValue):
         self.unknown = unknown
         
     def known(self):
-        a_theory = self.Theory.a_theory()
-        b_theory = self.Theory.b_theory()
+        s_coeff_theory = self.Theory.s_coeff_theory()
+        u_coeff_theory = self.Theory.u_coeff_theory()
         unknown = self.unknown
         
         known = np.ndarray((18 - len(unknown),))
-        known[0] = a_theory[0][0]
-        known[1] = a_theory[0][1]
-        known[2] = a_theory[0][2]
-        known[3] = a_theory[1][0]
-        known[4] = a_theory[1][1]
-        known[5] = a_theory[1][2]
-        known[6] = b_theory[0]
-        known[7] = b_theory[1]
-        known[8] = b_theory[2]
+        known[0] = s_coeff_theory[0][0]
+        known[1] = s_coeff_theory[0][1]
+        known[2] = s_coeff_theory[0][2]
+        known[3] = s_coeff_theory[1][0]
+        known[4] = s_coeff_theory[1][1]
+        known[5] = s_coeff_theory[1][2]
+        known[6] = u_coeff_theory[0]
+        known[7] = u_coeff_theory[1]
+        known[8] = u_coeff_theory[2]
         
         return known
 
@@ -65,19 +65,19 @@ class Unknown(laplace_theory.TheoreticalValue):
         
     def unknown_theory(self):
         unknown = self.unknown
-        a_theory = self.Theory.a_theory()
-        b_theory = self.Theory.b_theory()
+        s_coeff_theory = self.Theory.s_coeff_theory()
+        u_coeff_theory = self.Theory.u_coeff_theory()
         
         unknown_theory = np.ndarray((len(unknown),))
-        unknown_theory[0] = a_theory[0][3]
-        unknown_theory[1] = a_theory[0][4]
-        unknown_theory[2] = a_theory[0][5]
-        unknown_theory[3] = a_theory[1][3]
-        unknown_theory[4] = a_theory[1][4]
-        unknown_theory[5] = a_theory[1][5]
-        unknown_theory[6] = b_theory[3]
-        unknown_theory[7] = b_theory[4]
-        unknown_theory[8] = b_theory[5]
+        unknown_theory[0] = s_coeff_theory[0][3]
+        unknown_theory[1] = s_coeff_theory[0][4]
+        unknown_theory[2] = s_coeff_theory[0][5]
+        unknown_theory[3] = s_coeff_theory[1][3]
+        unknown_theory[4] = s_coeff_theory[1][4]
+        unknown_theory[5] = s_coeff_theory[1][5]
+        unknown_theory[6] = u_coeff_theory[3]
+        unknown_theory[7] = u_coeff_theory[4]
+        unknown_theory[8] = u_coeff_theory[5]
         
         return unknown_theory
         
@@ -614,28 +614,28 @@ if __name__ == '__main__':
     s[1] = Symbol('s2', real = True)
     
     unknown = np.ndarray((9,), 'object')
-    unknown[0] = Symbol('a1_11', real = True)
-    unknown[1] = Symbol('a1_12', real = True)
-    unknown[2] = Symbol('a1_22', real = True)
-    unknown[3] = Symbol('a2_11', real = True)
-    unknown[4] = Symbol('a2_12', real = True)
-    unknown[5] = Symbol('a2_22', real = True)
-    unknown[6] = Symbol('b11', real = True)
-    unknown[7] = Symbol('b12', real = True)
-    unknown[8] = Symbol('b22', real = True)
+    unknown[0] = Symbol('s1_11', real = True)
+    unknown[1] = Symbol('s1_12', real = True)
+    unknown[2] = Symbol('s1_22', real = True)
+    unknown[3] = Symbol('s2_11', real = True)
+    unknown[4] = Symbol('s2_12', real = True)
+    unknown[5] = Symbol('s2_22', real = True)
+    unknown[6] = Symbol('u11', real = True)
+    unknown[7] = Symbol('u12', real = True)
+    unknown[8] = Symbol('u22', real = True)
     
     ################################
-#    f_id = 'z^2'
+    f_id = 'z^2'
 #    f_id = 'z^3'
-    f_id = 'z^4'
+#    f_id = 'z^4'
 #    f_id = 'exp(z)'
     
 #    laplacian_id = 'metric'
     laplacian_id = 'derivative'
     
-    n = 20
-    error_init_limit = 1000.0
-    element_size = 1.0e-2
+    n = 1
+    error_init_limit = 0.0
+    element_size = 1.0e-1
     newton_tol = 1.0e-8
     
 #    solver_id = 'np.solve'
