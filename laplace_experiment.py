@@ -530,9 +530,9 @@ class Solve(BoundaryConditions, GoverningEquations):
         
         residual = np.ndarray((len(f),), 'object')
         for i in range(len(f)):
-            residual[i] = -f[i]
-            for j in range(len(unknown)):
-                residual[i] += diff(f[i], unknown[j])*unknown[j]
+            residual[i] = f[i]
+#            for j in range(len(unknown)):
+#                residual[i] += diff(f[i], unknown[j])*unknown[j]
             residual[i] = lambdify(unknown, residual[i], 'numpy')
             residual[i] = residual[i](unknown_temp[0],
                                       unknown_temp[1],
@@ -548,48 +548,49 @@ class Solve(BoundaryConditions, GoverningEquations):
     
         return residual   
     
-    def newton_error(self, unknown_temp):
-        unknown = self.unknown
-        f = self.f()
-        
-        newton_error = np.ndarray((len(f),), 'object')
-        for i in range(len(f)):
-            newton_error[i] = lambdify(unknown, f[i], 'numpy')
-            newton_error[i] = newton_error[i](unknown_temp[0],
-                                              unknown_temp[1],
-                                              unknown_temp[2],
-                                              unknown_temp[3],
-                                              unknown_temp[4],
-                                              unknown_temp[5],
-                                              unknown_temp[6],
-                                              unknown_temp[7],
-                                              unknown_temp[8],
-                                              )
-        newton_error = norm(newton_error)
-        
-        return newton_error
+#    def newton_error(self, unknown_temp):
+#        unknown = self.unknown
+#        f = self.f()
+#        
+#        newton_error = np.ndarray((len(f),), 'object')
+#        for i in range(len(f)):
+#            newton_error[i] = lambdify(unknown, f[i], 'numpy')
+#            newton_error[i] = newton_error[i](unknown_temp[0],
+#                                              unknown_temp[1],
+#                                              unknown_temp[2],
+#                                              unknown_temp[3],
+#                                              unknown_temp[4],
+#                                              unknown_temp[5],
+#                                              unknown_temp[6],
+#                                              unknown_temp[7],
+#                                              unknown_temp[8],
+#                                              )
+#        newton_error = norm(newton_error)
+#        
+#        return newton_error
     
     def solution(self, newton_tol, solver_id):
         unknown_init = self.unknown_init
         unknown_temp = unknown_init
-        newton_error = self.newton_error(unknown_temp)
-        
-        while newton_error > newton_tol:
+        residual = self.residual(unknown_temp)
+            
+        while norm(residual) > newton_tol:
             Jacobian_f = self.Jacobian_f(unknown_temp)
             residual = self.residual(unknown_temp)
             
             if solver_id == 'np.solve':
-                unknown_temp = np.linalg.solve(Jacobian_f, residual)
+                increment = np.linalg.solve(Jacobian_f, residual)
             if solver_id == 'np.lstsq':
-                unknown_temp = np.linalg.lstsq(Jacobian_f, residual)[0]
+                increment = np.linalg.lstsq(Jacobian_f, residual)[0]
             if solver_id == 'scp.spsolve':
-                unknown_temp = scp.sparse.linalg.spsolve(Jacobian_f, residual)
+                increment = scp.sparse.linalg.spsolve(Jacobian_f, residual)
             if solver_id == 'scp.bicg':
-                unknown_temp = scp.sparse.linalg.bicg(Jacobian_f, residual)[0]
+                increment = scp.sparse.linalg.bicg(Jacobian_f, residual)[0]
             if solver_id == 'scp.lsqr':
-                unknown_temp = scp.sparse.linalg.lsqr(Jacobian_f, residual)[0]
-                
-            newton_error = self.newton_error(unknown_temp)
+                increment = scp.sparse.linalg.lsqr(Jacobian_f, residual)[0]
+            
+            unknown_temp -= increment
+            residual = self.residual(unknown_temp)
         
         solution = unknown_temp
         
@@ -630,9 +631,9 @@ if __name__ == '__main__':
     formulation_id = 'derivative'
     
     n = 1
-    error_init_limit = 0.0
-    element_size = 1.0e-1
-    newton_tol = 1.0e-8
+    error_init_limit = 1000.0
+    element_size = 1.0e-2
+    newton_tol = 1.0e-3
     
 #    solver_id = 'np.solve'
     solver_id = 'np.lstsq'
@@ -720,6 +721,21 @@ if __name__ == '__main__':
     print('')
     print('x_target = ')
     print(x_target_array)
+    print('')
+    
+    print('')
+    print('unknown_theory = ')
+    print(unknown_theory)
+    print('')
+    
+    print('')
+    print('unknown_init = ')
+    print(unknown_init)
+    print('')
+    
+    print('')
+    print('unknown_terminal = ')
+    print(unknown_terminal)
     print('')
     
     print('error_init(%) & error_terminal(%) = ')
