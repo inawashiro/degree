@@ -400,27 +400,31 @@ class Laplacian(Metric):
 class GoverningEquations(Laplacian):
     """ Derive Governing Equations """
     
-    def __init__(self, f_id, formulation_id, x, s, unknown, x_value, unknown_init):
+    def __init__(self, f_id, formulation_id, highest_order, x, s, unknown, x_value, unknown_init):
         self.Laplacian = Laplacian(f_id, formulation_id, x, s, unknown, x_value, unknown_init)
         self.Metric = self.Laplacian.Metric
         self.Derivative = self.Laplacian.Metric.Derivative
         self.Taylor = self.Laplacian.Metric.Derivative.Taylor
+        self.highest_order = highest_order
         self.x =  x
         self.x_value = x_value
 
     def governing_equation_0(self):
         """ 1st Order x_Taylor Series of g_12 """
         du_ds2 = self.Derivative.du_ds()[1]
+        highest_order = self.highest_order
         x = self.x
         x_value = self.x_value
         
-        coeff_du_ds2 = np.ndarray((6), 'object')
-#        coeff_du_ds2[0] = du_ds2
+        len_coeff_du_ds2 = int(1/2*(highest_order + 1)*(highest_order + 2))
+        
+        coeff_du_ds2 = np.ndarray((len_coeff_du_ds2), 'object')
+        coeff_du_ds2[0] = du_ds2
         coeff_du_ds2[1] = syp.diff(du_ds2, x[0])
         coeff_du_ds2[2] = syp.diff(du_ds2, x[1])
-#        coeff_du_ds2[3] = syp.diff(du_ds2, x[0], 2)
-#        coeff_du_ds2[4] = syp.diff(du_ds2, x[0], x[1])
-#        coeff_du_ds2[5] = syp.diff(du_ds2, x[1], 2)
+        coeff_du_ds2[3] = syp.diff(du_ds2, x[0], 2)
+        coeff_du_ds2[4] = syp.diff(du_ds2, x[0], x[1])
+        coeff_du_ds2[5] = syp.diff(du_ds2, x[1], 2)
         
         for i in range(len(coeff_du_ds2)):
             coeff_du_ds2[i] = syp.lambdify(x, coeff_du_ds2[i], 'numpy')
@@ -431,11 +435,14 @@ class GoverningEquations(Laplacian):
     def governing_equation_1(self):
         """ 1st Order x_Taylor Series of g_12 """
         g12 = self.Metric.supermetric()[0][1]
+        highest_order = self.highest_order
         x = self.x
         x_value = self.x_value
         
-        coeff_g12 = np.ndarray((6), 'object')
-#        coeff_g12[0] = g12
+        len_coeff_g12 = int(1/2*(highest_order + 1)*(highest_order + 2))
+        
+        coeff_g12 = np.ndarray((len_coeff_g12), 'object')
+        coeff_g12[0] = g12
         coeff_g12[1] = syp.diff(g12, x[0])
         coeff_g12[2] = syp.diff(g12, x[1])
         coeff_g12[3] = syp.diff(g12, x[0], 2)
@@ -451,16 +458,19 @@ class GoverningEquations(Laplacian):
     def governing_equation_2(self):
         """ 1st Order x_Taylor Series of g_12 """
         laplacian_u = self.Laplacian.laplacian_u()
+        highest_order = self.highest_order
         x = self.x
         x_value = self.x_value
         
-        coeff_laplacian_u = np.ndarray((6), 'object')
+        len_coeff_laplacian_u = int(1/2*(highest_order + 1)*(highest_order + 2))
+        
+        coeff_laplacian_u = np.ndarray((len_coeff_laplacian_u), 'object')
         coeff_laplacian_u[0] = laplacian_u
-#        coeff_laplacian_u[1] = syp.diff(laplacian_u, x[0])
-#        coeff_laplacian_u[2] = syp.diff(laplacian_u, x[1])
-#        coeff_laplacian_u[3] = syp.diff(laplacian_u, x[0], 2)
-#        coeff_laplacian_u[4] = syp.diff(laplacian_u, x[0], x[1])
-#        coeff_laplacian_u[5] = syp.diff(laplacian_u, x[1], 2)
+        coeff_laplacian_u[1] = syp.diff(laplacian_u, x[0])
+        coeff_laplacian_u[2] = syp.diff(laplacian_u, x[1])
+        coeff_laplacian_u[3] = syp.diff(laplacian_u, x[0], 2)
+        coeff_laplacian_u[4] = syp.diff(laplacian_u, x[0], x[1])
+        coeff_laplacian_u[5] = syp.diff(laplacian_u, x[1], 2)
         
         for i in range(len(coeff_laplacian_u)):
             coeff_laplacian_u[i] = syp.lambdify(x, coeff_laplacian_u[i], 'numpy')
@@ -472,9 +482,10 @@ class GoverningEquations(Laplacian):
 class Solve(BoundaryConditions, GoverningEquations):
     """ Solve BVP for Each Line Element by Newton's Method """
     
-    def __init__(self, f_id, ge_id, x, s, unknown, x_value, unknown_init, element_size):
+    def __init__(self, f_id, formulation_id, highest_order, x, s, unknown, x_value, unknown_init, element_size):
         self.BC = BoundaryConditions(f_id, x, s, unknown, x_value, unknown_init, element_size)
-        self.GE = GoverningEquations(f_id, ge_id, x, s, unknown, x_value, unknown_init)
+        self.GE = GoverningEquations(f_id, formulation_id, highest_order, x, s, unknown, x_value, unknown_init)
+        self.highest_order = highest_order
         self.unknown = unknown
         self.unknown_init = unknown_init
     
@@ -484,17 +495,31 @@ class Solve(BoundaryConditions, GoverningEquations):
         ge0 = self.GE.governing_equation_0()
         ge1 = self.GE.governing_equation_1()
         ge2 = self.GE.governing_equation_2()
+        highest_order = self.highest_order
         
-        f = np.ndarray((len(unknown),), 'object')
+        len_f = int(3/2*(highest_order + 1)*(highest_order + 2) + 2)
+        
+        f = np.ndarray((len_f), 'object')
         f[0] = bc[0]
         f[1] = bc[1]
-        f[2] = ge0[1]
-        f[3] = ge0[2]
-        f[4] = ge1[1]
-        f[5] = ge1[2]
-        f[6] = ge1[3]
-        f[7] = ge1[4]
-        f[8] = ge2[0]
+        f[2] = ge0[0]
+        f[3] = ge0[1]
+        f[4] = ge0[2]
+        f[5] = ge0[3]
+        f[6] = ge0[4]
+        f[7] = ge0[5]
+        f[8] = ge1[0]
+        f[9] = ge1[1]
+        f[10] = ge1[2]
+        f[11] = ge1[3]
+        f[12] = ge1[4]
+        f[13] = ge1[5]
+        f[14] = ge2[0]
+        f[15] = ge2[1]
+        f[16] = ge2[2]
+        f[17] = ge2[3]
+        f[18] = ge2[4]
+        f[19] = ge2[5]
         
         return f
     
@@ -597,18 +622,19 @@ if __name__ == '__main__':
     unknown[8] = syp.Symbol('u22', real = True)
     
     ################################
-#    f_id = 'z^2'
-    f_id = 'z^3'
+    f_id = 'z^2'
+#    f_id = 'z^3'
 #    f_id = 'z^4'
 #    f_id = 'exp(z)'
     
 #    formulation_id = 'metric'
     formulation_id = 'derivative'
     
-    n = 10
-    error_init_limit = 10.0
+    highest_order = 2
+    number_of_points = 10
+    error_init_limit = 100.0
     element_size = 1.0e-1
-    newton_tol = 1.0e-5
+    newton_tol = 1.0e-6
     
 #    solver_id = 'np.solve'
 #    solver_id = 'np.lstsq'
@@ -629,18 +655,18 @@ if __name__ == '__main__':
     
     x_target = np.ndarray((len(x),))
     
-    x_target_array = np.ndarray((n, len(x),))
+    x_target_array = np.ndarray((number_of_points, len(x),))
     
-    unknown_theory_array = np.ndarray((n, len(unknown)))
-    unknown_init_array = np.ndarray((n, len(unknown)))
-    unknown_terminal_array = np.ndarray((n, len(unknown)))
+    unknown_theory_array = np.ndarray((number_of_points, len(unknown)))
+    unknown_init_array = np.ndarray((number_of_points, len(unknown)))
+    unknown_terminal_array = np.ndarray((number_of_points, len(unknown)))
     
-    error_array = np.ndarray((n, 2))
+    error_array = np.ndarray((number_of_points, 2))
     error_sum = np.ndarray((2))
     error_sum[0] = 0
     error_sum[1] = 0
     
-    min_abs_eigvals_Jacobian_f_init_array = np.ndarray((n, 1))
+    min_abs_eigvals_Jacobian_f_init_array = np.ndarray((number_of_points, 1))
     
     
     def relative_error(a, b):
@@ -658,7 +684,7 @@ if __name__ == '__main__':
     x_max[0] = 2.0
     x_max[1] = 2.0
     
-    for i in range(n):
+    for i in range(number_of_points):
         x_target[0] = np.random.uniform(x_min[0], x_max[0])
         x_target[1] = np.random.uniform(x_min[1], x_max[1])
         
@@ -677,7 +703,7 @@ if __name__ == '__main__':
             unknown_init_array[i][j] = unknown_init[j]
     
         ##############################################################################################
-        Solve_call = Solve(f_id, formulation_id, x, s, unknown, x_target, unknown_init, element_size)
+        Solve_call = Solve(f_id, formulation_id, highest_order, x, s, unknown, x_target, unknown_init, element_size)
         ##############################################################################################
         unknown_terminal = Solve_call.solution(newton_tol, solver_id)
         error_terminal = relative_error(unknown_theory, unknown_terminal)
