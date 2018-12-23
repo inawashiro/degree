@@ -622,8 +622,8 @@ if __name__ == '__main__':
     unknown[8] = syp.Symbol('u22', real = True)
     
     ################################
-    f_id = 'z^2'
-#    f_id = 'z^3'
+#    f_id = 'z^2'
+    f_id = 'z^3'
 #    f_id = 'z^4'
 #    f_id = 'exp(z)'
     
@@ -632,16 +632,16 @@ if __name__ == '__main__':
     
     highest_order = 2
     number_of_points = 10
-    error_init_limit = 100.0
+    error_init_limit = 1000.0
     element_size = 1.0e-1
     newton_tol = 1.0e-6
     
 #    solver_id = 'np.solve'
-#    solver_id = 'np.lstsq'
+    solver_id = 'np.lstsq'
 #    solver_id = 'scp.spsolve'
 #    solver_id = 'scp.bicg'
 #    solver_id = 'scp.lsqr'
-    solver_id = 'scp.lsmr'
+#    solver_id = 'scp.lsmr'
     ##############################
     
     print('')
