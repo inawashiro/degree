@@ -17,13 +17,10 @@ from sympy import Symbol, diff, lambdify, nsolve
 syp.init_printing()
 
 import scipy as scp
-from scipy.sparse.linalg import spsolve, lsqr
+from scipy.sparse.linalg import spsolve, lsqr, lsmr
 
 # For Displaying Symbolic Notation
 from IPython.display import display
-
-## For Random Variables
-#import random
 
 # For Measuring Computation Time
 import time
@@ -87,7 +84,7 @@ class Unknown(laplace_theory.TheoreticalValue):
     
         unknown_init = np.ndarray((len(unknown),))
         for i in range(len(unknown)):
-            e = random.uniform(-error_limit, error_limit)
+            e = np.random.uniform(-error_limit, error_limit)
             unknown_init[i] = (1 + e/100)*unknown_theory[i]
         
         return unknown_init
@@ -244,10 +241,10 @@ class Derivative(Taylor):
         
         du_ds = np.ndarray((2,), 'object')
         for i in range(2):
-            du_ds[i] = diff(s_taylor_u, s[i])
+            du_ds[i] = syp.diff(s_taylor_u, s[i])
         
         for i in range(2):
-            du_ds[i] = lambdify(s, du_ds[i], 'numpy')
+            du_ds[i] = syp.lambdify(s, du_ds[i], 'numpy')
             du_ds[i] = du_ds[i](x_taylor_s[0], x_taylor_s[1])
         
         return du_ds
@@ -260,14 +257,14 @@ class Derivative(Taylor):
         x_taylor_s = self.Taylor.x_taylor_s(x, unknown)
         
         ddu_dds = np.ndarray((2, 2), 'object')
-        ddu_dds[0][0] = diff(s_taylor_u, s[0], 2)
-        ddu_dds[0][1] = diff(s_taylor_u, s[0], s[1])
-        ddu_dds[1][0] = diff(s_taylor_u, s[1], s[0])
-        ddu_dds[1][1] = diff(s_taylor_u, s[1], 2)
+        ddu_dds[0][0] = syp.diff(s_taylor_u, s[0], 2)
+        ddu_dds[0][1] = syp.diff(s_taylor_u, s[0], s[1])
+        ddu_dds[1][0] = syp.diff(s_taylor_u, s[1], s[0])
+        ddu_dds[1][1] = syp.diff(s_taylor_u, s[1], 2)
         
         for i in range(2):
             for j in range(2):
-                ddu_dds[i][j] = lambdify(s, ddu_dds[i][j], 'numpy')
+                ddu_dds[i][j] = syp.lambdify(s, ddu_dds[i][j], 'numpy')
                 ddu_dds[i][j] = ddu_dds[i][j](x_taylor_s[0], x_taylor_s[1])       
         
         return ddu_dds
@@ -278,10 +275,10 @@ class Derivative(Taylor):
         x_taylor_s = self.Taylor.x_taylor_s(x, unknown)
         
         ds_dx = np.ndarray((2, 2,), 'object')
-        ds_dx[0][0] = diff(x_taylor_s[0], x[0])
-        ds_dx[0][1] = diff(x_taylor_s[0], x[1])
-        ds_dx[1][0] = diff(x_taylor_s[1], x[0])
-        ds_dx[1][1] = diff(x_taylor_s[1], x[1])
+        ds_dx[0][0] = syp.diff(x_taylor_s[0], x[0])
+        ds_dx[0][1] = syp.diff(x_taylor_s[0], x[1])
+        ds_dx[1][0] = syp.diff(x_taylor_s[1], x[0])
+        ds_dx[1][1] = syp.diff(x_taylor_s[1], x[1])
                 
         return ds_dx
     
@@ -305,10 +302,10 @@ class Derivative(Taylor):
         
         dds_ddx = np.ndarray((2, 2, 2), 'object')
         for i in range(2):
-            dds_ddx[i][0][0] = diff(x_taylor_s[i], x[0], 2)
-            dds_ddx[i][0][1] = diff(x_taylor_s[i], x[0], x[1])
-            dds_ddx[i][1][0] = diff(x_taylor_s[i], x[1], x[0])
-            dds_ddx[i][1][1] = diff(x_taylor_s[i], x[1], 2)
+            dds_ddx[i][0][0] = syp.diff(x_taylor_s[i], x[0], 2)
+            dds_ddx[i][0][1] = syp.diff(x_taylor_s[i], x[0], x[1])
+            dds_ddx[i][1][0] = syp.diff(x_taylor_s[i], x[1], x[0])
+            dds_ddx[i][1][1] = syp.diff(x_taylor_s[i], x[1], 2)
         
         return dds_ddx
         
@@ -332,10 +329,10 @@ class Metric(Derivative):
         ds2_dx[1] = ds_dx[1][1]
         
         supermetric = np.ndarray((2, 2,), 'object')
-        supermetric[0][0] = dot(ds1_dx, ds1_dx)
-        supermetric[0][1] = dot(ds1_dx, ds2_dx)
-        supermetric[1][0] = dot(ds2_dx, ds1_dx)
-        supermetric[1][1] = dot(ds2_dx, ds2_dx)
+        supermetric[0][0] = np.dot(ds1_dx, ds1_dx)
+        supermetric[0][1] = np.dot(ds1_dx, ds2_dx)
+        supermetric[1][0] = np.dot(ds2_dx, ds1_dx)
+        supermetric[1][1] = np.dot(ds2_dx, ds2_dx)
         
         return supermetric
     
@@ -349,12 +346,12 @@ class Metric(Derivative):
         dg_dx1 = np.ndarray((2, 2), 'object')
         for i in range(2):
             for j in range(2):
-                dg_dx1[i][j] = diff(supermetric[i][j], x[0]) 
+                dg_dx1[i][j] = syp.diff(supermetric[i][j], x[0]) 
                 
         dg_dx2 = np.ndarray((2, 2), 'object')
         for i in range(2):
             for j in range(2):
-                dg_dx2[i][j] = diff(supermetric[i][j], x[1])
+                dg_dx2[i][j] = syp.diff(supermetric[i][j], x[1])
                     
         dg_ds1 = np.ndarray((2, 2,), 'object')
         for i in range(2):
@@ -419,14 +416,14 @@ class GoverningEquations(Laplacian):
         
         coeff_du_ds2 = np.ndarray((6), 'object')
 #        coeff_du_ds2[0] = du_ds2
-        coeff_du_ds2[1] = diff(du_ds2, x[0])
-        coeff_du_ds2[2] = diff(du_ds2, x[1])
-#        coeff_du_ds2[3] = diff(du_ds2, x[0], 2)
-#        coeff_du_ds2[4] = diff(du_ds2, x[0], x[1])
-#        coeff_du_ds2[5] = diff(du_ds2, x[1], 2)
+        coeff_du_ds2[1] = syp.diff(du_ds2, x[0])
+        coeff_du_ds2[2] = syp.diff(du_ds2, x[1])
+#        coeff_du_ds2[3] = syp.diff(du_ds2, x[0], 2)
+#        coeff_du_ds2[4] = syp.diff(du_ds2, x[0], x[1])
+#        coeff_du_ds2[5] = syp.diff(du_ds2, x[1], 2)
         
         for i in range(len(coeff_du_ds2)):
-            coeff_du_ds2[i] = lambdify(x, coeff_du_ds2[i], 'numpy')
+            coeff_du_ds2[i] = syp.lambdify(x, coeff_du_ds2[i], 'numpy')
             coeff_du_ds2[i] = coeff_du_ds2[i](x_value[0], x_value[1])
             
         return coeff_du_ds2
@@ -439,14 +436,14 @@ class GoverningEquations(Laplacian):
         
         coeff_g12 = np.ndarray((6), 'object')
 #        coeff_g12[0] = g12
-        coeff_g12[1] = diff(g12, x[0])
-        coeff_g12[2] = diff(g12, x[1])
-        coeff_g12[3] = diff(g12, x[0], 2)
-        coeff_g12[4] = diff(g12, x[0], x[1])
-        coeff_g12[5] = diff(g12, x[1], 2)
+        coeff_g12[1] = syp.diff(g12, x[0])
+        coeff_g12[2] = syp.diff(g12, x[1])
+        coeff_g12[3] = syp.diff(g12, x[0], 2)
+        coeff_g12[4] = syp.diff(g12, x[0], x[1])
+        coeff_g12[5] = syp.diff(g12, x[1], 2)
         
         for i in range(len(coeff_g12)):
-            coeff_g12[i] = lambdify(x, coeff_g12[i], 'numpy')
+            coeff_g12[i] = syp.lambdify(x, coeff_g12[i], 'numpy')
             coeff_g12[i] = coeff_g12[i](x_value[0], x_value[1])
             
         return coeff_g12
@@ -459,14 +456,14 @@ class GoverningEquations(Laplacian):
         
         coeff_laplacian_u = np.ndarray((6), 'object')
         coeff_laplacian_u[0] = laplacian_u
-#        coeff_laplacian_u[1] = diff(laplacian_u, x[0])
-#        coeff_laplacian_u[2] = diff(laplacian_u, x[1])
-#        coeff_laplacian_u[3] = diff(laplacian_u, x[0], 2)
-#        coeff_laplacian_u[4] = diff(laplacian_u, x[0], x[1])
-#        coeff_laplacian_u[5] = diff(laplacian_u, x[1], 2)
+#        coeff_laplacian_u[1] = syp.diff(laplacian_u, x[0])
+#        coeff_laplacian_u[2] = syp.diff(laplacian_u, x[1])
+#        coeff_laplacian_u[3] = syp.diff(laplacian_u, x[0], 2)
+#        coeff_laplacian_u[4] = syp.diff(laplacian_u, x[0], x[1])
+#        coeff_laplacian_u[5] = syp.diff(laplacian_u, x[1], 2)
         
         for i in range(len(coeff_laplacian_u)):
-            coeff_laplacian_u[i] = lambdify(x, coeff_laplacian_u[i], 'numpy')
+            coeff_laplacian_u[i] = syp.lambdify(x, coeff_laplacian_u[i], 'numpy')
             coeff_laplacian_u[i] = coeff_laplacian_u[i](x_value[0], x_value[1])
             
         return coeff_laplacian_u
@@ -508,8 +505,8 @@ class Solve(BoundaryConditions, GoverningEquations):
         Jacobian_f = np.ndarray((len(f), len(unknown),), 'object')
         for i in range(len(f)):
             for j in range(len(unknown)):
-                Jacobian_f[i][j] = diff(f[i], unknown[j])
-                Jacobian_f[i][j] = lambdify(unknown, Jacobian_f[i][j], 'numpy')
+                Jacobian_f[i][j] = syp.diff(f[i], unknown[j])
+                Jacobian_f[i][j] = syp.lambdify(unknown, Jacobian_f[i][j], 'numpy')
                 Jacobian_f[i][j] = Jacobian_f[i][j](unknown_temp[0],
                                                     unknown_temp[1],
                                                     unknown_temp[2],
@@ -531,7 +528,7 @@ class Solve(BoundaryConditions, GoverningEquations):
         residual = np.ndarray((len(f),), 'object')
         for i in range(len(f)):
             residual[i] = f[i]
-            residual[i] = lambdify(unknown, residual[i], 'numpy')
+            residual[i] = syp.lambdify(unknown, residual[i], 'numpy')
             residual[i] = residual[i](unknown_temp[0],
                                       unknown_temp[1],
                                       unknown_temp[2],
@@ -551,7 +548,7 @@ class Solve(BoundaryConditions, GoverningEquations):
         Jacobian_f = self.Jacobian_f(unknown_temp)
         residual = self.residual(unknown_temp)
             
-        while norm(residual) > newton_tol:
+        while np.linalg.norm(residual) > newton_tol:
             if solver_id == 'np.solve':
                 increment = np.linalg.solve(Jacobian_f, residual)
             if solver_id == 'np.lstsq':
@@ -562,6 +559,8 @@ class Solve(BoundaryConditions, GoverningEquations):
                 increment = scp.sparse.linalg.bicg(Jacobian_f, residual)[0]
             if solver_id == 'scp.lsqr':
                 increment = scp.sparse.linalg.lsqr(Jacobian_f, residual)[0]
+            if solver_id == 'scp.lsmr':
+                increment = scp.sparse.linalg.lsmr(Jacobian_f, residual)[0]
             
             unknown_temp -= increment
             Jacobian_f = self.Jacobian_f(unknown_temp)
@@ -579,43 +578,44 @@ if __name__ == '__main__':
     
     
     x = np.ndarray((2,), 'object')
-    x[0] = Symbol('x1', real = True)
-    x[1] = Symbol('x2', real = True)
+    x[0] = syp.Symbol('x1', real = True)
+    x[1] = syp.Symbol('x2', real = True)
     
     s = np.ndarray((2,), 'object')
-    s[0] = Symbol('s1', real = True)
-    s[1] = Symbol('s2', real = True)
+    s[0] = syp.Symbol('s1', real = True)
+    s[1] = syp.Symbol('s2', real = True)
     
     unknown = np.ndarray((9,), 'object')
-    unknown[0] = Symbol('s1_11', real = True)
-    unknown[1] = Symbol('s1_12', real = True)
-    unknown[2] = Symbol('s1_22', real = True)
-    unknown[3] = Symbol('s2_11', real = True)
-    unknown[4] = Symbol('s2_12', real = True)
-    unknown[5] = Symbol('s2_22', real = True)
-    unknown[6] = Symbol('u11', real = True)
-    unknown[7] = Symbol('u12', real = True)
-    unknown[8] = Symbol('u22', real = True)
+    unknown[0] = syp.Symbol('s1_11', real = True)
+    unknown[1] = syp.Symbol('s1_12', real = True)
+    unknown[2] = syp.Symbol('s1_22', real = True)
+    unknown[3] = syp.Symbol('s2_11', real = True)
+    unknown[4] = syp.Symbol('s2_12', real = True)
+    unknown[5] = syp.Symbol('s2_22', real = True)
+    unknown[6] = syp.Symbol('u11', real = True)
+    unknown[7] = syp.Symbol('u12', real = True)
+    unknown[8] = syp.Symbol('u22', real = True)
     
     ################################
-    f_id = 'z^2'
-#    f_id = 'z^3'
+#    f_id = 'z^2'
+    f_id = 'z^3'
 #    f_id = 'z^4'
 #    f_id = 'exp(z)'
     
 #    formulation_id = 'metric'
     formulation_id = 'derivative'
     
-    n = 1
-    error_init_limit = 1000.0
-    element_size = 1.0e-2
-    newton_tol = 1.0e-3
+    n = 10
+    error_init_limit = 10.0
+    element_size = 1.0e-1
+    newton_tol = 1.0e-5
     
 #    solver_id = 'np.solve'
-    solver_id = 'np.lstsq'
+#    solver_id = 'np.lstsq'
 #    solver_id = 'scp.spsolve'
 #    solver_id = 'scp.bicg'
 #    solver_id = 'scp.lsqr'
+    solver_id = 'scp.lsmr'
     ##############################
     
     print('')
@@ -645,7 +645,7 @@ if __name__ == '__main__':
     
     def relative_error(a, b):
         
-        relative_error = round(norm(b - a)/norm(a), 4)*100
+        relative_error = round(np.linalg.norm(b - a)/np.linalg.norm(a), 4)*100
         
         return relative_error
     
@@ -659,8 +659,8 @@ if __name__ == '__main__':
     x_max[1] = 2.0
     
     for i in range(n):
-        x_target[0] = random.uniform(x_min[0], x_max[0])
-        x_target[1] = random.uniform(x_min[1], x_max[1])
+        x_target[0] = np.random.uniform(x_min[0], x_max[0])
+        x_target[1] = np.random.uniform(x_min[1], x_max[1])
         
         for j in range(len(x)):
             x_target_array[i][j] = x_target[j]
@@ -683,7 +683,7 @@ if __name__ == '__main__':
         error_terminal = relative_error(unknown_theory, unknown_terminal)
 #        f_init = Solve_call.f()
 #        Jacobian_f_init = Solve_call.Jacobian_f(unknown_init)
-#        eigvals_Jacobian_f_init = eigvals(Jacobian_f_init)
+#        eigvals_Jacobian_f_init = np.linalg.eigvals(Jacobian_f_init)
 #        abs_eigvals_Jacobian_f_init = abs(eigvals_Jacobian_f_init)
 #        min_abs_eigvals_Jacobian_f_init_array[i] = min(abs_eigvals_Jacobian_f_init)
         
