@@ -84,7 +84,8 @@ class Unknown(laplace_theory.TheoreticalValue):
     
         unknown_init = np.ndarray((len(unknown),))
         for i in range(len(unknown)):
-            e = np.random.uniform(-error_limit, error_limit)
+#            e = np.random.uniform(-error_limit, error_limit)
+            e = error_limit
             unknown_init[i] = (1 + e/100)*unknown_theory[i]
         
         return unknown_init
@@ -622,17 +623,25 @@ if __name__ == '__main__':
     
     ################################
 #    f_id = 'z^2'
-    f_id = 'z^3'
+#    f_id = 'z^3'
 #    f_id = 'z^4'
-#    f_id = 'exp(z)'
+    f_id = 'exp(z)'
+    
+    x_min = np.ndarray((2))
+    x_min[0] = 0.0
+    x_min[1] = 0.0
+    
+    x_max = np.ndarray((2))
+    x_max[0] = 2.0
+    x_max[1] = 2.0
     
 #    formulation_id = 'metric'
     formulation_id = 'derivative'
     
     highest_order = 2
-    number_of_partitions = 10
-    error_init_limit = 1000.0
-    element_size = 1.0e-1
+    number_of_partitions = 20
+    error_init_limit = 50.0
+    element_size = 1.0e-2
     newton_tol = 1.0e-8
     
 #    solver_id = 'np.solve'
@@ -645,7 +654,8 @@ if __name__ == '__main__':
     
     print('')
     print('f(z) =', f_id)
-    print('formulation =', formulation_id)
+    print('area = ', x_min[0], ' < x1 < ', x_max[0], ' & ',  x_min[1], ' < x2 < ', x_max[1])
+    print('# of points = ', number_of_partitions - 1, 'x', number_of_partitions - 1)
     print('error_init_limit =', error_init_limit)
     print('element_size =', element_size)
     print('newton_tol =', newton_tol)
@@ -658,17 +668,13 @@ if __name__ == '__main__':
                                  number_of_partitions - 1, 
                                  len(x),))
         
-    error_array = np.ndarray((number_of_partitions- 1, 
-                              number_of_partitions- 1, 
-                              2))
-    
-    error_sum = np.ndarray((2))
-    error_sum[0] = 0
-    error_sum[1] = 0
+    error_mean = np.ndarray((2))
+    error_mean[0] = 0
+    error_mean[1] = 0
     
     bad_points_array = np.ndarray((1, 2), 'object')
-    bad_points_array[0][0] = 'None'
-    bad_points_array[0][1] = 'None'
+    bad_points_array[0][0] = 'none'
+    bad_points_array[0][1] = 'none'
         
     min_abs_eigvals_Jacobian_f_init_array = np.ndarray((number_of_partitions - 1, 
                                                         1))
@@ -681,20 +687,10 @@ if __name__ == '__main__':
         return relative_error
     
     
-    x_min = np.ndarray((2))
-    x_min[0] = 0.0
-    x_min[1] = 0.0
-    
-    x_max = np.ndarray((2))
-    x_max[0] = 2.0
-    x_max[1] = 2.0
-    
     for i in range(number_of_partitions - 1):
         for j in range(number_of_partitions - 1):
             x_target[0] = (x_max[0] - x_min[0])*(i + 1)/number_of_partitions
             x_target[1] = (x_max[1] - x_min[1])*(j + 1)/number_of_partitions    
-            for k in range(len(x)):
-                x_target_array[i][j][k] = x_target[k]
     
             ######################################################
             Unknown_call = Unknown(f_id, x, s, unknown, x_target)
@@ -702,14 +698,10 @@ if __name__ == '__main__':
             unknown_theory = Unknown_call.unknown_theory()
             unknown_init = Unknown_call.unknown_init(error_init_limit)
             error_init = relative_error(unknown_theory, unknown_init)
-                
-#            for k in range(len(unknown)):
-#                unknown_theory_array[i][j][k] = unknown_theory[k]
-#                unknown_init_array[i][j][k] = unknown_init[k]
         
-            ##############################################################################################
+            #############################################################################################################
             Solve_call = Solve(f_id, formulation_id, highest_order, x, s, unknown, x_target, unknown_init, element_size)
-            ##############################################################################################
+            #############################################################################################################
             unknown_terminal = Solve_call.solution(newton_tol, solver_id)
             error_terminal = relative_error(unknown_theory, unknown_terminal)
 #            f_init = Solve_call.f()
@@ -717,35 +709,25 @@ if __name__ == '__main__':
 #            eigvals_Jacobian_f_init = np.linalg.eigvals(Jacobian_f_init)
 #            abs_eigvals_Jacobian_f_init = abs(eigvals_Jacobian_f_init)
 #            min_abs_eigvals_Jacobian_f_init_array[i] = min(abs_eigvals_Jacobian_f_init)
-
-            error_array[i][j][0] = error_init
-            error_array[i][j][1] = error_terminal
             
-            if error_terminal > error_init:
-                if bad_points_array[0][0] == 'None':
+            error_mean[0] += error_init/((number_of_partitions - 1)**2)
+            error_mean[1] += error_terminal/((number_of_partitions - 1)**2)
+            
+            if error_terminal >= error_init:
+                if bad_points_array[0][0] == 'none':
                     bad_points_array = np.ndarray((1, 2))
                     bad_points_array[0][0] = x_target[0]
                     bad_points_array[0][1] = x_target[1]
                 else:
                     bad_points_array = np.append(bad_points_array, [[x_target[0], x_target[1]]], axis= 0)
-            
-            error_sum[0] += error_init
-            error_sum[1] += error_terminal
-    
-    print('')
-    print('x_target = ')
-    print(x_target_array)
-    print('')
-        
-    print('error_init(%) & error_terminal(%) = ')
-    print(error_array)
-    print('')
 
-    print('error_init_sum(%) & error_terminal_sum(%) = ')
-    print(error_sum)
+    print('error_init_mean(%) & error_terminal_mean(%) = ')
+    print(error_mean)
     print('') 
 
     print('x_coordinates of error-increasing points = ')
+    if bad_points_array[0][0] != 'none':
+        print('# = ', len(bad_points_array))    
     print(bad_points_array)
     print('')           
             
