@@ -640,8 +640,10 @@ class Plot(laplace_theory.ProblemSettings):
         plt.contour(x_plot[0], x_plot[1], s_plot[0], interval1, colors = 'gray', linestyles = 'dotted')        
         plt.contour(x_plot[0], x_plot[1], s_plot[1], interval2, colors = 'gray', linestyles = 'dotted')
         
+        for i in range(len(good_points_array)):
+            plt.plot(good_points_array[i][0], good_points_array[i][1], 'ko', markersize = '4')
         for i in range(len(bad_points_array)):
-            plt.plot(bad_points_array[i][0], bad_points_array[i][1], 'ko')     
+            plt.plot(bad_points_array[i][0], bad_points_array[i][1], 'ro', markersize = '4')     
         
         plt.locator_params(axis='x',nbins=5)
         plt.locator_params(axis='y',nbins=5)
@@ -735,6 +737,10 @@ if __name__ == '__main__':
     error_mean[0] = 0
     error_mean[1] = 0
     
+    good_points_array = np.ndarray((1, 2), 'object')
+    good_points_array[0][0] = 'none'
+    good_points_array[0][1] = 'none'
+    
     bad_points_array = np.ndarray((1, 2), 'object')
     bad_points_array[0][0] = 'none'
     bad_points_array[0][1] = 'none'
@@ -776,7 +782,14 @@ if __name__ == '__main__':
             error_mean[0] += error_init/((number_of_partitions - 1)**2)
             error_mean[1] += error_terminal/((number_of_partitions - 1)**2)
             
-            if error_terminal >= error_init:
+            if error_terminal < error_init:
+                if good_points_array[0][0] == 'none':
+                    good_points_array = np.ndarray((1, 2))
+                    good_points_array[0][0] = x_target[0]
+                    good_points_array[0][1] = x_target[1]
+                else:
+                    good_points_array = np.append(good_points_array, [[x_target[0], x_target[1]]], axis= 0)
+            else:
                 if bad_points_array[0][0] == 'none':
                     bad_points_array = np.ndarray((1, 2))
                     bad_points_array[0][0] = x_target[0]
@@ -787,6 +800,12 @@ if __name__ == '__main__':
     print('error_init_mean(%) & error_terminal_mean(%) = ')
     print(error_mean)
     print('') 
+
+    print('x_coordinates of error-decreasing points = ')
+    if good_points_array[0][0] != 'none':
+        print('# = ', len(good_points_array))    
+    print(good_points_array)
+    print('')
 
     print('x_coordinates of error-increasing points = ')
     if bad_points_array[0][0] != 'none':
