@@ -4,13 +4,6 @@ Created on Tue Jul 24 13:01:06 2018
 @author: inawashiro
 """
 
-# For Visualization
-import matplotlib.pyplot as plt
-plt.rcParams['contour.negative_linestyle']='solid'
-
-# For 3D Graph
-from mpl_toolkits.mplot3d import Axes3D
-
 # For Numerical Computation 
 import numpy as np
 from numpy import dot
@@ -26,6 +19,13 @@ from IPython.display import display
 # For Constants
 import math
 from math import pi
+
+# For Visualization
+import matplotlib.pyplot as plt
+plt.rcParams['contour.negative_linestyle']='solid'
+
+# For 3D Graph
+from mpl_toolkits.mplot3d import Axes3D
 
 # For Getting Access to Another Directory
 import os
@@ -120,33 +120,33 @@ class Verification(ProblemSettings):
 class Plot(ProblemSettings):
     """ Display Plot """
     
-    def __init__(self, f_id, x, s, x_value):
+    def __init__(self, f_id, x, s, x_plot):
         self.ProblemSettings = ProblemSettings(f_id)
         self.f_id = f_id
         self.x = x
         self.s = s
-        self.x_value = x_value
+        self.x_plot = x_plot
     
-    def s_value(self):
+    def s_plot(self):
         x = self.x
         s = self.ProblemSettings.s(x)
-        x_value = self.x_value
+        x_plot = self.x_plot
         
-        s_value = np.ndarray((len(s),), 'object')
-        s_value = syp.lambdify(x, s, 'numpy')
-        s_value = s_value(x_value[0], x_value[1])
+        s_plot = np.ndarray((len(s),), 'object')
+        s_plot = syp.lambdify(x, s, 'numpy')
+        s_plot = s_plot(x_plot[0], x_plot[1])
         
-        return s_value
+        return s_plot
     
     def u_plot(self):
         f_id = self.f_id
-        x_value = self.x_value
-        s_value = self.s_value()
-        u_value = self.ProblemSettings.u(s_value)
+        x_plot = self.x_plot
+        s_plot = self.s_plot()
+        u_plot = self.ProblemSettings.u(s_plot)
         
         fig = plt.figure()
         ax = fig.gca(projection = '3d')
-        ax.plot_wireframe(x_value[0], x_value[1], u_value, linewidth = 0.2)
+        ax.plot_wireframe(x_plot[0], x_plot[1], u_plot, linewidth = 0.2)
         
         plt.locator_params(axis='x',nbins=5)
         plt.locator_params(axis='y',nbins=5)
@@ -159,8 +159,8 @@ class Plot(ProblemSettings):
         
     def principal_coordinate_system_plot(self):
         f_id = self.f_id
-        x_value = self.x_value
-        s_value = self.s_value()
+        x_plot = self.x_plot
+        s_plot = self.s_plot()
         
         ax = plt.gca()
         ax.set_aspect('equal', adjustable='box')
@@ -168,8 +168,8 @@ class Plot(ProblemSettings):
         interval1 = np.arange(-100, 100, 1.0)
         interval2 = np.arange(-100, 100, 1.0)
         
-        plt.contour(x_value[0], x_value[1], s_value[0], interval1, colors = 'red')        
-        plt.contour(x_value[0], x_value[1], s_value[1], interval2, colors = 'blue')
+        plt.contour(x_plot[0], x_plot[1], s_plot[0], interval1, colors = 'red')        
+        plt.contour(x_plot[0], x_plot[1], s_plot[1], interval2, colors = 'blue')
         
         plt.locator_params(axis='x',nbins=5)
         plt.locator_params(axis='y',nbins=5)
@@ -296,11 +296,11 @@ if __name__ == '__main__':
     x_sidelength[0] = x_max[0] - x_min[0]
     x_sidelength[1] = x_max[1] - x_min[1]
     
-    x_value = np.meshgrid(np.arange(x_min[0], x_max[0], (x_sidelength[0])/500), 
-                          np.arange(x_min[1], x_max[1], (x_sidelength[1])/500))
+    x_plot = np.meshgrid(np.arange(x_min[0], x_max[0], (x_sidelength[0])/500), 
+                         np.arange(x_min[1], x_max[1], (x_sidelength[1])/500))
     
     #################################
-    Plot = Plot(f_id, x, s, x_value)
+    Plot = Plot(f_id, x, s, x_plot)
     #################################
     os.chdir('./graph')
     
