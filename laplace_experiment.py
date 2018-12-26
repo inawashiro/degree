@@ -606,12 +606,13 @@ class Solve(BoundaryConditions, GoverningEquations):
 class Plot(laplace_theory.ProblemSettings):
     """ Display Plot """
     
-    def __init__(self, f_id, x, s, x_plot, bad_points_array):
+    def __init__(self, f_id, x, s, x_plot, good_points_array, bad_points_array):
         self.ProblemSettings = laplace_theory.ProblemSettings(f_id)
         self.f_id = f_id
         self.x = x
         self.s = s
         self.x_plot = x_plot
+        self.good_points_array = good_points_array
         self.bad_points_array = bad_points_array
         
     def s_plot(self):
@@ -634,22 +635,39 @@ class Plot(laplace_theory.ProblemSettings):
         ax = plt.gca()
         ax.set_aspect('equal', adjustable='box')
         
+        plt.locator_params(axis = 'x', nbins = 5)
+        plt.locator_params(axis = 'y', nbins = 5)
+        
         interval1 = np.arange(-100, 100, 1.0)
         interval2 = np.arange(-100, 100, 1.0)
         
         plt.contour(x_plot[0], x_plot[1], s_plot[0], interval1, colors = 'gray', linestyles = 'dotted')        
         plt.contour(x_plot[0], x_plot[1], s_plot[1], interval2, colors = 'gray', linestyles = 'dotted')
         
-        for i in range(len(good_points_array)):
-            plt.plot(good_points_array[i][0], good_points_array[i][1], 'ko', markersize = '4')
-        for i in range(len(bad_points_array)):
-            plt.plot(bad_points_array[i][0], bad_points_array[i][1], 'ro', markersize = '4')     
+        if good_points_array[0][0] != 'none':
+            good_points_x1 = np.ndarray((len(good_points_array)))
+            good_points_x2 = np.ndarray((len(good_points_array)))
+            
+            for i in range(len(good_points_array)):
+                good_points_x1[i] = good_points_array[i][0]
+                good_points_x2[i] = good_points_array[i][1]
+
+            good_points = plt.plot(good_points_x1, good_points_x2, 'bo', markersize = '4', label = 'Good points')    
         
-        plt.locator_params(axis='x',nbins=5)
-        plt.locator_params(axis='y',nbins=5)
+        if bad_points_array[0][0] != 'none':
+            bad_points_x1 = np.ndarray((len(bad_points_array)))
+            bad_points_x2 = np.ndarray((len(bad_points_array)))
+            
+            for i in range(len(bad_points_array)):
+                bad_points_x1[i] = bad_points_array[i][0]
+                bad_points_x2[i] = bad_points_array[i][1]
+
+            bad_points = plt.plot(bad_points_x1, bad_points_x2, 'ro', markersize = '4', label = 'Bad points')
+
+        plt.legend(bbox_to_anchor=(1.05, 1), loc = 2, borderaxespad = 0.)
         
-        plt.savefig('../graph/' + f_id + '/principal_coordinate_system.pdf')
-        plt.savefig('../graph/' + f_id + '/principal_coordinate_system.png')
+        plt.savefig('../graph/' + f_id + '/result.pdf')
+        plt.savefig('../graph/' + f_id + '/result.png')
         
         plt.pause(.01)
 
@@ -680,8 +698,8 @@ if __name__ == '__main__':
     unknown[8] = syp.Symbol('u22', real = True)
     
     ################################
-#    f_id = 'z^2'
-    f_id = 'z^3'
+    f_id = 'z^2'
+#    f_id = 'z^3'
 #    f_id = 'z^4'
 #    f_id = 'exp(z)'
     
@@ -719,7 +737,6 @@ if __name__ == '__main__':
     
     print('')
     print('f(z) =', f_id)
-    print('area = ', x_min[0], ' < x1 < ', x_max[0], ' & ',  x_min[1], ' < x2 < ', x_max[1])
     print('# of points = ', number_of_partitions - 1, 'x', number_of_partitions - 1)
     print('error_init_limit =', error_init_limit)
     print('element_size =', element_size)
@@ -773,11 +790,6 @@ if __name__ == '__main__':
             #############################################################################################################
             unknown_terminal = Solve_call.solution(newton_tol, solver_id)
             error_terminal = relative_error(unknown_theory, unknown_terminal)
-#            f_init = Solve_call.f()
-#            Jacobian_f_init = Solve_call.Jacobian_f(unknown_init)
-#            eigvals_Jacobian_f_init = np.linalg.eigvals(Jacobian_f_init)
-#            abs_eigvals_Jacobian_f_init = abs(eigvals_Jacobian_f_init)
-#            min_abs_eigvals_Jacobian_f_init_array[i] = min(abs_eigvals_Jacobian_f_init)
             
             error_mean[0] += error_init/((number_of_partitions - 1)**2)
             error_mean[1] += error_terminal/((number_of_partitions - 1)**2)
@@ -800,21 +812,9 @@ if __name__ == '__main__':
     print('error_init_mean(%) & error_terminal_mean(%) = ')
     print(error_mean)
     print('') 
-
-    print('x_coordinates of error-decreasing points = ')
-    if good_points_array[0][0] != 'none':
-        print('# = ', len(good_points_array))    
-    print(good_points_array)
-    print('')
-
-    print('x_coordinates of error-increasing points = ')
-    if bad_points_array[0][0] != 'none':
-        print('# = ', len(bad_points_array))    
-    print(bad_points_array)
-    print('')          
     
     #################################
-    Plot = Plot(f_id, x, s, x_plot, bad_points_array)
+    Plot = Plot(f_id, x, s, x_plot, good_points_array, bad_points_array)
     #################################
     os.chdir('./graph')
     
