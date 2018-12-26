@@ -606,12 +606,13 @@ class Solve(BoundaryConditions, GoverningEquations):
 class Plot(laplace_theory.ProblemSettings):
     """ Display Plot """
     
-    def __init__(self, f_id, x, s, x_plot):
+    def __init__(self, f_id, x, s, x_plot, bad_points_array):
         self.ProblemSettings = laplace_theory.ProblemSettings(f_id)
         self.f_id = f_id
         self.x = x
         self.s = s
         self.x_plot = x_plot
+        self.bad_points_array = bad_points_array
         
     def s_plot(self):
         x = self.x
@@ -628,6 +629,7 @@ class Plot(laplace_theory.ProblemSettings):
         f_id = self.f_id
         x_plot = self.x_plot
         s_plot = self.s_plot()
+        bad_points_array = self.bad_points_array
         
         ax = plt.gca()
         ax.set_aspect('equal', adjustable='box')
@@ -637,6 +639,9 @@ class Plot(laplace_theory.ProblemSettings):
         
         plt.contour(x_plot[0], x_plot[1], s_plot[0], interval1, colors = 'gray', linestyles = 'dotted')        
         plt.contour(x_plot[0], x_plot[1], s_plot[1], interval2, colors = 'gray', linestyles = 'dotted')
+        
+        for i in range(len(bad_points_array)):
+            plt.plot(bad_points_array[i][0], bad_points_array[i][1], 'ko')     
         
         plt.locator_params(axis='x',nbins=5)
         plt.locator_params(axis='y',nbins=5)
@@ -790,7 +795,7 @@ if __name__ == '__main__':
     print('')          
     
     #################################
-    Plot = Plot(f_id, x, s, x_plot)
+    Plot = Plot(f_id, x, s, x_plot, bad_points_array)
     #################################
     os.chdir('./graph')
     
