@@ -148,9 +148,9 @@ class Plot(ProblemSettings):
         ax = fig.gca(projection = '3d')
         ax.plot_wireframe(x_plot[0], x_plot[1], u_plot, linewidth = 0.2)
         
-        plt.locator_params(axis='x',nbins=5)
-        plt.locator_params(axis='y',nbins=5)
-        plt.locator_params(axis='z',nbins=5)
+        plt.locator_params(axis = 'x', nbins = 5)
+        plt.locator_params(axis = 'y', nbins = 5)
+        plt.locator_params(axis = 'z', nbins = 5)
 
         plt.savefig('../graph/' + f_id + '/3d_plot.pdf')
         plt.savefig('../graph/' + f_id + '/3d_plot.png')
@@ -165,14 +165,21 @@ class Plot(ProblemSettings):
         ax = plt.gca()
         ax.set_aspect('equal', adjustable='box')
         
+        plt.locator_params(axis = 'x', nbins = 5)
+        plt.locator_params(axis = 'y', nbins = 5)
+        
         interval1 = np.arange(-100, 100, 1.0)
         interval2 = np.arange(-100, 100, 1.0)
         
-        plt.contour(x_plot[0], x_plot[1], s_plot[0], interval1, colors = 'red')        
-        plt.contour(x_plot[0], x_plot[1], s_plot[1], interval2, colors = 'blue')
+        s1 = plt.contour(x_plot[0], x_plot[1], s_plot[0], interval1, colors = 'red')        
+        s2 = plt.contour(x_plot[0], x_plot[1], s_plot[1], interval2, colors = 'blue')
         
-        plt.locator_params(axis='x',nbins=5)
-        plt.locator_params(axis='y',nbins=5)
+        labels = ['s1 = const.', 's2 = const.']
+            
+        s1.collections[0].set_label(labels[0])
+        s2.collections[0].set_label(labels[1])
+
+        plt.legend(bbox_to_anchor=(1.05, 1), loc = 2, borderaxespad = 0.)
         
         plt.savefig('../graph/' + f_id + '/principal_coordinate_system.pdf')
         plt.savefig('../graph/' + f_id + '/principal_coordinate_system.png')
