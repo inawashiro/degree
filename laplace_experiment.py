@@ -21,9 +21,8 @@ from scipy.sparse.linalg import spsolve, lsqr, lsmr
 
 # For Visualization
 import matplotlib.pyplot as plt
+import matplotlib.cm as cm
 plt.rcParams['contour.negative_linestyle']='solid'
-
-# For 3D Graph
 from mpl_toolkits.mplot3d import Axes3D
 
 # For Getting Access to Another Directory
@@ -606,14 +605,14 @@ class Solve(BoundaryConditions, GoverningEquations):
 class Plot(laplace_theory.ProblemSettings):
     """ Display Plot """
     
-    def __init__(self, f_id, x, s, x_plot, good_points_array, bad_points_array):
+    def __init__(self, f_id, x, s, x_plot, x_target_array, error_terminal_array):
         self.ProblemSettings = laplace_theory.ProblemSettings(f_id)
         self.f_id = f_id
         self.x = x
         self.s = s
         self.x_plot = x_plot
-        self.good_points_array = good_points_array
-        self.bad_points_array = bad_points_array
+        self.x_target_array = x_target_array
+        self.error_terminal_array = error_terminal_array
         
     def s_plot(self):
         x = self.x
@@ -626,11 +625,12 @@ class Plot(laplace_theory.ProblemSettings):
         
         return s_plot
         
-    def principal_coordinate_system_plot(self):
+    def result_plot(self):
         f_id = self.f_id
         x_plot = self.x_plot
         s_plot = self.s_plot()
-        bad_points_array = self.bad_points_array
+        x_target_array = self.x_target_array
+        error_terminal_array = self.error_terminal_array
         
         ax = plt.gca()
         ax.set_aspect('equal', adjustable='box')
@@ -644,27 +644,9 @@ class Plot(laplace_theory.ProblemSettings):
         plt.contour(x_plot[0], x_plot[1], s_plot[0], interval1, colors = 'gray', linestyles = 'dotted')        
         plt.contour(x_plot[0], x_plot[1], s_plot[1], interval2, colors = 'gray', linestyles = 'dotted')
         
-        if good_points_array[0][0] != 'none':
-            good_points_x1 = np.ndarray((len(good_points_array)))
-            good_points_x2 = np.ndarray((len(good_points_array)))
-            
-            for i in range(len(good_points_array)):
-                good_points_x1[i] = good_points_array[i][0]
-                good_points_x2[i] = good_points_array[i][1]
-
-            good_points = plt.plot(good_points_x1, good_points_x2, 'bo', markersize = '4', label = 'Good points')    
+        error_plot = plt.scatter(x_target_array[:, :, 0], x_target_array[:, :, 1], c = error_terminal_array, cmap = cm.seismic)
         
-        if bad_points_array[0][0] != 'none':
-            bad_points_x1 = np.ndarray((len(bad_points_array)))
-            bad_points_x2 = np.ndarray((len(bad_points_array)))
-            
-            for i in range(len(bad_points_array)):
-                bad_points_x1[i] = bad_points_array[i][0]
-                bad_points_x2[i] = bad_points_array[i][1]
-
-            bad_points = plt.plot(bad_points_x1, bad_points_x2, 'ro', markersize = '4', label = 'Bad points')
-
-        plt.legend(bbox_to_anchor=(1.05, 1), loc = 2, borderaxespad = 0.)
+        plt.colorbar(error_plot)
         
         plt.savefig('../graph/' + f_id + '/result.pdf')
         plt.savefig('../graph/' + f_id + '/result.png')
@@ -698,10 +680,10 @@ if __name__ == '__main__':
     unknown[8] = syp.Symbol('u22', real = True)
     
     ################################
-    f_id = 'z^2'
+#    f_id = 'z^2'
 #    f_id = 'z^3'
 #    f_id = 'z^4'
-#    f_id = 'exp(z)'
+    f_id = 'exp(z)'
     
     x_min = np.ndarray((2))
     x_min[0] = 0.0
@@ -722,9 +704,9 @@ if __name__ == '__main__':
     formulation_id = 'derivative'
     
     highest_order = 2
-    number_of_partitions = 4
+    number_of_partitions = 20
     error_init_limit = 50.0
-    element_size = 1.0e-1
+    element_size = 1.0e-2
     newton_tol = 1.0e-8
     
 #    solver_id = 'np.solve'
@@ -750,20 +732,12 @@ if __name__ == '__main__':
                                  number_of_partitions - 1, 
                                  len(x),))
         
+    error_terminal_array = np.ndarray((number_of_partitions - 1, 
+                                       number_of_partitions - 1))
+    
     error_mean = np.ndarray((2))
     error_mean[0] = 0
     error_mean[1] = 0
-    
-    good_points_array = np.ndarray((1, 2), 'object')
-    good_points_array[0][0] = 'none'
-    good_points_array[0][1] = 'none'
-    
-    bad_points_array = np.ndarray((1, 2), 'object')
-    bad_points_array[0][0] = 'none'
-    bad_points_array[0][1] = 'none'
-        
-    min_abs_eigvals_Jacobian_f_init_array = np.ndarray((number_of_partitions - 1, 
-                                                        1))
     
     
     def relative_error(a, b):
@@ -777,6 +751,8 @@ if __name__ == '__main__':
         for j in range(number_of_partitions - 1):
             x_target[0] = (x_max[0] - x_min[0])*(i + 1)/number_of_partitions
             x_target[1] = (x_max[1] - x_min[1])*(j + 1)/number_of_partitions    
+            for k in range(len(x)):
+                x_target_array[i][j][k] = x_target[k]
     
             ######################################################
             Unknown_call = Unknown(f_id, x, s, unknown, x_target)
@@ -790,36 +766,22 @@ if __name__ == '__main__':
             #############################################################################################################
             unknown_terminal = Solve_call.solution(newton_tol, solver_id)
             error_terminal = relative_error(unknown_theory, unknown_terminal)
+            error_terminal_array[i][j] = error_terminal
             
             error_mean[0] += error_init/((number_of_partitions - 1)**2)
             error_mean[1] += error_terminal/((number_of_partitions - 1)**2)
             
-            if error_terminal < error_init:
-                if good_points_array[0][0] == 'none':
-                    good_points_array = np.ndarray((1, 2))
-                    good_points_array[0][0] = x_target[0]
-                    good_points_array[0][1] = x_target[1]
-                else:
-                    good_points_array = np.append(good_points_array, [[x_target[0], x_target[1]]], axis= 0)
-            else:
-                if bad_points_array[0][0] == 'none':
-                    bad_points_array = np.ndarray((1, 2))
-                    bad_points_array[0][0] = x_target[0]
-                    bad_points_array[0][1] = x_target[1]
-                else:
-                    bad_points_array = np.append(bad_points_array, [[x_target[0], x_target[1]]], axis= 0)
-
     print('error_init_mean(%) & error_terminal_mean(%) = ')
     print(error_mean)
     print('') 
     
     #################################
-    Plot = Plot(f_id, x, s, x_plot, good_points_array, bad_points_array)
+    Plot = Plot(f_id, x, s, x_plot, x_target_array, error_terminal_array)
     #################################
     os.chdir('./graph')
     
-    print('Principal Coordinate System')
-    Plot.principal_coordinate_system_plot()
+    print('Result')
+    Plot.result_plot()
     print('')    
             
         
