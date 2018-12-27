@@ -19,25 +19,13 @@ syp.init_printing()
 import scipy as scp
 from scipy.sparse.linalg import spsolve, lsqr, lsmr
 
-# For Visualization
-import matplotlib.pyplot as plt
-import matplotlib.cm as cm
-plt.rcParams['contour.negative_linestyle']='solid'
-from mpl_toolkits.mplot3d import Axes3D
-
-# For Getting Access to Another Directory
-import os
-
-# For Measuring Computation Time
-import time
 
 
-
-class Known(laplace_theory.TheoreticalValue):
+class Known(laplace_theory.TheoryValue):
     """ Known Values """
     
     def __init__(self, f_id, x, s, unknown, x_value):
-        self.Theory = laplace_theory.TheoreticalValue(f_id, x, s, x_value)
+        self.Theory = laplace_theory.TheoryValue(f_id, x, s, x_value)
         self.unknown = unknown
         
     def known(self):
@@ -59,11 +47,11 @@ class Known(laplace_theory.TheoreticalValue):
         return known
 
 
-class Unknown(laplace_theory.TheoreticalValue):
-    """ Values Related to Unknowns """
+class Unknown(laplace_theory.TheoryValue):
+    """ Unknown Values """
 
     def __init__(self, f_id, x, s, unknown, x_value):
-        self.Theory = laplace_theory.TheoreticalValue(f_id, x, s, x_value)
+        self.Theory = laplace_theory.TheoryValue(f_id, x, s, x_value)
         self.unknown = unknown
         
     def unknown_theory(self):
@@ -98,7 +86,7 @@ class Unknown(laplace_theory.TheoreticalValue):
 
 
 class Taylor(Known):
-    """ Taylor Series Expressions """
+    """ Taylor Series Expansion """
     
     def __init__(self, f_id, x, s, unknown, x_value, unknown_init):
         self.Known = Known(f_id, x, s, unknown, x_value)
@@ -106,7 +94,7 @@ class Taylor(Known):
         self.unknown_init = unknown_init
         
     def x_taylor_s(self, x, unknown):
-        """ 2nd Order x_Taylor Series of s1 """
+        """ 2nd Order x_Taylor Series Expansion of s """
         x_value = self.x_value
         known = self.Known.known()
 
@@ -138,7 +126,7 @@ class Taylor(Known):
         return s_value
         
     def s_taylor_u(self, s, unknown):
-        """ 2nd Order x_Taylor Series of s1 """
+        """ 2nd Order s_Taylor Series Expansion of u """
         known = self.Known.known()
         s_value = self.s_value()
         
@@ -154,6 +142,7 @@ class Taylor(Known):
         return s_taylor_u
     
     def x_taylor_u(self, x, unknown):
+        """ x_polynomial Series of u """
         """ Convolution of x_taylor_s & s_taylor_u """
         x_taylor_s = self.x_taylor_s(x, unknown)
         x_taylor_u = self.s_taylor_u(x_taylor_s, unknown)
@@ -162,7 +151,7 @@ class Taylor(Known):
     
  
 class BoundaryConditions(Taylor):
-    """ Boundary Conditions along Streamline """
+    """ Boundary Conditions along Each Line Element """
     
     def __init__(self, f_id, x, s, unknown, x_value, unknown_init, element_size):
         self.Taylor = Taylor(f_id, x, s, unknown, x_value, unknown_init)
@@ -231,7 +220,6 @@ class BoundaryConditions(Taylor):
         
 
 class Derivative(Taylor):
-    """ x_Taylor Series of Derivatives """
     
     def __init__(self, f_id, x, s, unknown, x_value, unknown_init):
         self.Taylor = Taylor(f_id, x, s, unknown, x_value, unknown_init)
@@ -318,7 +306,6 @@ class Derivative(Taylor):
         
 
 class Metric(Derivative):
-    """ x_Taylor Series of Metrics """
     
     def __init__(self, f_id, x, s, unknown, x_value, unknown_init):
         self.Derivative = Derivative(f_id, x, s, unknown, x_value, unknown_init)
@@ -417,7 +404,7 @@ class GoverningEquations(Laplacian):
         self.x_value = x_value
 
     def governing_equation_0(self):
-        """ 1st Order x_Taylor Series of g_12 """
+        """ Coefficients of du/ds2 """
         du_ds2 = self.Derivative.du_ds()[1]
         N = self.highest_order
         x = self.x
@@ -440,7 +427,7 @@ class GoverningEquations(Laplacian):
         return coeff_du_ds2
         
     def governing_equation_1(self):
-        """ 1st Order x_Taylor Series of g_12 """
+        """ Coefficients of g_12 """
         g12 = self.Metric.supermetric()[0][1]
         N = self.highest_order
         x = self.x
@@ -463,7 +450,7 @@ class GoverningEquations(Laplacian):
         return coeff_g12
     
     def governing_equation_2(self):
-        """ 1st Order x_Taylor Series of g_12 """
+        """ Coefficients of Δu """
         laplacian_u = self.Laplacian.laplacian_u()
         N = self.highest_order
         x = self.x
@@ -487,7 +474,7 @@ class GoverningEquations(Laplacian):
 
 
 class Solve(BoundaryConditions, GoverningEquations):
-    """ Solve BVP for Each Line Element by Newton's Method """
+    """ Solve BVP of Each Line Element by Non-linear Least Square Algorithm """
     
     def __init__(self, f_id, formulation_id, highest_order, x, s, unknown, x_value, unknown_init, element_size):
         self.BC = BoundaryConditions(f_id, x, s, unknown, x_value, unknown_init, element_size)
@@ -600,196 +587,8 @@ class Solve(BoundaryConditions, GoverningEquations):
         solution = unknown_temp
         
         return solution
-    
-
-class Plot(laplace_theory.ProblemSettings):
-    """ Display Plot """
-    
-    def __init__(self, f_id, x, s, x_plot, x_target_array, error_terminal_array):
-        self.ProblemSettings = laplace_theory.ProblemSettings(f_id)
-        self.f_id = f_id
-        self.x = x
-        self.s = s
-        self.x_plot = x_plot
-        self.x_target_array = x_target_array
-        self.error_terminal_array = error_terminal_array
         
-    def s_plot(self):
-        x = self.x
-        s = self.ProblemSettings.s(x)
-        x_plot = self.x_plot
         
-        s_plot = np.ndarray((len(s),), 'object')
-        s_plot = syp.lambdify(x, s, 'numpy')
-        s_plot = s_plot(x_plot[0], x_plot[1])
-        
-        return s_plot
-        
-    def result_plot(self):
-        f_id = self.f_id
-        x_plot = self.x_plot
-        s_plot = self.s_plot()
-        x_target_array = self.x_target_array
-        error_terminal_array = self.error_terminal_array
-        
-        ax = plt.gca()
-        ax.set_aspect('equal', adjustable='box')
-        
-        plt.locator_params(axis = 'x', nbins = 5)
-        plt.locator_params(axis = 'y', nbins = 5)
-        
-        interval1 = np.arange(-100, 100, 1.0)
-        interval2 = np.arange(-100, 100, 1.0)
-        
-        plt.contour(x_plot[0], x_plot[1], s_plot[0], interval1, colors = 'gray', linestyles = 'dotted')        
-        plt.contour(x_plot[0], x_plot[1], s_plot[1], interval2, colors = 'gray', linestyles = 'dotted')
-        
-        error_plot = plt.scatter(x_target_array[:, :, 0], x_target_array[:, :, 1], c = error_terminal_array, cmap = cm.seismic)
-        
-        plt.colorbar(error_plot)
-        
-        plt.savefig('../graph/' + f_id + '/result.pdf')
-        plt.savefig('../graph/' + f_id + '/result.png')
-        
-        plt.pause(.01)
-
-        
-
-if __name__ == '__main__':
-    
-    t0 = time.time()
-    
-    
-    x = np.ndarray((2,), 'object')
-    x[0] = syp.Symbol('x1', real = True)
-    x[1] = syp.Symbol('x2', real = True)
-    
-    s = np.ndarray((2,), 'object')
-    s[0] = syp.Symbol('s1', real = True)
-    s[1] = syp.Symbol('s2', real = True)
-    
-    unknown = np.ndarray((9,), 'object')
-    unknown[0] = syp.Symbol('s1_11', real = True)
-    unknown[1] = syp.Symbol('s1_12', real = True)
-    unknown[2] = syp.Symbol('s1_22', real = True)
-    unknown[3] = syp.Symbol('s2_11', real = True)
-    unknown[4] = syp.Symbol('s2_12', real = True)
-    unknown[5] = syp.Symbol('s2_22', real = True)
-    unknown[6] = syp.Symbol('u11', real = True)
-    unknown[7] = syp.Symbol('u12', real = True)
-    unknown[8] = syp.Symbol('u22', real = True)
-    
-    ################################
-#    f_id = 'z^2'
-#    f_id = 'z^3'
-#    f_id = 'z^4'
-    f_id = 'exp(z)'
-    
-    x_min = np.ndarray((2))
-    x_min[0] = 0.0
-    x_min[1] = 0.0
-    
-    x_max = np.ndarray((2))
-    x_max[0] = 2.0
-    x_max[1] = 2.0
-    
-    x_sidelength = np.ndarray((2))
-    x_sidelength[0] = x_max[0] - x_min[0]
-    x_sidelength[1] = x_max[1] - x_min[1]
-    
-    x_plot = np.meshgrid(np.arange(x_min[0], x_max[0], (x_sidelength[0])/500), 
-                         np.arange(x_min[1], x_max[1], (x_sidelength[1])/500))
-    
-#    formulation_id = 'metric'
-    formulation_id = 'derivative'
-    
-    highest_order = 2
-    number_of_partitions = 20
-    error_init_limit = 50.0
-    element_size = 1.0e-2
-    newton_tol = 1.0e-8
-    
-#    solver_id = 'np.solve'
-    solver_id = 'np.lstsq'
-#    solver_id = 'scp.spsolve'
-#    solver_id = 'scp.bicg'
-#    solver_id = 'scp.lsqr'
-#    solver_id = 'scp.lsmr'
-    ##############################
-    
-    print('')
-    print('f(z) =', f_id)
-    print('# of points = ', number_of_partitions - 1, 'x', number_of_partitions - 1)
-    print('error_init_limit =', error_init_limit)
-    print('element_size =', element_size)
-    print('newton_tol =', newton_tol)
-    print('solver =', solver_id)
-    print('')
-    
-    x_target = np.ndarray((len(x),))
-    
-    x_target_array = np.ndarray((number_of_partitions - 1, 
-                                 number_of_partitions - 1, 
-                                 len(x),))
-        
-    error_terminal_array = np.ndarray((number_of_partitions - 1, 
-                                       number_of_partitions - 1))
-    
-    error_mean = np.ndarray((2))
-    error_mean[0] = 0
-    error_mean[1] = 0
-    
-    
-    def relative_error(a, b):
-        
-        relative_error = round(np.linalg.norm(b - a)/np.linalg.norm(a), 4)*100
-        
-        return relative_error
-    
-    
-    for i in range(number_of_partitions - 1):
-        for j in range(number_of_partitions - 1):
-            x_target[0] = (x_max[0] - x_min[0])*(i + 1)/number_of_partitions
-            x_target[1] = (x_max[1] - x_min[1])*(j + 1)/number_of_partitions    
-            for k in range(len(x)):
-                x_target_array[i][j][k] = x_target[k]
-    
-            ######################################################
-            Unknown_call = Unknown(f_id, x, s, unknown, x_target)
-            ######################################################
-            unknown_theory = Unknown_call.unknown_theory()
-            unknown_init = Unknown_call.unknown_init(error_init_limit)
-            error_init = relative_error(unknown_theory, unknown_init)
-        
-            #############################################################################################################
-            Solve_call = Solve(f_id, formulation_id, highest_order, x, s, unknown, x_target, unknown_init, element_size)
-            #############################################################################################################
-            unknown_terminal = Solve_call.solution(newton_tol, solver_id)
-            error_terminal = relative_error(unknown_theory, unknown_terminal)
-            error_terminal_array[i][j] = error_terminal
-            
-            error_mean[0] += error_init/((number_of_partitions - 1)**2)
-            error_mean[1] += error_terminal/((number_of_partitions - 1)**2)
-            
-    print('error_init_mean(%) & error_terminal_mean(%) = ')
-    print(error_mean)
-    print('') 
-    
-    #################################
-    Plot = Plot(f_id, x, s, x_plot, x_target_array, error_terminal_array)
-    #################################
-    os.chdir('./graph')
-    
-    print('Result')
-    Plot.result_plot()
-    print('')    
-            
-        
-    t1 = time.time()
-    
-    print('Elapsed Time = ')
-    print(round(t1 - t0), '(s)')
-    print('')
 
 
 
@@ -797,9 +596,4 @@ if __name__ == '__main__':
 
 
 
-        
-    
-    
-    
-    
 
