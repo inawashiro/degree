@@ -49,6 +49,9 @@ class ProblemSettings():
         
         s = np.ndarray((2,), 'object')
         
+        if f_id == 'z':
+            s[0] = x[0]
+            s[1] = x[1]
         if f_id == 'z^2':
             s[0] = x[0]**2 - x[1]**2
             s[1] = 2*x[0]*x[1]        
@@ -262,10 +265,10 @@ if __name__ == '__main__':
     s[1] = syp.Symbol('s2', real = True)
     
     ####################
-#    f_id = 'z^2'
+    f_id = 'z^2'
 #    f_id = 'z^3'
 #    f_id = 'z^4'
-    f_id = 'exp(z)'
+#    f_id = 'exp(z)'
     ####################
     
     print('')
