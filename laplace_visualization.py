@@ -110,7 +110,7 @@ class TerminalPlot():
         self.x_target_array = x_target_array
         self.error_terminal_array = error_terminal_array
     
-    def error_terminal_plot(self):
+    def unknown_terminal_error_plot(self):
         x_min = self.x_min
         x_max = self.x_max
         newton_tol = str(self.newton_tol)
@@ -139,8 +139,8 @@ class TerminalPlot():
         
         plt.colorbar(error_plot)
         
-        plt.savefig('./graph/' + f_id + '/terminal_error_distribution/newton_tol_' + newton_tol + '.pdf')
-        plt.savefig('./graph/' + f_id + '/terminal_error_distribution/newton_tol_' + newton_tol + '.png')
+        plt.savefig('./graph/' + f_id + '/unknown_terminal_error/newton_tol_' + newton_tol + '.pdf')
+        plt.savefig('./graph/' + f_id + '/unknown_terminal_error/newton_tol_' + newton_tol + '.png')
         
         plt.pause(.01)
         
@@ -171,9 +171,9 @@ if __name__ == '__main__':
     unknown[8] = syp.Symbol('u22', real = True)
     
     ################################
-    f_id = 'z^2'
+#    f_id = 'z^2'
 #    f_id = 'z^3'
-#    f_id = 'exp(z)'
+    f_id = 'exp(z)'
     
     x_min = np.ndarray((2))
     x_min[0] = 0.0
@@ -195,9 +195,9 @@ if __name__ == '__main__':
     
     highest_order = 2
     number_of_partitions = 4
-    error_init_limit = 200.0
-    element_size = 1.0e-1
-    newton_tol = 1.0e-8
+    unknown_init_error_limit = 200.0
+    element_size = 1.0e-3
+    newton_tol = 1.0e-9
     
 #    solver_id = 'np.solve'
     solver_id = 'np.lstsq'
@@ -210,32 +210,31 @@ if __name__ == '__main__':
     print('u = Re{',f_id,'}')
     print('')
     print('# of points = ', number_of_partitions - 1, 'x', number_of_partitions - 1)
-    print('error_init_limit =', error_init_limit)
+    print('unknown_init_error_limit =', unknown_init_error_limit)
     print('element_size =', element_size)
     print('newton_tol =', newton_tol)
     print('solver =', solver_id)
     print('')
-    
-    x_target = np.ndarray((len(x),))
-    
-    x_target_array = np.ndarray((number_of_partitions - 1, 
-                                 number_of_partitions - 1, 
-                                 len(x),))
-        
-    error_terminal_array = np.ndarray((number_of_partitions - 1, 
-                                       number_of_partitions - 1))
-    
-    error_mean = np.ndarray((2))
-    error_mean[0] = 0
-    error_mean[1] = 0
-    
+
     
     def relative_error(a, b):
         
         relative_error = round(np.linalg.norm(b - a)/np.linalg.norm(a), 4)*100
         
         return relative_error
+
+
+    x_target = np.ndarray((len(x),))
     
+    x_target_array = np.ndarray((number_of_partitions - 1, 
+                                 number_of_partitions - 1, 
+                                 len(x),))
+        
+    unknown_terminal_error_array = np.ndarray((number_of_partitions - 1, 
+                                       number_of_partitions - 1))
+    
+    unknown_init_error_mean = 0
+    unknown_terminal_error_mean = 0
     
     for i in range(number_of_partitions - 1):
         for j in range(number_of_partitions - 1):
@@ -248,22 +247,28 @@ if __name__ == '__main__':
             Unknown_call = laplace_experiment.Unknown(f_id, x, s, unknown, x_target)
             ######################################################
             unknown_theory = Unknown_call.unknown_theory()
-            unknown_init = Unknown_call.unknown_init(error_init_limit)
-            error_init = relative_error(unknown_theory, unknown_init)
+            unknown_init = Unknown_call.unknown_init(unknown_init_error_limit)
+            
+            
+            unknown_init_error = relative_error(unknown_theory, unknown_init)
         
             #############################################################################################################
             Solve_call = laplace_experiment.Solve(f_id, formulation_id, highest_order, x, s, unknown, x_target, unknown_init, element_size)
             #############################################################################################################
             unknown_terminal = Solve_call.solution(newton_tol, solver_id)
             
-            error_terminal = relative_error(unknown_theory, unknown_terminal)
-            error_terminal_array[i][j] = error_terminal
+            unknown_terminal_error = relative_error(unknown_theory, unknown_terminal)
+            unknown_terminal_error_array[i][j] = unknown_terminal_error
             
-            error_mean[0] += error_init/((number_of_partitions - 1)**2)
-            error_mean[1] += error_terminal/((number_of_partitions - 1)**2)
+            unknown_init_error_mean += unknown_init_error/((number_of_partitions - 1)**2)
+            unknown_terminal_error_mean += unknown_terminal_error/((number_of_partitions - 1)**2)
             
-    print('error_init_mean(%) & error_terminal_mean(%) = ')
-    print(error_mean)
+    print('unknown_init_error_mean(%) = ')
+    print(unknown_init_error_mean)
+    print('') 
+    
+    print('unknown_terminal_error_mean(%) = ')
+    print(unknown_terminal_error_mean)
     print('') 
     
     ############################################
@@ -278,11 +283,11 @@ if __name__ == '__main__':
     print('')    
     
     ####################################################################################
-    TerminalPlot = TerminalPlot(x_min, x_max, newton_tol, x_target_array, error_terminal_array)
+    TerminalPlot = TerminalPlot(x_min, x_max, newton_tol, x_target_array, unknown_terminal_error_array)
     ####################################################################################
     
-    print('Terminal Error Distribution')
-    TerminalPlot.error_terminal_plot()
+    print('unknown_terminal_error Distribution')
+    TerminalPlot.unknown_terminal_error_plot()
     print('')      
     
     
