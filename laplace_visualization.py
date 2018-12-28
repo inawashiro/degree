@@ -7,9 +7,10 @@ Created on Thu Dec 27 18:43:47 2018
 import laplace_theory, laplace_experiment
 
 # For Visualization
+
+from mpl_toolkits.mplot3d import axes3d, Axes3D
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
-from mpl_toolkits.mplot3d import Axes3D
 plt.rcParams['contour.negative_linestyle'] = 'solid'
 
 # For Numerical Computation 
@@ -55,7 +56,7 @@ class TheoryPlot(laplace_theory.ProblemSettings):
         fig = plt.figure()
         ax = fig.gca(projection = '3d')
         ax.plot_wireframe(x_plot[0], x_plot[1], u_theory_plot, linewidth = 0.2)
-        
+    
         plt.locator_params(axis = 'x', nbins = 5)
         plt.locator_params(axis = 'y', nbins = 5)
         plt.locator_params(axis = 'z', nbins = 5)
@@ -63,8 +64,8 @@ class TheoryPlot(laplace_theory.ProblemSettings):
         plt.xlabel('x1', labelpad = 12)
         plt.ylabel('x2', labelpad = 12)
 
-        plt.savefig('./graph/' + f_id + '/3d_plot/theory.pdf')
-        plt.savefig('./graph/' + f_id + '/3d_plot/theory.png')
+        plt.savefig('./graph/' + f_id + '/u/theory.pdf')
+        plt.savefig('./graph/' + f_id + '/u/theory.png')
         
         plt.pause(.01)
         
@@ -95,27 +96,88 @@ class TheoryPlot(laplace_theory.ProblemSettings):
 
         plt.legend(bbox_to_anchor=(1.05, 1), loc = 2, borderaxespad = 0.)
         
-        plt.savefig('./graph/' + f_id + '/principal_coordinate_system/theory.pdf')
-        plt.savefig('./graph/' + f_id + '/principal_coordinate_system/theory.png')
+        plt.savefig('./graph/' + f_id + '/pcs/theory.pdf')
+        plt.savefig('./graph/' + f_id + '/pcs/theory.png')
         
         plt.pause(.01)
+
+
+class InitPlot():
+    
+    def __init__(self, x_min, x_max, unknown_init_error, x_target_array, u_init_array):
+        self.x_min = x_min
+        self.x_max = x_max
+        self.unknown_init_error = unknown_init_error
+        self.x_target_array = x_target_array
+        self.u_init_array = u_init_array
+    
+    def u_init_plot(self):
+        x_min = self.x_min
+        x_max = self.x_max
+        x_target_array = self.x_target_array
+        u_init_array = self.u_init_array
         
+        fig = plt.figure()
+        ax = fig.gca(projection = '3d')
+        ax.scatter(x_target_array[:, :, 0], x_target_array[:, :, 1], u_init_array[:, :])
+        
+        plt.xlim(x_min[0], x_max[0])
+        plt.ylim(x_min[1], x_max[1])
+        
+        plt.locator_params(axis = 'x', nbins = 5)
+        plt.locator_params(axis = 'y', nbins = 5)
+        plt.locator_params(axis = 'z', nbins = 5)
+        
+        plt.xlabel('x1', labelpad = 12)
+        plt.ylabel('x2', labelpad = 12)
+        
+        plt.savefig('./graph/' + f_id + '/u/init.pdf')
+        plt.savefig('./graph/' + f_id + '/u/init.png')
+        
+        plt.pause(.01)
+
         
 class TerminalPlot():
     
-    def __init__(self, x_min, x_max, newton_tol, x_target_array, error_terminal_array):
+    def __init__(self, x_min, x_max, x_target_array, u_terminal_array, unknown_terminal_error_array):
         self.x_min = x_min
         self.x_max = x_max
         self.newton_tol = newton_tol
         self.x_target_array = x_target_array
-        self.error_terminal_array = error_terminal_array
+        self.u_terminal_array = u_terminal_array
+        self.unknown_terminal_error_array = unknown_terminal_error_array
+    
+    def u_terminal_plot(self):
+        x_min = self.x_min
+        x_max = self.x_max
+        x_target_array = self.x_target_array
+        u_terminal_array = self.u_terminal_array
+        
+        fig = plt.figure()
+        ax = fig.gca(projection = '3d')
+        ax.scatter(x_target_array[:, :, 0], x_target_array[:, :, 1], u_terminal_array[:, :])
+        
+        plt.xlim(x_min[0], x_max[0])
+        plt.ylim(x_min[1], x_max[1])
+        
+        plt.locator_params(axis = 'x', nbins = 5)
+        plt.locator_params(axis = 'y', nbins = 5)
+        plt.locator_params(axis = 'z', nbins = 5)
+        
+        plt.xlabel('x1', labelpad = 12)
+        plt.ylabel('x2', labelpad = 12)
+        
+        plt.savefig('./graph/' + f_id + '/u/terminal.pdf')
+        plt.savefig('./graph/' + f_id + '/u/terminal.png')
+        
+        plt.pause(.01)
     
     def unknown_terminal_error_plot(self):
         x_min = self.x_min
         x_max = self.x_max
-        newton_tol = str(self.newton_tol)
+#        newton_tol = str(self.newton_tol)
         x_target_array = self.x_target_array
-        error_terminal_array = self.error_terminal_array
+        unknown_terminal_error_array = self.unknown_terminal_error_array
         
         ax = plt.gca()
         ax.set_aspect('equal', adjustable='box')
@@ -125,7 +187,7 @@ class TerminalPlot():
                                  s = 12,
                                  vmin = 0,
                                  vmax = 100,
-                                 c = error_terminal_array, 
+                                 c = unknown_terminal_error_array, 
                                  cmap = cm.seismic)
         
         plt.xlim(x_min[0], x_max[0])
@@ -139,8 +201,8 @@ class TerminalPlot():
         
         plt.colorbar(error_plot)
         
-        plt.savefig('./graph/' + f_id + '/unknown_terminal_error/newton_tol_' + newton_tol + '.pdf')
-        plt.savefig('./graph/' + f_id + '/unknown_terminal_error/newton_tol_' + newton_tol + '.png')
+        plt.savefig('./graph/' + f_id + '/unknown/terminal_error.pdf')
+        plt.savefig('./graph/' + f_id + '/unknown/terminal_error.png')
         
         plt.pause(.01)
         
@@ -171,9 +233,9 @@ if __name__ == '__main__':
     unknown[8] = syp.Symbol('u22', real = True)
     
     ################################
-#    f_id = 'z^2'
+    f_id = 'z^2'
 #    f_id = 'z^3'
-    f_id = 'exp(z)'
+#    f_id = 'exp(z)'
     
     x_min = np.ndarray((2))
     x_min[0] = 0.0
@@ -194,10 +256,10 @@ if __name__ == '__main__':
     formulation_id = 'derivative'
     
     highest_order = 2
-    number_of_partitions = 4
-    unknown_init_error_limit = 200.0
-    element_size = 1.0e-3
-    newton_tol = 1.0e-9
+    number_of_partitions = 10
+    unknown_init_error = 200.0
+    element_size = 1.0e-1
+    newton_tol = 1.0e-8
     
 #    solver_id = 'np.solve'
     solver_id = 'np.lstsq'
@@ -210,7 +272,7 @@ if __name__ == '__main__':
     print('u = Re{',f_id,'}')
     print('')
     print('# of points = ', number_of_partitions - 1, 'x', number_of_partitions - 1)
-    print('unknown_init_error_limit =', unknown_init_error_limit)
+    print('unknown_init_error =', unknown_init_error)
     print('element_size =', element_size)
     print('newton_tol =', newton_tol)
     print('solver =', solver_id)
@@ -229,9 +291,15 @@ if __name__ == '__main__':
     x_target_array = np.ndarray((number_of_partitions - 1, 
                                  number_of_partitions - 1, 
                                  len(x),))
-        
+    
     unknown_terminal_error_array = np.ndarray((number_of_partitions - 1, 
-                                       number_of_partitions - 1))
+                                               number_of_partitions - 1))
+    
+    u_init_array = np.ndarray((number_of_partitions - 1, 
+                               number_of_partitions - 1,))
+    
+    u_terminal_array = np.ndarray((number_of_partitions - 1, 
+                                   number_of_partitions - 1,))
     
     unknown_init_error_mean = 0
     unknown_terminal_error_mean = 0
@@ -247,11 +315,9 @@ if __name__ == '__main__':
             Unknown_call = laplace_experiment.Unknown(f_id, x, s, unknown, x_target)
             ######################################################
             unknown_theory = Unknown_call.unknown_theory()
-            unknown_init = Unknown_call.unknown_init(unknown_init_error_limit)
-            
-            
+            unknown_init = Unknown_call.unknown_init(unknown_init_error)
             unknown_init_error = relative_error(unknown_theory, unknown_init)
-        
+            
             #############################################################################################################
             Solve_call = laplace_experiment.Solve(f_id, formulation_id, highest_order, x, s, unknown, x_target, unknown_init, element_size)
             #############################################################################################################
@@ -262,6 +328,17 @@ if __name__ == '__main__':
             
             unknown_init_error_mean += unknown_init_error/((number_of_partitions - 1)**2)
             unknown_terminal_error_mean += unknown_terminal_error/((number_of_partitions - 1)**2)
+            
+            #####################################################################################
+            Taylor_call = laplace_experiment.Taylor(f_id, x, s, unknown, x_target, unknown_init)
+            #####################################################################################
+            s_init = Taylor_call.x_taylor_s(x_target, unknown_init)
+            u_init = Taylor_call.s_taylor_u(s_init, unknown_init)
+            u_init_array[i][j] = u_init
+            
+            s_terminal = Taylor_call.x_taylor_s(x_target, unknown_terminal)
+            u_terminal = Taylor_call.s_taylor_u(s_terminal, unknown_terminal)
+            u_terminal_array[i][j] = u_terminal
             
     print('unknown_init_error_mean(%) = ')
     print(unknown_init_error_mean)
@@ -283,8 +360,18 @@ if __name__ == '__main__':
     print('')    
     
     ####################################################################################
-    TerminalPlot = TerminalPlot(x_min, x_max, newton_tol, x_target_array, unknown_terminal_error_array)
+    InitPlot = InitPlot(x_min, x_max, unknown_init_error, x_target_array, u_init_array)
     ####################################################################################
+    print('u_init')
+    InitPlot.u_init_plot()
+    print('')
+    
+    ####################################################################################
+    TerminalPlot = TerminalPlot(x_min, x_max, x_target_array, u_terminal_array, unknown_terminal_error_array)
+    ####################################################################################
+    print('u_terminal')
+    TerminalPlot.u_terminal_plot()
+    print('')
     
     print('unknown_terminal_error Distribution')
     TerminalPlot.unknown_terminal_error_plot()
