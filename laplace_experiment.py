@@ -141,13 +141,13 @@ class Taylor(Known):
                      
         return s_taylor_u
     
-    def x_taylor_u(self, x, unknown):
+    def x_polynomial_u(self, x, unknown):
         """ x_polynomial Series of u """
         """ Convolution of x_taylor_s & s_taylor_u """
         x_taylor_s = self.x_taylor_s(x, unknown)
-        x_taylor_u = self.s_taylor_u(x_taylor_s, unknown)
+        x_polynomial_u = self.s_taylor_u(x_taylor_s, unknown)
         
-        return x_taylor_u
+        return x_polynomial_u
     
  
 class BoundaryConditions(Taylor):
@@ -210,11 +210,11 @@ class BoundaryConditions(Taylor):
         x_boundary = self.x_boundary()
         u_boundary = self.u_boundary()
         
-        x_taylor_u = np.ndarray((2,), 'object')
+        x_polynomial_u = np.ndarray((2,), 'object')
         bc = np.ndarray((2,), 'object')
         for i in range(2):
-            x_taylor_u[i] = self.Taylor.x_taylor_u(x_boundary[i], unknown)
-            bc[i] = x_taylor_u[i] - u_boundary[i]
+            x_polynomial_u[i] = self.Taylor.x_polynomial_u(x_boundary[i], unknown)
+            bc[i] = x_polynomial_u[i] - u_boundary[i]
             
         return bc
         
