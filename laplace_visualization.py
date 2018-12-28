@@ -233,8 +233,8 @@ if __name__ == '__main__':
     unknown[8] = syp.Symbol('u22', real = True)
     
     ################################
-    f_id = 'z^2'
-#    f_id = 'z^3'
+#    f_id = 'z^2'
+    f_id = 'z^3'
 #    f_id = 'exp(z)'
     
     x_min = np.ndarray((2))
@@ -258,7 +258,7 @@ if __name__ == '__main__':
     highest_order = 2
     number_of_partitions = 10
     unknown_init_error = 200.0
-    element_size = 1.0e-1
+    element_size = 1.0e-2
     newton_tol = 1.0e-8
     
 #    solver_id = 'np.solve'
@@ -311,9 +311,9 @@ if __name__ == '__main__':
             for k in range(len(x)):
                 x_target_array[i][j][k] = x_target[k]
     
-            ######################################################
+            #########################################################################
             Unknown_call = laplace_experiment.Unknown(f_id, x, s, unknown, x_target)
-            ######################################################
+            #########################################################################
             unknown_theory = Unknown_call.unknown_theory()
             unknown_init = Unknown_call.unknown_init(unknown_init_error)
             unknown_init_error = relative_error(unknown_theory, unknown_init)
@@ -348,34 +348,34 @@ if __name__ == '__main__':
     print(unknown_terminal_error_mean)
     print('') 
     
-    ############################################
-    TheoryPlot = TheoryPlot(f_id, x, s, x_plot)
-    ############################################
-    print('u_theory')
-    TheoryPlot.u_theory_plot()
-    print('')
-    
-    print('pcs_theory')
-    TheoryPlot.pcs_theory_plot()
-    print('')    
-    
-    ####################################################################################
-    InitPlot = InitPlot(x_min, x_max, unknown_init_error, x_target_array, u_init_array)
-    ####################################################################################
-    print('u_init')
-    InitPlot.u_init_plot()
-    print('')
-    
-    ##########################################################################################################
-    TerminalPlot = TerminalPlot(x_min, x_max, x_target_array, u_terminal_array, unknown_terminal_error_array)
-    ##########################################################################################################
-    print('u_terminal')
-    TerminalPlot.u_terminal_plot()
-    print('')
-    
-    print('unknown_terminal_error Distribution')
-    TerminalPlot.unknown_terminal_error_plot()
-    print('')      
+#    ############################################
+#    TheoryPlot = TheoryPlot(f_id, x, s, x_plot)
+#    ############################################
+#    print('u_theory')
+#    TheoryPlot.u_theory_plot()
+#    print('')
+#    
+#    print('pcs_theory')
+#    TheoryPlot.pcs_theory_plot()
+#    print('')    
+#    
+#    ####################################################################################
+#    InitPlot = InitPlot(x_min, x_max, unknown_init_error, x_target_array, u_init_array)
+#    ####################################################################################
+#    print('u_init')
+#    InitPlot.u_init_plot()
+#    print('')
+#    
+#    ##########################################################################################################
+#    TerminalPlot = TerminalPlot(x_min, x_max, x_target_array, u_terminal_array, unknown_terminal_error_array)
+#    ##########################################################################################################
+#    print('u_terminal')
+#    TerminalPlot.u_terminal_plot()
+#    print('')
+#    
+#    print('unknown_terminal_error Distribution')
+#    TerminalPlot.unknown_terminal_error_plot()
+#    print('')      
     
     
     t1 = time.time()
