@@ -516,16 +516,16 @@ class Solve(BoundaryConditions, GoverningEquations):
         
         return f
     
-    def Jacobian_f(self, unknown_temp):
+    def jacobian_f(self, unknown_temp):
         unknown = self.unknown
         f = self.f()
         
-        Jacobian_f = np.ndarray((len(f), len(unknown),), 'object')
+        jacobian_f = np.ndarray((len(f), len(unknown),), 'object')
         for i in range(len(f)):
             for j in range(len(unknown)):
-                Jacobian_f[i][j] = syp.diff(f[i], unknown[j])
-                Jacobian_f[i][j] = syp.lambdify(unknown, Jacobian_f[i][j], 'numpy')
-                Jacobian_f[i][j] = Jacobian_f[i][j](unknown_temp[0],
+                jacobian_f[i][j] = syp.diff(f[i], unknown[j])
+                jacobian_f[i][j] = syp.lambdify(unknown, jacobian_f[i][j], 'numpy')
+                jacobian_f[i][j] = jacobian_f[i][j](unknown_temp[0],
                                                     unknown_temp[1],
                                                     unknown_temp[2],
                                                     unknown_temp[3],
@@ -535,9 +535,9 @@ class Solve(BoundaryConditions, GoverningEquations):
                                                     unknown_temp[7],
                                                     unknown_temp[8],
                                                     )
-        Jacobian_f = Jacobian_f.astype('double')
+        jacobian_f = jacobian_f.astype('double')
         
-        return Jacobian_f
+        return jacobian_f
     
     def residual(self, unknown_temp):
         unknown = self.unknown
@@ -563,25 +563,25 @@ class Solve(BoundaryConditions, GoverningEquations):
     
     def solution(self, newton_tol, solver_id):
         unknown_temp = self.unknown_init
-        Jacobian_f = self.Jacobian_f(unknown_temp)
+        jacobian_f = self.jacobian_f(unknown_temp)
         residual = self.residual(unknown_temp)
             
         while np.linalg.norm(residual) > newton_tol:
             if solver_id == 'np.solve':
-                increment = np.linalg.solve(Jacobian_f, residual)
+                increment = np.linalg.solve(jacobian_f, residual)
             if solver_id == 'np.lstsq':
-                increment = np.linalg.lstsq(Jacobian_f, residual)[0]
+                increment = np.linalg.lstsq(jacobian_f, residual)[0]
             if solver_id == 'scp.spsolve':
-                increment = scp.sparse.linalg.spsolve(Jacobian_f, residual)
+                increment = scp.sparse.linalg.spsolve(jacobian_f, residual)
             if solver_id == 'scp.bicg':
-                increment = scp.sparse.linalg.bicg(Jacobian_f, residual)[0]
+                increment = scp.sparse.linalg.bicg(jacobian_f, residual)[0]
             if solver_id == 'scp.lsqr':
-                increment = scp.sparse.linalg.lsqr(Jacobian_f, residual)[0]
+                increment = scp.sparse.linalg.lsqr(jacobian_f, residual)[0]
             if solver_id == 'scp.lsmr':
-                increment = scp.sparse.linalg.lsmr(Jacobian_f, residual)[0]
+                increment = scp.sparse.linalg.lsmr(jacobian_f, residual)[0]
             
             unknown_temp -= increment
-            Jacobian_f = self.Jacobian_f(unknown_temp)
+            jacobian_f = self.jacobian_f(unknown_temp)
             residual = self.residual(unknown_temp)
         
         solution = unknown_temp
