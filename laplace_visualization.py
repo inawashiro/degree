@@ -9,14 +9,17 @@ import laplace_theory, laplace_experiment
 # For Visualization
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
-plt.rcParams['contour.negative_linestyle']='solid'
 from mpl_toolkits.mplot3d import Axes3D
+plt.rcParams['contour.negative_linestyle'] = 'solid'
 
 # For Numerical Computation 
 import numpy as np
 
 # For Symbolic Notation
 import sympy as syp
+
+# For Scientific Notation
+from decimal import getcontext, Decimal
 
 # For Measuring Computation Time
 import time
@@ -32,30 +35,33 @@ class TheoryPlot(laplace_theory.ProblemSettings):
         self.s = s
         self.x_plot = x_plot
     
-    def s_plot(self):
+    def s_theory_plot(self):
         x = self.x
-        s = self.ProblemSettings.s(x)
+        s_theory = self.ProblemSettings.s(x)
         x_plot = self.x_plot
         
-        s_plot = np.ndarray((len(s),), 'object')
-        s_plot = syp.lambdify(x, s, 'numpy')
-        s_plot = s_plot(x_plot[0], x_plot[1])
+        s_theory_plot = np.ndarray((len(s_theory),), 'object')
+        s_theory_plot = syp.lambdify(x, s_theory, 'numpy')
+        s_theory_plot = s_theory_plot(x_plot[0], x_plot[1])
         
-        return s_plot
+        return s_theory_plot
     
     def u_theory_plot(self):
         f_id = self.f_id
         x_plot = self.x_plot
-        s_plot = self.s_plot()
-        u_plot = self.ProblemSettings.u(s_plot)
+        s_theory_plot = self.s_theory_plot()
+        u_theory_plot = self.ProblemSettings.u(s_theory_plot)
         
         fig = plt.figure()
         ax = fig.gca(projection = '3d')
-        ax.plot_wireframe(x_plot[0], x_plot[1], u_plot, linewidth = 0.2)
+        ax.plot_wireframe(x_plot[0], x_plot[1], u_theory_plot, linewidth = 0.2)
         
         plt.locator_params(axis = 'x', nbins = 5)
         plt.locator_params(axis = 'y', nbins = 5)
         plt.locator_params(axis = 'z', nbins = 5)
+
+        plt.xlabel('x1', labelpad = 12)
+        plt.ylabel('x2', labelpad = 12)
 
         plt.savefig('./graph/' + f_id + '/3d_plot/theory.pdf')
         plt.savefig('./graph/' + f_id + '/3d_plot/theory.png')
@@ -65,19 +71,22 @@ class TheoryPlot(laplace_theory.ProblemSettings):
     def pcs_theory_plot(self):
         f_id = self.f_id
         x_plot = self.x_plot
-        s_plot = self.s_plot()
+        s_theory_plot = self.s_theory_plot()
         
         ax = plt.gca()
         ax.set_aspect('equal', adjustable='box')
         
-        plt.locator_params(axis = 'x', nbins = 5)
-        plt.locator_params(axis = 'y', nbins = 5)
-        
         interval1 = np.arange(-100, 100, 1.0)
         interval2 = np.arange(-100, 100, 1.0)
         
-        s1 = plt.contour(x_plot[0], x_plot[1], s_plot[0], interval1, colors = 'red')        
-        s2 = plt.contour(x_plot[0], x_plot[1], s_plot[1], interval2, colors = 'blue')
+        s1 = plt.contour(x_plot[0], x_plot[1], s_theory_plot[0], interval1, colors = 'red')        
+        s2 = plt.contour(x_plot[0], x_plot[1], s_theory_plot[1], interval2, colors = 'blue')
+        
+        plt.locator_params(axis = 'x', nbins = 5)
+        plt.locator_params(axis = 'y', nbins = 5)
+        
+        plt.xlabel('x1', labelpad = 12)
+        plt.ylabel('x2', labelpad = 12)
         
         labels = ['s1 = const.', 's2 = const.']
             
@@ -90,9 +99,9 @@ class TheoryPlot(laplace_theory.ProblemSettings):
         plt.savefig('./graph/' + f_id + '/principal_coordinate_system/theory.png')
         
         plt.pause(.01)
-
-
-class ExperimentPlot(laplace_experiment.Solve):
+        
+        
+class TerminalPlot():
     
     def __init__(self, x_min, x_max, newton_tol, x_target_array, error_terminal_array):
         self.x_min = x_min
@@ -101,7 +110,7 @@ class ExperimentPlot(laplace_experiment.Solve):
         self.x_target_array = x_target_array
         self.error_terminal_array = error_terminal_array
     
-    def error_terminal_distribution(self):
+    def error_terminal_plot(self):
         x_min = self.x_min
         x_max = self.x_max
         newton_tol = str(self.newton_tol)
@@ -111,12 +120,6 @@ class ExperimentPlot(laplace_experiment.Solve):
         ax = plt.gca()
         ax.set_aspect('equal', adjustable='box')
         
-        plt.xlim(x_min[0], x_max[0])
-        plt.ylim(x_min[1], x_max[1])
-        
-        plt.locator_params(axis = 'x', nbins = 5)
-        plt.locator_params(axis = 'y', nbins = 5)
-        
         error_plot = plt.scatter(x_target_array[:, :, 0], 
                                  x_target_array[:, :, 1], 
                                  s = 12,
@@ -124,6 +127,15 @@ class ExperimentPlot(laplace_experiment.Solve):
                                  vmax = 100,
                                  c = error_terminal_array, 
                                  cmap = cm.seismic)
+        
+        plt.xlim(x_min[0], x_max[0])
+        plt.ylim(x_min[1], x_max[1])
+        
+        plt.locator_params(axis = 'x', nbins = 5)
+        plt.locator_params(axis = 'y', nbins = 5)
+        
+        plt.xlabel('x1', labelpad = 12)
+        plt.ylabel('x2', labelpad = 12)
         
         plt.colorbar(error_plot)
         
@@ -182,8 +194,8 @@ if __name__ == '__main__':
     formulation_id = 'derivative'
     
     highest_order = 2
-    number_of_partitions = 20
-    error_init_limit = 0.0
+    number_of_partitions = 4
+    error_init_limit = 200.0
     element_size = 1.0e-1
     newton_tol = 1.0e-8
     
@@ -243,6 +255,7 @@ if __name__ == '__main__':
             Solve_call = laplace_experiment.Solve(f_id, formulation_id, highest_order, x, s, unknown, x_target, unknown_init, element_size)
             #############################################################################################################
             unknown_terminal = Solve_call.solution(newton_tol, solver_id)
+            
             error_terminal = relative_error(unknown_theory, unknown_terminal)
             error_terminal_array[i][j] = error_terminal
             
@@ -265,10 +278,11 @@ if __name__ == '__main__':
     print('')    
     
     ####################################################################################
-    ExperimentPlot = ExperimentPlot(x_min, x_max, newton_tol, x_target_array, error_terminal_array)
+    TerminalPlot = TerminalPlot(x_min, x_max, newton_tol, x_target_array, error_terminal_array)
     ####################################################################################
+    
     print('Terminal Error Distribution')
-    ExperimentPlot.error_terminal_distribution()
+    TerminalPlot.error_terminal_plot()
     print('')      
     
     
