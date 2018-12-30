@@ -20,10 +20,7 @@ import numpy as np
 import sympy as syp
 from sympy import nsolve
 
-# For Scientific Notation
-from decimal import getcontext, Decimal
-
-# For Measuring Computation Time
+# For Measuring Computation Timea
 import time
 
 
@@ -312,7 +309,6 @@ if __name__ == '__main__':
     formulation_id = 'derivative'
     
     highest_order = 2
-    number_of_partitions = 4
     unknown_init_error = 200.0
     
     solver_id = 'np.lstsq'
@@ -322,7 +318,6 @@ if __name__ == '__main__':
     print('')
     print('element_size =', element_size)
     print('newton_tol =', newton_tol)
-    print('# of points = ', number_of_partitions - 1, 'x', number_of_partitions - 1)
     print('')
 
     
@@ -337,6 +332,8 @@ if __name__ == '__main__':
     TheoryPlot = TheoryPlot(f_id, x, s, x_plot)
     ############################################
     x_target_array = TheoryPlot.pcs_theory_plot()
+    
+    number_of_points = len(x_target_array)*len(x_target_array[0])
     
     unknown_terminal_error_array = np.ndarray((len(x_target_array), 
                                                len(x_target_array[0])))
@@ -370,8 +367,8 @@ if __name__ == '__main__':
             unknown_terminal_error_array[i][j] = unknown_terminal_error
             
             
-            unknown_init_error_mean += unknown_init_error/((number_of_partitions - 1)**2)
-            unknown_terminal_error_mean += unknown_terminal_error/((number_of_partitions - 1)**2)
+            unknown_init_error_mean += unknown_init_error/number_of_points
+            unknown_terminal_error_mean += unknown_terminal_error/number_of_points
             
             #####################################################################################
             Taylor_call = laplace_experiment.Taylor(f_id, x, s, unknown, x_target, unknown_init)
