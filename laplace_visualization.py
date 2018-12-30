@@ -18,6 +18,7 @@ import numpy as np
 
 # For Symbolic Notation
 import sympy as syp
+from sympy import nsolve
 
 # For Scientific Notation
 from decimal import getcontext, Decimal
@@ -70,9 +71,13 @@ class TheoryPlot(laplace_theory.ProblemSettings):
         plt.pause(.01)
         
     def pcs_theory_plot(self):
+        x = self.x
+        s = self.ProblemSettings.s(x)
         f_id = self.f_id
         x_plot = self.x_plot
         s_theory_plot = self.s_theory_plot()
+        
+        
         
         ax = plt.gca()
         ax.set_aspect('equal', adjustable='box')
@@ -101,6 +106,24 @@ class TheoryPlot(laplace_theory.ProblemSettings):
         
         plt.pause(.01)
 
+        f1 = np.ndarray((len(s1.levels)), 'object')
+        for i in range(len(s1.levels)):
+            f1[i] = s[0] - s1.levels[i]
+        f2 = np.ndarray((len(s2.levels)), 'object')
+        for i in range(len(s2.levels)):
+            f2[i] = s[1] - s2.levels[i]    
+
+        x_target_array = np.ndarray((len(s1.levels), len(s2.levels), 2))
+        for i in range(len(s1.levels)):
+            for j in range(len(s2.levels)):
+                for k in range(len(x)):
+                    x_target_array[i][j][k] = syp.nsolve((f1[i], f2[j]), \
+                                             (x[0], x[1]), \
+                                             (1, 1) \
+                                             )[k]
+
+        return x_target_array
+        
 
 class InitPlot():
     
@@ -137,9 +160,10 @@ class InitPlot():
         plt.pause(.01)
 
         
-class TerminalPlot():
+class TerminalPlot(TheoryPlot):
     
     def __init__(self, x_min, x_max, x_target_array, u_terminal_array, unknown_terminal_error_array):
+        self.TheoryPlot = TheoryPlot
         self.x_min = x_min
         self.x_max = x_max
         self.newton_tol = newton_tol
@@ -173,6 +197,7 @@ class TerminalPlot():
         plt.pause(.01)
     
     def unknown_terminal_error_plot(self):
+        s_theory_plot = self.TheoryPlot.s_theory_plot()
         x_min = self.x_min
         x_max = self.x_max
 #        newton_tol = str(self.newton_tol)
@@ -181,6 +206,12 @@ class TerminalPlot():
         
         ax = plt.gca()
         ax.set_aspect('equal', adjustable='box')
+        
+        interval1 = np.arange(-100, 100, 1.0)
+        interval2 = np.arange(-100, 100, 1.0)
+        
+        plt.contour(x_plot[0], x_plot[1], s_theory_plot[0], interval1, colors = 'gray', linestyles = 'dotted')        
+        plt.contour(x_plot[0], x_plot[1], s_theory_plot[1], interval2, colors = 'gray', linestyles = 'dotted')
         
         error_plot = plt.scatter(x_target_array[:, :, 0], 
                                  x_target_array[:, :, 1], 
@@ -211,12 +242,13 @@ class TerminalPlot():
         
         unknown_terminal_error_array = np.ravel(unknown_terminal_error_array)
         
+        bins = range(0, 100, 10)
         weights = np.ones_like(unknown_terminal_error_array) / len(unknown_terminal_error_array)
         
-        plt.hist(unknown_terminal_error_array, weights = weights)
+        plt.hist(unknown_terminal_error_array, bins = bins, weights = weights)
         
         plt.xlabel('Error (%)', labelpad = 12)
-        plt.ylabel('Probability Density', labelpad = 12)
+        plt.ylabel('Density', labelpad = 12)
         
         plt.savefig('./graph/' + f_id + '/unknown/terminal_error_histogram.pdf')
         plt.savefig('./graph/' + f_id + '/unknown/terminal_error_histogram.png')
@@ -250,9 +282,17 @@ if __name__ == '__main__':
     unknown[8] = syp.Symbol('u22', real = True)
     
     ################################
-#    f_id = 'z^2'
-    f_id = 'z^3'
+    f_id = 'z^2'
+    element_size = 1.0e-1
+    newton_tol = 1.0e-8
+    
+#    f_id = 'z^3'
+#    element_size = 1.0e-2
+#    newton_tol = 1.0e-8
+    
 #    f_id = 'exp(z)'
+#    element_size = 1.0e-3
+#    newton_tol = 1.0e-9
     
     x_min = np.ndarray((2))
     x_min[0] = 0.0
@@ -269,30 +309,20 @@ if __name__ == '__main__':
     x_plot = np.meshgrid(np.arange(x_min[0], x_max[0], (x_sidelength[0])/500), 
                          np.arange(x_min[1], x_max[1], (x_sidelength[1])/500))
     
-#    formulation_id = 'metric'
     formulation_id = 'derivative'
     
     highest_order = 2
     number_of_partitions = 4
     unknown_init_error = 200.0
-    element_size = 1.0e-2
-    newton_tol = 1.0e-8
     
-#    solver_id = 'np.solve'
     solver_id = 'np.lstsq'
-#    solver_id = 'scp.spsolve'
-#    solver_id = 'scp.bicg'
-#    solver_id = 'scp.lsqr'
-#    solver_id = 'scp.lsmr'
     ##############################
     print('')
     print('u = Re{',f_id,'}')
     print('')
-    print('# of points = ', number_of_partitions - 1, 'x', number_of_partitions - 1)
-    print('unknown_init_error =', unknown_init_error)
     print('element_size =', element_size)
     print('newton_tol =', newton_tol)
-    print('solver =', solver_id)
+    print('# of points = ', number_of_partitions - 1, 'x', number_of_partitions - 1)
     print('')
 
     
@@ -302,31 +332,27 @@ if __name__ == '__main__':
         
         return relative_error
 
-
-    x_target = np.ndarray((len(x),))
-    
-    x_target_array = np.ndarray((number_of_partitions - 1, 
-                                 number_of_partitions - 1, 
-                                 len(x),))
  
-    unknown_terminal_error_array = np.ndarray((number_of_partitions - 1, 
-                                                 number_of_partitions - 1))
+    ############################################
+    TheoryPlot = TheoryPlot(f_id, x, s, x_plot)
+    ############################################
+    x_target_array = TheoryPlot.pcs_theory_plot()
     
-    u_init_array = np.ndarray((number_of_partitions - 1, 
-                               number_of_partitions - 1,))
+    unknown_terminal_error_array = np.ndarray((len(x_target_array), 
+                                               len(x_target_array[0])))
     
-    u_terminal_array = np.ndarray((number_of_partitions - 1, 
-                                   number_of_partitions - 1,))
+    u_init_array = np.ndarray((len(x_target_array), 
+                               len(x_target_array[0])))
+    
+    u_terminal_array = np.ndarray((len(x_target_array), 
+                                   len(x_target_array[0])))
     
     unknown_init_error_mean = 0
     unknown_terminal_error_mean = 0
     
-    for i in range(number_of_partitions - 1):
-        for j in range(number_of_partitions - 1):
-            x_target[0] = (x_max[0] - x_min[0])*(i + 1)/number_of_partitions
-            x_target[1] = (x_max[1] - x_min[1])*(j + 1)/number_of_partitions    
-            for k in range(len(x)):
-                x_target_array[i][j][k] = x_target[k]
+    for i in range(len(x_target_array)):
+        for j in range(len(x_target_array[i])):
+            x_target = x_target_array[i][j]
     
             #########################################################################
             Unknown_call = laplace_experiment.Unknown(f_id, x, s, unknown, x_target)
@@ -366,20 +392,9 @@ if __name__ == '__main__':
     print(unknown_terminal_error_mean)
     print('') 
     
-#    ############################################
-#    TheoryPlot = TheoryPlot(f_id, x, s, x_plot)
-#    ############################################
-#    print('u_theory')
-#    TheoryPlot.u_theory_plot()
-#    print('')
-#    
-#    print('pcs_theory')
-#    TheoryPlot.pcs_theory_plot()
-#    print('')    
-#    
-#    ####################################################################################
-#    InitPlot = InitPlot(x_min, x_max, unknown_init_error, x_target_array, u_init_array)
-#    ####################################################################################
+    ####################################################################################
+    InitPlot = InitPlot(x_min, x_max, unknown_init_error, x_target_array, u_init_array)
+    ####################################################################################
 #    print('u_init')
 #    InitPlot.u_init_plot()
 #    print('')
@@ -390,10 +405,10 @@ if __name__ == '__main__':
 #    print('u_terminal')
 #    TerminalPlot.u_terminal_plot()
 #    print('')
-#    
-#    print('unknown_terminal_error Distribution')
-#    TerminalPlot.unknown_terminal_error_plot()
-#    print('')      
+    
+    print('unknown_terminal_error Distribution')
+    TerminalPlot.unknown_terminal_error_plot()
+    print('')      
     
     print('unknown_terminal_error Histogram')
     TerminalPlot.unknown_terminal_error_hist_plot()
