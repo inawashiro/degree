@@ -68,13 +68,9 @@ class TheoryPlot(laplace_theory.ProblemSettings):
         plt.pause(.01)
         
     def pcs_theory_plot(self):
-        x = self.x
-        s = self.ProblemSettings.s(x)
+        s_theory_plot = self.s_theory_plot()
         f_id = self.f_id
         x_plot = self.x_plot
-        s_theory_plot = self.s_theory_plot()
-        
-        
         
         ax = plt.gca()
         ax.set_aspect('equal', adjustable='box')
@@ -103,22 +99,33 @@ class TheoryPlot(laplace_theory.ProblemSettings):
         
         plt.pause(.01)
 
-        f1 = np.ndarray((len(s1.levels)), 'object')
-        for i in range(len(s1.levels)):
-            f1[i] = s[0] - s1.levels[i]
-        f2 = np.ndarray((len(s2.levels)), 'object')
-        for i in range(len(s2.levels)):
-            f2[i] = s[1] - s2.levels[i]    
+        s_levels = []
+        s_levels.append(s1.levels.tolist())
+        s_levels.append(s2.levels.tolist())
 
-        x_target_array = np.ndarray((len(s1.levels), len(s2.levels), 2))
-        for i in range(len(s1.levels)):
-            for j in range(len(s2.levels)):
+        return s_levels
+    
+    def x_target_array(self):
+        x = self.x
+        s = self.ProblemSettings.s(x)
+        s_levels = self.pcs_theory_plot()
+        
+        f1 = np.ndarray((len(s_levels[0])), 'object')
+        for i in range(len(s_levels[0])):
+            f1[i] = s[0] - s_levels[0][i]
+        f2 = np.ndarray((len(s_levels[1])), 'object')
+        for i in range(len(s_levels[1])):
+            f2[i] = s[1] - s_levels[1][i]    
+
+        x_target_array = np.ndarray((len(s_levels[0]), len(s_levels[1]), 2))
+        for i in range(len(s_levels[0])):
+            for j in range(len(s_levels[1])):
                 for k in range(len(x)):
                     x_target_array[i][j][k] = syp.nsolve((f1[i], f2[j]), \
                                              (x[0], x[1]), \
                                              (1, 1) \
                                              )[k]
-
+                    
         return x_target_array
         
 
@@ -197,7 +204,6 @@ class TerminalPlot(TheoryPlot):
         s_theory_plot = self.TheoryPlot.s_theory_plot()
         x_min = self.x_min
         x_max = self.x_max
-#        newton_tol = str(self.newton_tol)
         x_target_array = self.x_target_array
         unknown_terminal_error_array = self.unknown_terminal_error_array
         
@@ -331,7 +337,7 @@ if __name__ == '__main__':
     ############################################
     TheoryPlot = TheoryPlot(f_id, x, s, x_plot)
     ############################################
-    x_target_array = TheoryPlot.pcs_theory_plot()
+    x_target_array = TheoryPlot.x_target_array()
     
     number_of_points = len(x_target_array)*len(x_target_array[0])
     
@@ -417,6 +423,10 @@ if __name__ == '__main__':
     print('Elapsed Time = ', round(t1 - t0), '(s)')        
         
      
+    
+    
+    
+    
     
     
     
