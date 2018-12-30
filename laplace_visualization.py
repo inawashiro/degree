@@ -109,19 +109,14 @@ class TheoryPlot(laplace_theory.ProblemSettings):
         x = self.x
         s = self.ProblemSettings.s(x)
         s_levels = self.pcs_theory_plot()
-        
-        f1 = np.ndarray((len(s_levels[0])), 'object')
-        for i in range(len(s_levels[0])):
-            f1[i] = s[0] - s_levels[0][i]
-        f2 = np.ndarray((len(s_levels[1])), 'object')
-        for i in range(len(s_levels[1])):
-            f2[i] = s[1] - s_levels[1][i]    
 
         x_target_array = np.ndarray((len(s_levels[0]), len(s_levels[1]), 2))
         for i in range(len(s_levels[0])):
             for j in range(len(s_levels[1])):
+                f1 = s[0] - s_levels[0][i]
+                f2 = s[1] - s_levels[1][j]
                 for k in range(len(x)):
-                    x_target_array[i][j][k] = syp.nsolve((f1[i], f2[j]), \
+                    x_target_array[i][j][k] = syp.nsolve((f1, f2), \
                                              (x[0], x[1]), \
                                              (1, 1) \
                                              )[k]
@@ -285,17 +280,17 @@ if __name__ == '__main__':
     unknown[8] = syp.Symbol('u22', real = True)
     
     ################################
-    f_id = 'z^2'
-    element_size = 1.0e-1
-    newton_tol = 1.0e-8
+#    f_id = 'z^2'
+#    element_size = 1.0e-1
+#    newton_tol = 1.0e-8
     
 #    f_id = 'z^3'
 #    element_size = 1.0e-2
 #    newton_tol = 1.0e-8
     
-#    f_id = 'exp(z)'
-#    element_size = 1.0e-3
-#    newton_tol = 1.0e-9
+    f_id = 'exp(z)'
+    element_size = 1.0e-3
+    newton_tol = 1.0e-9
     
     x_min = np.ndarray((2))
     x_min[0] = 0.0
