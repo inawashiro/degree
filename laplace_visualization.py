@@ -206,6 +206,23 @@ class TerminalPlot():
         
         plt.pause(.01)
         
+    def unknown_terminal_error_hist_plot(self):
+        unknown_terminal_error_array = self.unknown_terminal_error_array
+        
+        unknown_terminal_error_array = np.ravel(unknown_terminal_error_array)
+        
+        weights = np.ones_like(unknown_terminal_error_array) / len(unknown_terminal_error_array)
+        
+        plt.hist(unknown_terminal_error_array, weights = weights)
+        
+        plt.xlabel('Error (%)', labelpad = 12)
+        plt.ylabel('Probability Density', labelpad = 12)
+        
+        plt.savefig('./graph/' + f_id + '/unknown/terminal_error_histogram.pdf')
+        plt.savefig('./graph/' + f_id + '/unknown/terminal_error_histogram.png')
+        
+        plt.pause(.01)
+        
         
         
 if __name__ == '__main__':
@@ -256,7 +273,7 @@ if __name__ == '__main__':
     formulation_id = 'derivative'
     
     highest_order = 2
-    number_of_partitions = 10
+    number_of_partitions = 4
     unknown_init_error = 200.0
     element_size = 1.0e-2
     newton_tol = 1.0e-8
@@ -291,9 +308,9 @@ if __name__ == '__main__':
     x_target_array = np.ndarray((number_of_partitions - 1, 
                                  number_of_partitions - 1, 
                                  len(x),))
-    
+ 
     unknown_terminal_error_array = np.ndarray((number_of_partitions - 1, 
-                                               number_of_partitions - 1))
+                                                 number_of_partitions - 1))
     
     u_init_array = np.ndarray((number_of_partitions - 1, 
                                number_of_partitions - 1,))
@@ -325,6 +342,7 @@ if __name__ == '__main__':
             
             unknown_terminal_error = relative_error(unknown_theory, unknown_terminal)
             unknown_terminal_error_array[i][j] = unknown_terminal_error
+            
             
             unknown_init_error_mean += unknown_init_error/((number_of_partitions - 1)**2)
             unknown_terminal_error_mean += unknown_terminal_error/((number_of_partitions - 1)**2)
@@ -365,10 +383,10 @@ if __name__ == '__main__':
 #    print('u_init')
 #    InitPlot.u_init_plot()
 #    print('')
-#    
-#    ##########################################################################################################
-#    TerminalPlot = TerminalPlot(x_min, x_max, x_target_array, u_terminal_array, unknown_terminal_error_array)
-#    ##########################################################################################################
+    
+    ##########################################################################################################
+    TerminalPlot = TerminalPlot(x_min, x_max, x_target_array, u_terminal_array, unknown_terminal_error_array)
+    ##########################################################################################################
 #    print('u_terminal')
 #    TerminalPlot.u_terminal_plot()
 #    print('')
@@ -376,6 +394,10 @@ if __name__ == '__main__':
 #    print('unknown_terminal_error Distribution')
 #    TerminalPlot.unknown_terminal_error_plot()
 #    print('')      
+    
+    print('unknown_terminal_error Histogram')
+    TerminalPlot.unknown_terminal_error_hist_plot()
+    print('') 
     
     
     t1 = time.time()
