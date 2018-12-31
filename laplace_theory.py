@@ -7,7 +7,7 @@ Created on Tue Jul 24 13:01:06 2018
 
 # For Numerical Computation 
 import numpy as np
-from numpy import dot
+from numpy import dot, pi
 
 # For Symbolic Notation
 import sympy as syp
@@ -41,9 +41,9 @@ class ProblemSettings():
         if f_id == 'z^3':
             s[0] = x[0]**3 - 3*x[0]*x[1]**2
             s[1] = -x[1]**3 + 3*x[0]**2*x[1]        
-        if f_id == 'exp(z)':
-            s[0] = syp.exp(x[0])*syp.cos(x[1])
-            s[1] = syp.exp(x[0])*syp.sin(x[1])
+        if f_id == 'exp(kz)':
+            s[0] = syp.exp(np.pi/4*x[0])*syp.cos(np.pi/4*x[1])
+            s[1] = syp.exp(np.pi/4*x[0])*syp.sin(np.pi/4*x[1])
     
         return s
 
@@ -173,8 +173,8 @@ if __name__ == '__main__':
     
     ####################
 #    f_id = 'z^2'
-#    f_id = 'z^3'
-    f_id = 'exp(z)'
+    f_id = 'z^3'
+#    f_id = 'exp(kz)'
     ####################
     
     print('')
