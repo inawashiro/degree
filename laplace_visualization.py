@@ -83,9 +83,6 @@ class TheoryPlot(laplace_theory.ProblemSettings):
         s2 = plt.contour(x_plot[0], x_plot[1], s_theory_plot[1], interval2, 
                          colors = 'blue')
         
-#        plt.clabel(s1)
-#        plt.clabel(s2)
-        
         plt.locator_params(axis = 'x', nbins = 5)
         plt.locator_params(axis = 'y', nbins = 5)
         
@@ -119,16 +116,11 @@ class TheoryPlot(laplace_theory.ProblemSettings):
         x_target_array = np.ndarray((len(s_levels[0]), len(s_levels[1]), 2))
         for i in range(len(s_levels[0])):
             for j in range(len(s_levels[1])):
-                if s_levels[0][i] == 0 or s_levels[1][j] == 0:
-                    for k in range(len(x)):
-                        x_target_array[i][j][k] = 0
-                else:
-                    f1 = s[0] - s_levels[0][i]
-                    f2 = s[1] - s_levels[1][j]
-                    for k in range(len(x)):
-                        x_target_array[i][j][k] = syp.nsolve((f1, f2), 
-                                                             (x[0], x[1]), 
-                                                             (1, 1))[k]
+                f1 = s[0] - s_levels[0][i]
+                f2 = s[1] - s_levels[1][j]
+                for k in range(len(x)):
+                    x_target_array[i][j][k] = syp.nsolve((f1, f2), (x[0], x[1]), 
+                                                         (1, 1))[k]
                     
         return x_target_array
         
@@ -250,8 +242,8 @@ if __name__ == '__main__':
     solver_id = 'np.lstsq'
     
     x_min = np.ndarray((2))
-    x_min[0] = 0.0
-    x_min[1] = 0.0
+    x_min[0] = 1.8
+    x_min[1] = 1.8
     
     x_max = np.ndarray((2))
     x_max[0] = 2.0
