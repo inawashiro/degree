@@ -127,14 +127,13 @@ class TheoryPlot(laplace_theory.ProblemSettings):
         
 class TerminalPlot(TheoryPlot):
     
-    def __init__(self, x_min, x_max, x_target_array, u_terminal_array, 
+    def __init__(self, x_min, x_max, x_target_array, 
                  unknown_terminal_error_array):
         self.TheoryPlot = TheoryPlot
         self.x_min = x_min
         self.x_max = x_max
         self.newton_tol = newton_tol
         self.x_target_array = x_target_array
-        self.u_terminal_array = u_terminal_array
         self.unknown_terminal_error_array = unknown_terminal_error_array
      
     def unknown_terminal_error_plot(self):
@@ -310,17 +309,17 @@ if __name__ == '__main__':
     
             #########################################################################
             Unknown_call = laplace_experiment.Unknown(f_id, x, s, unknown, 
-                                                      x_target)
+                                                      x_target, 
+                                                      unknown_init_error)
             #########################################################################
             unknown_theory = Unknown_call.unknown_theory()
-            unknown_init = Unknown_call.unknown_init(unknown_init_error)
+            unknown_init = Unknown_call.unknown_init()
             unknown_init_error = relative_error(unknown_theory, unknown_init)
             
             #############################################################################################################
-            Solve_call = laplace_experiment.Solve(f_id, formulation_id, 
-                                                  highest_order, x, s, unknown,
-                                                  x_target, unknown_init,
-                                                  element_size)
+            Solve_call = laplace_experiment.Solve(f_id, x, s, unknown,
+                                                  x_target, unknown_init_error,
+                                                  element_size, highest_order)
             #############################################################################################################
             unknown_terminal = Solve_call.solution(newton_tol, solver_id)
             
@@ -331,18 +330,6 @@ if __name__ == '__main__':
             unknown_init_error_mean += unknown_init_error/number_of_points
             unknown_terminal_error_mean += unknown_terminal_error/number_of_points
             
-            #####################################################################################
-            Taylor_call = laplace_experiment.Taylor(f_id, x, s, unknown, 
-                                                    x_target, unknown_init)
-            #####################################################################################
-            s_init = Taylor_call.x_taylor_s(x_target, unknown_init)
-            u_init = Taylor_call.s_taylor_u(s_init, unknown_init)
-            u_init_array[i][j] = u_init
-            
-            s_terminal = Taylor_call.x_taylor_s(x_target, unknown_terminal)
-            u_terminal = Taylor_call.s_taylor_u(s_terminal, unknown_terminal)
-            u_terminal_array[i][j] = u_terminal
-            
     print('unknown_init_error_mean (%) = ')
     print(unknown_init_error_mean)
     print('') 
@@ -352,7 +339,7 @@ if __name__ == '__main__':
     print('') 
     
     ##########################################################################################################
-    TerminalPlot = TerminalPlot(x_min, x_max, x_target_array, u_terminal_array,
+    TerminalPlot = TerminalPlot(x_min, x_max, x_target_array,
                                 unknown_terminal_error_array)
     ##########################################################################################################
 
