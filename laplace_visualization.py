@@ -184,10 +184,13 @@ class TerminalPlot(TheoryPlot):
         
         unknown_terminal_error_array = np.ravel(unknown_terminal_error_array)
         
-        bins = range(0, 200, 10)
+        bins = range(0, 210, 10)
         weights = np.ones_like(unknown_terminal_error_array) / len(unknown_terminal_error_array)
         
         plt.hist(unknown_terminal_error_array, bins = bins, weights = weights)
+        
+        plt.locator_params(axis = 'x', nbins = 11)
+        plt.locator_params(axis = 'y', nbins = 5)
         
         plt.xlabel('Error (%)', labelpad = 8)
         plt.ylabel('Density', labelpad = 8)
@@ -227,34 +230,37 @@ if __name__ == '__main__':
 #    f_id = 'z^2'
 #    element_size = 1.0e-1
 #    newton_tol = 1.0e-8
+#    x_min = np.ndarray((2))
+#    x_min[0] = 0.0
+#    x_min[1] = 0.0
+#    x_max = np.ndarray((2))
+#    x_max[0] = 2.0
+#    x_max[1] = 2.0
     
     f_id = 'z^3'
     element_size = 1.0e-2
     newton_tol = 1.0e-8
-    
+    x_min = np.ndarray((2))
+    x_min[0] = 1.2
+    x_min[1] = 1.2
+    x_max = np.ndarray((2))
+    x_max[0] = 2.0
+    x_max[1] = 2.0
+
 #    f_id = 'exp(kz)'
 #    element_size = 1.0e-2
 #    newton_tol = 1.0e-8
+#    x_min = np.ndarray((2))
+#    x_min[0] = 0.0
+#    x_min[1] = 0.0
+#    x_max = np.ndarray((2))
+#    x_max[0] = 2.0
+#    x_max[1] = 2.0
     
     unknown_init_error = 200.0
     highest_order = 2
     formulation_id = 'derivative'
     solver_id = 'np.lstsq'
-    
-    x_min = np.ndarray((2))
-    x_min[0] = 1.8
-    x_min[1] = 1.8
-    
-    x_max = np.ndarray((2))
-    x_max[0] = 2.0
-    x_max[1] = 2.0
-    
-    x_sidelength = np.ndarray((2))
-    x_sidelength[0] = x_max[0] - x_min[0]
-    x_sidelength[1] = x_max[1] - x_min[1]
-    
-    x_plot = np.meshgrid(np.arange(x_min[0], x_max[0], (x_sidelength[0])/500), 
-                         np.arange(x_min[1], x_max[1], (x_sidelength[1])/500))
     ###########################################################################
     
     print('')
@@ -271,7 +277,14 @@ if __name__ == '__main__':
         
         return relative_error
 
- 
+
+    x_sidelength = np.ndarray((2))
+    x_sidelength[0] = x_max[0] - x_min[0]
+    x_sidelength[1] = x_max[1] - x_min[1]
+    
+    x_plot = np.meshgrid(np.arange(x_min[0], x_max[0], (x_sidelength[0])/500), 
+                         np.arange(x_min[1], x_max[1], (x_sidelength[1])/500))
+    
     ############################################
     TheoryPlot = TheoryPlot(f_id, x, s, x_plot)
     ############################################
