@@ -50,9 +50,10 @@ class Known(laplace_theory.TheoryValue):
 class Unknown(laplace_theory.TheoryValue):
     """ Unknown Values """
 
-    def __init__(self, f_id, x, s, unknown, x_value):
+    def __init__(self, f_id, x, s, unknown, x_value, unknown_init_error):
         self.Theory = laplace_theory.TheoryValue(f_id, x, s, x_value)
         self.unknown = unknown
+        self.unknown_init_error = unknown_init_error
         
     def unknown_theory(self):
         unknown = self.unknown
@@ -72,26 +73,26 @@ class Unknown(laplace_theory.TheoryValue):
         
         return unknown_theory
         
-    def unknown_init(self, error_limit):
+    def unknown_init(self):
         unknown = self.unknown
+        unknown_init_error = self.unknown_init_error
         unknown_theory = self.unknown_theory()
     
         unknown_init = np.ndarray((len(unknown),))
         for i in range(len(unknown)):
 #            e = np.random.uniform(-error_limit, error_limit)
-            e = error_limit
-            unknown_init[i] = (1 + e/100)*unknown_theory[i]
+            unknown_init[i] = (1 + unknown_init_error/100)*unknown_theory[i]
         
         return unknown_init
 
 
-class Taylor(Known):
+class Taylor(Known, Unknown):
     """ Taylor Series Expansion """
     
-    def __init__(self, f_id, x, s, unknown, x_value, unknown_init):
+    def __init__(self, f_id, x, s, unknown, x_value, unknown_init_error):
         self.Known = Known(f_id, x, s, unknown, x_value)
+        self.Unknown = Unknown(f_id, x, s, unknown, x_value, unknown_init_error)
         self.x_value = x_value
-        self.unknown_init = unknown_init
         
     def x_taylor_s(self, x, unknown):
         """ 2nd Order x_Taylor Series Expansion of s """
@@ -120,7 +121,7 @@ class Taylor(Known):
         
     def s_value(self):
         x_value = self.x_value
-        unknown_init = self.unknown_init
+        unknown_init = self.Unknown.unknown_init()
         s_value = self.x_taylor_s(x_value, unknown_init)
         
         return s_value
@@ -153,13 +154,13 @@ class Taylor(Known):
 class BoundaryConditions(Taylor):
     """ Boundary Conditions along Each Line Element """
     
-    def __init__(self, f_id, x, s, unknown, x_value, unknown_init, element_size):
-        self.Taylor = Taylor(f_id, x, s, unknown, x_value, unknown_init)
+    def __init__(self, f_id, x, s, unknown, x_value, unknown_init_error, 
+                 element_size):
+        self.Taylor = Taylor(f_id, x, s, unknown, x_value, unknown_init_error)
         self.ProblemSettings = self.Taylor.Known.Theory.ProblemSettings
         self.x = x
         self.unknown = unknown
         self.x_value = x_value
-        self.unknown_init = unknown_init
         self.element_size = element_size
         
     def s_boundary(self):
@@ -221,8 +222,8 @@ class BoundaryConditions(Taylor):
 
 class Derivative(Taylor):
     
-    def __init__(self, f_id, x, s, unknown, x_value, unknown_init):
-        self.Taylor = Taylor(f_id, x, s, unknown, x_value, unknown_init)
+    def __init__(self, f_id, x, s, unknown, x_value, unknown_init_error):
+        self.Taylor = Taylor(f_id, x, s, unknown, x_value, unknown_init_error)
         self.x = x
         self.s = s
         self.unknown = unknown
@@ -307,8 +308,9 @@ class Derivative(Taylor):
 
 class Metric(Derivative):
     
-    def __init__(self, f_id, x, s, unknown, x_value, unknown_init):
-        self.Derivative = Derivative(f_id, x, s, unknown, x_value, unknown_init)
+    def __init__(self, f_id, x, s, unknown, x_value, unknown_init_error):
+        self.Derivative = Derivative(f_id, x, s, unknown, x_value, 
+                                     unknown_init_error)
         self.x = x
     
     def supermetric(self):
@@ -359,34 +361,23 @@ class Metric(Derivative):
 class Laplacian(Metric):
     """ x_Taylor Series of Laplacian """
     
-    def __init__(self, f_id, formulation_id, x, s, unknown, x_value, unknown_init):
-        self.Metric = Metric(f_id, x, s, unknown, x_value, unknown_init)
+    def __init__(self, f_id, x, s, unknown, x_value, 
+                 unknown_init_error):
+        self.Metric = Metric(f_id, x, s, unknown, x_value, unknown_init_error)
         self.Derivative = self.Metric.Derivative
-        self.formulation_id = formulation_id
         
     def laplacian_u(self):
         """ g11*g22*u,11 + 1/2*(g22*g11,1 - g11*g22,1)*u,1 """
-        formulation_id = self.formulation_id
         du_ds1 = self.Derivative.du_ds()[0]
         ddu_dds1 = self.Derivative.ddu_dds()[0][0]
         
-        if formulation_id == 'metric':
-            g11 = self.Metric.supermetric()[0][0]
-            g22 = self.Metric.supermetric()[1][1]
-            dg11_ds1 = self.Metric.dg_ds1()[0][0]
-            dg22_ds1 = self.Metric.dg_ds1()[1][1]
-    
-            laplacian_u = 2*g11*g22*ddu_dds1 \
-                          + (g22*dg11_ds1 - g11*dg22_ds1)*du_ds1
-            
-        if formulation_id == 'derivative':
-            ds1_dx1 = self.Derivative.ds_dx()[0][0]
-            ds1_dx2 = self.Derivative.ds_dx()[0][1]
-            dds1_ddx1 = self.Derivative.dds_ddx()[0][0][0]
-            dds1_ddx2 = self.Derivative.dds_ddx()[0][1][1]
-    
-            laplacian_u = ((ds1_dx1)**2 + (ds1_dx2)**2)*ddu_dds1 \
-                          + (dds1_ddx1 + dds1_ddx2)*du_ds1    
+        ds1_dx1 = self.Derivative.ds_dx()[0][0]
+        ds1_dx2 = self.Derivative.ds_dx()[0][1]
+        dds1_ddx1 = self.Derivative.dds_ddx()[0][0][0]
+        dds1_ddx2 = self.Derivative.dds_ddx()[0][1][1]
+
+        laplacian_u = ((ds1_dx1)**2 + (ds1_dx2)**2)*ddu_dds1 \
+                      + (dds1_ddx1 + dds1_ddx2)*du_ds1    
         
         return laplacian_u
 
@@ -394,8 +385,9 @@ class Laplacian(Metric):
 class GoverningEquations(Laplacian):
     """ Derive Governing Equations """
     
-    def __init__(self, f_id, formulation_id, highest_order, x, s, unknown, x_value, unknown_init):
-        self.Laplacian = Laplacian(f_id, formulation_id, x, s, unknown, x_value, unknown_init)
+    def __init__(self, f_id, x, s, unknown, x_value, unknown_init_error, 
+                 highest_order):
+        self.Laplacian = Laplacian(f_id, x, s, unknown, x_value, unknown_init_error)
         self.Metric = self.Laplacian.Metric
         self.Derivative = self.Laplacian.Metric.Derivative
         self.Taylor = self.Laplacian.Metric.Derivative.Taylor
@@ -476,12 +468,15 @@ class GoverningEquations(Laplacian):
 class Solve(BoundaryConditions, GoverningEquations):
     """ Solve BVP of Each Line Element by Non-linear Least Square Algorithm """
     
-    def __init__(self, f_id, formulation_id, highest_order, x, s, unknown, x_value, unknown_init, element_size):
-        self.BC = BoundaryConditions(f_id, x, s, unknown, x_value, unknown_init, element_size)
-        self.GE = GoverningEquations(f_id, formulation_id, highest_order, x, s, unknown, x_value, unknown_init)
+    def __init__(self, f_id, x, s, unknown, x_value, unknown_init_error, 
+                 element_size, highest_order):
+        self.BC = BoundaryConditions(f_id, x, s, unknown, x_value, 
+                                     unknown_init_error, element_size)
+        self.GE = GoverningEquations(f_id, x, s, unknown, x_value, 
+                                     unknown_init_error, highest_order)
+        self.Unknown = self.BC.Taylor.Unknown
         self.highest_order = highest_order
         self.unknown = unknown
-        self.unknown_init = unknown_init
     
     def f(self):
         bc = self.BC.boundary_conditions()
@@ -562,7 +557,7 @@ class Solve(BoundaryConditions, GoverningEquations):
         return residual   
     
     def solution(self, newton_tol, solver_id):
-        unknown_temp = self.unknown_init
+        unknown_temp = self.Unknown.unknown_init()
         jacobian_f = self.jacobian_f(unknown_temp)
         residual = self.residual(unknown_temp)
         
