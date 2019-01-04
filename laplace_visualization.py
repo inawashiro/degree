@@ -188,6 +188,13 @@ class TerminalPlot(TheoryPlot):
         
         plt.hist(unknown_terminal_error_array, bins = bins, weights = weights)
         
+        plt.axvline(unknown_terminal_error_array.mean(), color='k', 
+                    linestyle='dashed', linewidth=1)
+
+        _, max_ = plt.ylim()
+        plt.text(unknown_terminal_error_array.mean() + 10, max_*0.9, 
+                 'Mean: {:.1f}'.format(unknown_terminal_error_array.mean()))
+        
         plt.locator_params(axis = 'x', nbins = 11)
         plt.locator_params(axis = 'y', nbins = 5)
         
