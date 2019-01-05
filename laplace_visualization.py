@@ -62,8 +62,8 @@ class TheoryPlot(laplace_theory.ProblemSettings):
         plt.xlabel('x1', labelpad = 8)
         plt.ylabel('x2', labelpad = 8)
 
-        plt.savefig('./graph/' + f_id + '/u/theory.pdf')
-        plt.savefig('./graph/' + f_id + '/u/theory.png')
+        plt.savefig('./figure/' + f_id + '/u/theory.pdf')
+        plt.savefig('./figure/' + f_id + '/u/theory.png')
         
         plt.pause(.01)
         
@@ -97,8 +97,8 @@ class TheoryPlot(laplace_theory.ProblemSettings):
         plt.legend(bbox_to_anchor=(1.05, 1), loc = 2, borderaxespad = 0., 
                    frameon = False)
         
-        plt.savefig('./graph/' + f_id + '/pcs/theory.pdf')
-        plt.savefig('./graph/' + f_id + '/pcs/theory.png')
+        plt.savefig('./figure/' + f_id + '/pcs/theory.pdf')
+        plt.savefig('./figure/' + f_id + '/pcs/theory.png')
         
         plt.pause(.01)
 
@@ -173,8 +173,8 @@ class TerminalPlot(TheoryPlot):
         
         plt.colorbar(error_plot)
         
-        plt.savefig('./graph/' + f_id + '/unknown/terminal_error.pdf')
-        plt.savefig('./graph/' + f_id + '/unknown/terminal_error.png')
+        plt.savefig('./figure/' + f_id + '/unknown/terminal_error.pdf')
+        plt.savefig('./figure/' + f_id + '/unknown/terminal_error.png')
         
         plt.pause(.01)
         
@@ -183,13 +183,13 @@ class TerminalPlot(TheoryPlot):
         
         unknown_terminal_error_array = np.ravel(unknown_terminal_error_array)
         
-        bins = range(0, 210, 10)
+        bins = range(0, 210, 5)
         weights = np.ones_like(unknown_terminal_error_array) / len(unknown_terminal_error_array)
         
         plt.hist(unknown_terminal_error_array, bins = bins, weights = weights)
         
-        plt.axvline(unknown_terminal_error_array.mean(), color='k', 
-                    linestyle='dashed', linewidth=1)
+        plt.axvline(unknown_terminal_error_array.mean(), color = 'k', 
+                    linestyle = 'dashed', linewidth = 1)
 
         _, max_ = plt.ylim()
         plt.text(unknown_terminal_error_array.mean() + 10, max_*0.9, 
@@ -201,8 +201,8 @@ class TerminalPlot(TheoryPlot):
         plt.xlabel('Error (%)', labelpad = 8)
         plt.ylabel('Density', labelpad = 8)
         
-        plt.savefig('./graph/' + f_id + '/unknown/terminal_error_histogram.pdf')
-        plt.savefig('./graph/' + f_id + '/unknown/terminal_error_histogram.png')
+        plt.savefig('./figure/' + f_id + '/unknown/terminal_error_histogram.pdf')
+        plt.savefig('./figure/' + f_id + '/unknown/terminal_error_histogram.png')
         
         plt.pause(.01)
         
@@ -233,29 +233,29 @@ if __name__ == '__main__':
     unknown[8] = syp.Symbol('u22', real = True)
     
     ###########################################################################
-#    f_id = 'z^2'
-#    element_size = 1.0e-1
-#    newton_tol = 1.0e-8
-#    x_min = np.ndarray((2))
-#    x_min[0] = 0.0
-#    x_min[1] = 0.0
-#    x_max = np.ndarray((2))
-#    x_max[0] = 2.0
-#    x_max[1] = 2.0
-    
-    f_id = 'z^3'
-    element_size = 1.0e-2
-    newton_tol = 1.0e-8
+    f_id = 'z^2'
+    element_size = 1.0e-1
+    newton_tol = 1.0e-7
     x_min = np.ndarray((2))
-    x_min[0] = 1.2
-    x_min[1] = 1.2
+    x_min[0] = 0.0
+    x_min[1] = 0.0
     x_max = np.ndarray((2))
     x_max[0] = 2.0
     x_max[1] = 2.0
+    
+#    f_id = 'z^3'
+#    element_size = 1.0e-2
+#    newton_tol = 1.0e-7
+#    x_min = np.ndarray((2))
+#    x_min[0] = 1.2
+#    x_min[1] = 1.2
+#    x_max = np.ndarray((2))
+#    x_max[0] = 2.0
+#    x_max[1] = 2.0
 
 #    f_id = 'exp(kz)'
 #    element_size = 1.0e-2
-#    newton_tol = 1.0e-8
+#    newton_tol = 1.0e-6
 #    x_min = np.ndarray((2))
 #    x_min[0] = 0.0
 #    x_min[1] = 0.0
@@ -364,19 +364,6 @@ if __name__ == '__main__':
     print('Elapsed Time = ', round(t1 - t0), '(s)')        
         
      
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     
     
     
