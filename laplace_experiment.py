@@ -560,16 +560,12 @@ class Solve(BoundaryConditions, GoverningEquations):
         unknown_temp = self.Unknown.unknown_init()
         jacobian_f = self.jacobian_f(unknown_temp)
         residual = self.residual(unknown_temp)
-        
-#        jtj = np.dot(jacobian_f.transpose(), jacobian_f)
-#        jtr = np.dot(jacobian_f.transpose(), residual)
             
         while np.linalg.norm(residual) > newton_tol:
             if solver_id == 'np.solve':
                 increment = np.linalg.solve(jacobian_f, residual)
             if solver_id == 'np.lstsq':
                 increment = np.linalg.lstsq(jacobian_f, residual)[0]
-#                increment = np.linalg.lstsq(jtj, jtr)[0]
             if solver_id == 'scp.spsolve':
                 increment = scp.sparse.linalg.spsolve(jacobian_f, residual)
             if solver_id == 'scp.bicg':
@@ -582,16 +578,9 @@ class Solve(BoundaryConditions, GoverningEquations):
             unknown_temp -= increment
             jacobian_f = self.jacobian_f(unknown_temp)
             residual = self.residual(unknown_temp)
-#            jtj = np.dot(jacobian_f.transpose(), jacobian_f)
-#            jtr = np.dot(jacobian_f.transpose(), residual)    
-        
         solution = unknown_temp
         
         return solution
-        
-        
-
-
 
 
 
