@@ -126,9 +126,9 @@ class TheoryValue(ProblemSettings):
             s_coeff_theory[i][0] = s[i]
             s_coeff_theory[i][1] = syp.diff(s[i], x[0])
             s_coeff_theory[i][2] = syp.diff(s[i], x[1])
-            s_coeff_theory[i][3] = syp.diff(s[i], x[0], 2)
+            s_coeff_theory[i][3] = syp.diff(s[i], x[0], 2)/2
             s_coeff_theory[i][4] = syp.diff(s[i], x[0], x[1])
-            s_coeff_theory[i][5] = syp.diff(s[i], x[1], 2)
+            s_coeff_theory[i][5] = syp.diff(s[i], x[1], 2)/2
             
         for i in range(len(s)):
             for j in range(len(s_coeff_theory[i])):
@@ -146,9 +146,9 @@ class TheoryValue(ProblemSettings):
         u_coeff_theory[0] = u
         u_coeff_theory[1] = syp.diff(u, s[0])
         u_coeff_theory[2] = syp.diff(u, s[1])
-        u_coeff_theory[3] = syp.diff(u, s[0], 2)
+        u_coeff_theory[3] = syp.diff(u, s[0], 2)/2
         u_coeff_theory[4] = syp.diff(u, s[0], s[1])
-        u_coeff_theory[5] = syp.diff(u, s[1], 2)
+        u_coeff_theory[5] = syp.diff(u, s[1], 2)/2
         
         for i in range(len(u_coeff_theory)):
             u_coeff_theory[i] = syp.lambdify(s, u_coeff_theory[i], 'numpy')
