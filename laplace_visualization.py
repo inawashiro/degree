@@ -255,14 +255,14 @@ if __name__ == '__main__':
 
 #    f_id = 'exp(kz)'
 #    element_size = 1.0e-2
-#    newton_tol = 1.0e-6
+#    newton_tol = 1.0e-9
 #    x_min = np.ndarray((2))
 #    x_min[0] = 0.0
 #    x_min[1] = 0.0
 #    x_max = np.ndarray((2))
 #    x_max[0] = 2.0
 #    x_max[1] = 2.0
-    
+#    
     unknown_init_error = 200.0
     highest_order = 2
     formulation_id = 'derivative'
@@ -314,20 +314,20 @@ if __name__ == '__main__':
         for j in range(len(x_target_array[i])):
             x_target = x_target_array[i][j]
     
-            #########################################################################
+            ###################################################################
             Unknown_call = laplace_experiment.Unknown(f_id, x, s, unknown, 
                                                       x_target, 
                                                       unknown_init_error)
-            #########################################################################
+            ###################################################################
             unknown_theory = Unknown_call.unknown_theory()
             unknown_init = Unknown_call.unknown_init()
             unknown_init_error = relative_error(unknown_theory, unknown_init)
             
-            #############################################################################################################
+            ###################################################################
             Solve_call = laplace_experiment.Solve(f_id, x, s, unknown,
                                                   x_target, unknown_init_error,
                                                   element_size, highest_order)
-            #############################################################################################################
+            ###################################################################
             unknown_terminal = Solve_call.solution(newton_tol, solver_id)
             
             unknown_terminal_error = relative_error(unknown_theory, unknown_terminal)
@@ -345,10 +345,10 @@ if __name__ == '__main__':
     print(unknown_terminal_error_mean)
     print('') 
     
-    ##########################################################################################################
+    ###########################################################################
     TerminalPlot = TerminalPlot(x_min, x_max, x_target_array,
                                 unknown_terminal_error_array)
-    ##########################################################################################################
+    ###########################################################################
 
     print('unknown_terminal_error Distribution')
     TerminalPlot.unknown_terminal_error_plot()
