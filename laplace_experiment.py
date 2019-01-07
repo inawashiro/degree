@@ -106,16 +106,16 @@ class Taylor(Known, Unknown):
         x_taylor_s[0] = known[0] \
                         + known[1]*dx[0] \
                         + known[2]*dx[1] \
-                        + unknown[0]*dx[0]**2/2 \
+                        + unknown[0]*dx[0]**2 \
                         + unknown[1]*dx[0]*dx[1] \
-                        + unknown[2]*dx[1]**2/2
+                        + unknown[2]*dx[1]**2
                
         x_taylor_s[1] = known[3] \
                         + known[4]*dx[0] \
                         + known[5]*dx[1] \
-                        + unknown[3]*dx[0]**2/2 \
+                        + unknown[3]*dx[0]**2 \
                         + unknown[4]*dx[0]*dx[1] \
-                        + unknown[5]*dx[1]**2/2
+                        + unknown[5]*dx[1]**2
         
         return x_taylor_s
         
@@ -136,9 +136,9 @@ class Taylor(Known, Unknown):
         s_taylor_u = known[6] \
                      + known[7]*ds[0] \
                      + known[8]*ds[1] \
-                     + unknown[6]*ds[0]**2/2 \
+                     + unknown[6]*ds[0]**2 \
                      + unknown[7]*ds[0]*ds[1] \
-                     + unknown[8]*ds[1]**2/2
+                     + unknown[8]*ds[1]**2
                      
         return s_taylor_u
     
