@@ -156,7 +156,7 @@ class TerminalPlot(TheoryPlot):
         
         error_plot = plt.scatter(x_target_array[:, :, 0], 
                                  x_target_array[:, :, 1], 
-                                 s = 12,
+                                 s = 30,
                                  vmin = 0,
                                  vmax = 100,
                                  c = unknown_terminal_error_array, 
@@ -233,15 +233,15 @@ if __name__ == '__main__':
     unknown[8] = syp.Symbol('u22', real = True)
     
     ###########################################################################
-    f_id = 'z^2'
-    element_size = 1.0e-1
-    newton_tol = 1.0e-7
-    x_min = np.ndarray((2))
-    x_min[0] = 0.0
-    x_min[1] = 0.0
-    x_max = np.ndarray((2))
-    x_max[0] = 2.0
-    x_max[1] = 2.0
+#    f_id = 'z^2'
+#    element_size = 1.0e-1
+#    newton_tol = 1.0e-7
+#    x_min = np.ndarray((2))
+#    x_min[0] = 0.0
+#    x_min[1] = 0.0
+#    x_max = np.ndarray((2))
+#    x_max[0] = 2.0
+#    x_max[1] = 2.0
     
 #    f_id = 'z^3'
 #    element_size = 1.0e-2
@@ -253,25 +253,24 @@ if __name__ == '__main__':
 #    x_max[0] = 2.0
 #    x_max[1] = 2.0
 
-#    f_id = 'exp(kz)'
-#    element_size = 1.0e-2
-#    newton_tol = 1.0e-9
-#    x_min = np.ndarray((2))
-#    x_min[0] = 0.0
-#    x_min[1] = 0.0
-#    x_max = np.ndarray((2))
-#    x_max[0] = 2.0
-#    x_max[1] = 2.0
-#    
+    f_id = 'exp(kz)'
+    element_size = 1.0e-2
+    newton_tol = 1.0e-9
+    x_min = np.ndarray((2))
+    x_min[0] = 0.0
+    x_min[1] = 0.0
+    x_max = np.ndarray((2))
+    x_max[0] = 2.0
+    x_max[1] = 2.0
+   
     unknown_init_error = 200.0
-    highest_order = 2
-    formulation_id = 'derivative'
-    solver_id = 'np.lstsq'
+    taylor_order = 2
     ###########################################################################
     
     print('')
     print('u = Re{',f_id,'}')
     print('')
+    print('unknown_error_init =', unknown_init_error)
     print('element_size =', element_size)
     print('newton_tol =', newton_tol)
     print('')
@@ -326,9 +325,9 @@ if __name__ == '__main__':
             ###################################################################
             Solve_call = laplace_experiment.Solve(f_id, x, s, unknown,
                                                   x_target, unknown_init_error,
-                                                  element_size, highest_order)
+                                                  element_size, taylor_order)
             ###################################################################
-            unknown_terminal = Solve_call.solution(newton_tol, solver_id)
+            unknown_terminal = Solve_call.solution(newton_tol)
             
             unknown_terminal_error = relative_error(unknown_theory, unknown_terminal)
             unknown_terminal_error_array[i][j] = unknown_terminal_error

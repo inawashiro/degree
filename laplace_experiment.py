@@ -386,19 +386,19 @@ class GoverningEquations(Laplacian):
     """ Derive Governing Equations """
     
     def __init__(self, f_id, x, s, unknown, x_value, unknown_init_error, 
-                 highest_order):
+                 taylor_order):
         self.Laplacian = Laplacian(f_id, x, s, unknown, x_value, unknown_init_error)
         self.Metric = self.Laplacian.Metric
         self.Derivative = self.Laplacian.Metric.Derivative
         self.Taylor = self.Laplacian.Metric.Derivative.Taylor
-        self.highest_order = highest_order
+        self.taylor_order = taylor_order
         self.x =  x
         self.x_value = x_value
 
     def governing_equation_0(self):
         """ Coefficients of du/ds2 """
         du_ds2 = self.Derivative.du_ds()[1]
-        N = self.highest_order
+        N = self.taylor_order
         x = self.x
         x_value = self.x_value
         
@@ -421,7 +421,7 @@ class GoverningEquations(Laplacian):
     def governing_equation_1(self):
         """ Coefficients of g_12 """
         g12 = self.Metric.supermetric()[0][1]
-        N = self.highest_order
+        N = self.taylor_order
         x = self.x
         x_value = self.x_value
         
@@ -444,7 +444,7 @@ class GoverningEquations(Laplacian):
     def governing_equation_2(self):
         """ Coefficients of Δu """
         laplacian_u = self.Laplacian.laplacian_u()
-        N = self.highest_order
+        N = self.taylor_order
         x = self.x
         x_value = self.x_value
         
@@ -469,13 +469,13 @@ class Solve(BoundaryConditions, GoverningEquations):
     """ Solve BVP of Each Line Element by Non-linear Least Square Algorithm """
     
     def __init__(self, f_id, x, s, unknown, x_value, unknown_init_error, 
-                 element_size, highest_order):
+                 element_size, taylor_order):
         self.BC = BoundaryConditions(f_id, x, s, unknown, x_value, 
                                      unknown_init_error, element_size)
         self.GE = GoverningEquations(f_id, x, s, unknown, x_value, 
-                                     unknown_init_error, highest_order)
+                                     unknown_init_error, taylor_order)
         self.Unknown = self.BC.Taylor.Unknown
-        self.highest_order = highest_order
+        self.taylor_order = taylor_order
         self.unknown = unknown
     
     def f(self):
@@ -483,9 +483,9 @@ class Solve(BoundaryConditions, GoverningEquations):
         ge0 = self.GE.governing_equation_0()
         ge1 = self.GE.governing_equation_1()
         ge2 = self.GE.governing_equation_2()
-        highest_order = self.highest_order
+        taylor_order = self.taylor_order
         
-        len_f = int(3/2*(highest_order + 1)*(highest_order + 2) + 2)
+        len_f = int(3/2*(taylor_order + 1)*(taylor_order + 2) + 2)
         
         f = np.ndarray((len_f), 'object')
         f[0] = bc[0]
@@ -556,26 +556,14 @@ class Solve(BoundaryConditions, GoverningEquations):
     
         return residual   
     
-    def solution(self, newton_tol, solver_id):
+    def solution(self, newton_tol):
         unknown_temp = self.Unknown.unknown_init()
         jacobian_f = self.jacobian_f(unknown_temp)
         residual = self.residual(unknown_temp)
             
         while np.linalg.norm(residual) > newton_tol:
-            if solver_id == 'np.solve':
-                increment = np.linalg.solve(jacobian_f, residual)
-            if solver_id == 'np.lstsq':
-                increment = np.linalg.lstsq(jacobian_f, residual)[0]
-            if solver_id == 'scp.spsolve':
-                increment = scp.sparse.linalg.spsolve(jacobian_f, residual)
-            if solver_id == 'scp.bicg':
-                increment = scp.sparse.linalg.bicg(jacobian_f, residual)[0]
-            if solver_id == 'scp.lsqr':
-                increment = scp.sparse.linalg.lsqr(jacobian_f, residual)[0]
-            if solver_id == 'scp.lsmr':
-                increment = scp.sparse.linalg.lsmr(jacobian_f, residual)[0]
-            
-            unknown_temp -= increment
+            increment = np.linalg.lstsq(jacobian_f, -residual)[0]            
+            unknown_temp += increment
             jacobian_f = self.jacobian_f(unknown_temp)
             residual = self.residual(unknown_temp)
         solution = unknown_temp
