@@ -257,11 +257,11 @@ if __name__ == '__main__':
     element_size = 1.0e-2
     newton_tol = 1.0e-9
     x_min = np.ndarray((2))
-    x_min[0] = 0.0
-    x_min[1] = 0.0
+    x_min[0] = 0.5
+    x_min[1] = 0.5
     x_max = np.ndarray((2))
-    x_max[0] = 2.0
-    x_max[1] = 2.0
+    x_max[0] = 1.5
+    x_max[1] = 1.5
    
     unknown_init_error = 200.0
     taylor_order = 2
