@@ -254,7 +254,7 @@ if __name__ == '__main__':
 #    x_max[1] = 2.0
 
     f_id = 'exp(kz)'
-    element_size = 8.0e-2
+    element_size = 1.0e-1
     newton_tol = 1.0e-9
     x_min = np.ndarray((2))
     x_min[0] = 0.0

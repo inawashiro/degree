@@ -227,19 +227,6 @@ class Derivative(Taylor):
         self.s = s
         self.unknown = unknown
         
-#    def u_minus_s1(self):
-#        x = self.x
-#        s = self.s
-#        unknown = self.unknown
-#        s_taylor_u = self.Taylor.s_taylor_u(s, unknown)
-#        x_taylor_s = self.Taylor.x_taylor_s(x, unknown)
-#        
-#        u_minus_s1 = s_taylor_u - s[0]
-#        u_minus_s1 = syp.lambdify(s, u_minus_s1, 'numpy')
-#        u_minus_s1 = u_minus_s1(x_taylor_s[0], x_taylor_s[1])
-#        
-#        return u_minus_s1
-        
     def du_ds(self):
         x = self.x
         s = self.s
@@ -431,28 +418,6 @@ class GoverningEquations(Laplacian):
             coeff_du_ds2[i] = coeff_du_ds2[i](x_value[0], x_value[1])
             
         return coeff_du_ds2
-#    def governing_equation_0(self):
-#        """ Coefficients of du/ds2 """
-#        u_minus_s1 = self.Derivative.u_minus_s1()
-#        N = self.taylor_order
-#        x = self.x
-#        x_value = self.x_value
-#                
-#        len_coeff_u_minus_s1 = int(1/2*(N + 1)*(N + 2))
-#        
-#        coeff_u_minus_s1 = np.ndarray((len_coeff_u_minus_s1), 'object')
-#        coeff_u_minus_s1[0] = u_minus_s1
-#        coeff_u_minus_s1[1] = syp.diff(u_minus_s1, x[0])
-#        coeff_u_minus_s1[2] = syp.diff(u_minus_s1, x[1])
-#        coeff_u_minus_s1[3] = syp.diff(u_minus_s1, x[0], 2)
-#        coeff_u_minus_s1[4] = syp.diff(u_minus_s1, x[0], x[1])
-#        coeff_u_minus_s1[5] = syp.diff(u_minus_s1, x[1], 2)
-#        
-#        for i in range(len(coeff_u_minus_s1)):
-#            coeff_u_minus_s1[i] = syp.lambdify(x, coeff_u_minus_s1[i], 'numpy')
-#            coeff_u_minus_s1[i] = coeff_u_minus_s1[i](x_value[0], x_value[1])
-#            
-#        return coeff_u_minus_s1
         
     def governing_equation_1(self):
         """ Coefficients of g_12 """
