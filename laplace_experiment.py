@@ -8,7 +8,7 @@ import laplace_theory
 
 # For Numerical Computation 
 import numpy as np
-from numpy import dot, random
+from numpy import dot
 from numpy.linalg import norm, solve, eigvals, lstsq
 
 # For Symbolic Notation
@@ -80,7 +80,6 @@ class Unknown(laplace_theory.TheoryValue):
     
         unknown_init = np.ndarray((len(unknown),))
         for i in range(len(unknown)):
-#            e = np.random.uniform(-error_limit, error_limit)
             unknown_init[i] = (1 + unknown_init_error/100)*unknown_theory[i]
         
         return unknown_init

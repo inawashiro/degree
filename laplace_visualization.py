@@ -254,7 +254,7 @@ if __name__ == '__main__':
 #    x_max[1] = 2.0
 
     f_id = 'exp(kz)'
-    element_size = 1.0e-2
+    element_size = 8.0e-2
     newton_tol = 1.0e-9
     x_min = np.ndarray((2))
     x_min[0] = 0.0
@@ -263,14 +263,14 @@ if __name__ == '__main__':
     x_max[0] = 2.0
     x_max[1] = 2.0
    
-    unknown_init_error = 200.0
+    unknown_init_error_limit = 400.0
     taylor_order = 2
     ###########################################################################
     
     print('')
     print('u = Re{',f_id,'}')
     print('')
-    print('unknown_error_init =', unknown_init_error)
+    print('unknown_init_error_limit =', unknown_init_error_limit)
     print('element_size =', element_size)
     print('newton_tol =', newton_tol)
     print('')
@@ -313,6 +313,8 @@ if __name__ == '__main__':
         for j in range(len(x_target_array[i])):
             x_target = x_target_array[i][j]
     
+            unknown_init_error = np.random.uniform(-unknown_init_error_limit, 
+                                                   unknown_init_error_limit)
             ###################################################################
             Unknown_call = laplace_experiment.Unknown(f_id, x, s, unknown, 
                                                       x_target, 
@@ -320,7 +322,6 @@ if __name__ == '__main__':
             ###################################################################
             unknown_theory = Unknown_call.unknown_theory()
             unknown_init = Unknown_call.unknown_init()
-            unknown_init_error = relative_error(unknown_theory, unknown_init)
             
             ###################################################################
             Solve_call = laplace_experiment.Solve(f_id, x, s, unknown,
@@ -332,8 +333,7 @@ if __name__ == '__main__':
             unknown_terminal_error = relative_error(unknown_theory, unknown_terminal)
             unknown_terminal_error_array[i][j] = unknown_terminal_error
             
-            
-            unknown_init_error_mean += unknown_init_error/number_of_points
+            unknown_init_error_mean += abs(unknown_init_error)/number_of_points
             unknown_terminal_error_mean += unknown_terminal_error/number_of_points
             
     print('unknown_init_error_mean (%) = ')
